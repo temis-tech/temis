@@ -1,41 +1,52 @@
-import { contentApi } from '@/lib/api';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
-import Services from '@/components/Services';
-import Branches from '@/components/Branches';
-import Reviews from '@/components/Reviews';
-import Promotions from '@/components/Promotions';
 import Footer from '@/components/Footer';
+import ContentPage from '@/components/ContentPage';
+import { contentApi } from '@/lib/api';
+import { notFound } from 'next/navigation';
+
+// Отключаем статическую генерацию для главной страницы, чтобы меню обновлялось динамически
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function Home() {
-  const [services, branches, reviews, promotions] = await Promise.all([
-    contentApi.getServices().then(res => res.data.results || res.data).catch(err => {
-      console.error('Error fetching services:', err);
-      return [];
-    }),
-    contentApi.getBranches().then(res => res.data.results || res.data).catch(err => {
-      console.error('Error fetching branches:', err);
-      return [];
-    }),
-    contentApi.getReviews().then(res => res.data.results || res.data).catch(err => {
-      console.error('Error fetching reviews:', err);
-      return [];
-    }),
-    contentApi.getPromotions().then(res => res.data.results || res.data).catch(err => {
-      console.error('Error fetching promotions:', err);
-      return [];
-    }),
-  ]);
+  // Пытаемся найти главную страницу через конструктор
+  // Если есть страница с типом 'home', используем её
+  // Иначе показываем только Hero
+  let homePage = null;
+  try {
+    // Пробуем найти страницу с slug 'home'
+    const response = await contentApi.getContentPageBySlug('home').catch(() => null);
+    if (response?.data) {
+      homePage = response.data;
+      console.log('Home page loaded:', {
+        title: homePage.title,
+        page_type: homePage.page_type,
+        is_active: homePage.is_active,
+        blocks_count: homePage.home_blocks?.length || 0
+      });
+    }
+  } catch (error) {
+    console.error('Error loading home page:', error);
+  }
 
   return (
     <>
       <Header />
       <main style={{ minHeight: '100vh' }}>
         <Hero />
-        <Services services={services} />
-        <Branches branches={branches} />
-        <Reviews reviews={reviews} />
-        {promotions && promotions.length > 0 && <Promotions promotions={promotions} />}
+        {homePage && homePage.page_type === 'home' && homePage.is_active ? (
+          <ContentPage page={homePage} />
+        ) : (
+          <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <p>Создайте главную страницу в админке через конструктор страниц</p>
+            {homePage && (
+              <p style={{ color: '#999', fontSize: '0.9rem', marginTop: '1rem' }}>
+                Debug: page_type={homePage.page_type}, is_active={String(homePage.is_active)}
+              </p>
+            )}
+          </div>
+        )}
       </main>
       <Footer />
     </>

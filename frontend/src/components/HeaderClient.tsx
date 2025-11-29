@@ -64,6 +64,50 @@ export default function HeaderClient({
                 item.title || ''
               );
               
+              // Если есть вложенные пункты меню
+              if (item.children && item.children.length > 0) {
+                return (
+                  <div key={item.id} className={styles.dropdown}>
+                    <span className={styles.dropdownToggle}>
+                      {content}
+                      <span className={styles.dropdownArrow}>▼</span>
+                    </span>
+                    <div className={styles.dropdownMenu}>
+                      {item.children.map((child) => {
+                        const childContent = child.image ? (
+                          <img src={normalizeImageUrl(child.image)} alt={child.title || 'Menu item'} className={styles.menuImage} />
+                        ) : (
+                          child.title || ''
+                        );
+                        
+                        return child.is_external ? (
+                          <a
+                            key={child.id}
+                            href={child.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setIsMenuOpen(false)}
+                            className={child.image ? styles.menuImageLink : ''}
+                          >
+                            {childContent}
+                          </a>
+                        ) : (
+                          <Link
+                            key={child.id}
+                            href={child.url}
+                            onClick={() => setIsMenuOpen(false)}
+                            className={child.image ? styles.menuImageLink : ''}
+                          >
+                            {childContent}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
+              
+              // Обычный пункт меню без вложенных
               return item.is_external ? (
                 <a 
                   key={item.id} 

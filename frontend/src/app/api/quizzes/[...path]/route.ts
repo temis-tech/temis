@@ -46,6 +46,7 @@ export async function POST(
   { params }: { params: { path: string[] } }
 ) {
   if (!API_BASE_URL) {
+    console.error('API_BASE_URL not configured');
     return NextResponse.json({ error: 'API URL not configured' }, { status: 500 });
   }
 
@@ -54,8 +55,13 @@ export async function POST(
   const apiPath = path.endsWith('/') ? path : `${path}/`;
   const body = await request.json();
 
+  console.log('Quiz API route POST:', { path, apiPath, bodyKeys: Object.keys(body) });
+
   try {
-    const response = await fetch(`${API_BASE_URL}/quizzes/${apiPath}`, {
+    const targetUrl = `${API_BASE_URL}/quizzes/${apiPath}`;
+    console.log('Fetching to:', targetUrl);
+    
+    const response = await fetch(targetUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -63,12 +69,16 @@ export async function POST(
       body: JSON.stringify(body),
     });
 
+    console.log('Response status:', response.status);
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error('Response error:', errorData);
       return NextResponse.json(errorData, { status: response.status });
     }
 
     const data = await response.json();
+    console.log('Response data received');
     return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
     console.error('API route error:', error);

@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { MenuItem } from '@/types';
 
 export default async function Footer() {
-  const [contacts, footerSettings, menuItems] = await Promise.all([
+  const [contacts, footerSettings] = await Promise.all([
     contentApi.getContacts().then(res => res.data.results?.[0] || res.data?.[0]).catch(() => null),
     contentApi.getFooterSettings().then(res => res.data).catch(() => null),
-    contentApi.getMenu().then(res => res.data.results || res.data || []).catch(() => []),
   ]);
+
+  // Получаем меню из настроек футера
+  const menuItems = footerSettings?.menu?.items || [];
 
   return (
     <footer className={styles.footer}>

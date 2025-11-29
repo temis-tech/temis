@@ -2,129 +2,10 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django import forms
 from .models import (
-    Branch, Service, Specialist, Review, Promotion, Article, Contact,
-    MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings
+    Contact,
+    Menu, MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings,
+    ContentPage, CatalogItem, GalleryImage, HomePageBlock
 )
-
-
-# ==================== КОНТЕНТ САЙТА ====================
-@admin.register(Branch)
-class BranchAdmin(admin.ModelAdmin):
-    list_display = ['name', 'address', 'metro', 'phone', 'order', 'is_active', 'image_preview']
-    list_editable = ['order', 'is_active']
-    list_filter = ['is_active']
-    search_fields = ['name', 'address']
-    readonly_fields = ['image_preview']
-    
-    def image_preview(self, obj):
-        if obj and obj.image:
-            return f'<img src="{obj.image.url}" style="max-width: 100px; max-height: 100px;" />'
-        return "Нет изображения"
-    image_preview.allow_tags = True
-    image_preview.short_description = 'Превью'
-
-
-@admin.register(Service)
-class ServiceAdmin(admin.ModelAdmin):
-    list_display = ['title', 'price', 'price_with_abonement', 'duration', 'order', 'is_active', 
-                   'show_booking_button', 'image_preview']
-    list_editable = ['order', 'is_active', 'show_booking_button']
-    list_filter = ['is_active', 'show_booking_button']
-    search_fields = ['title', 'description']
-    prepopulated_fields = {'slug': ('title',)}
-    readonly_fields = ['image_preview']
-    fieldsets = (
-        ('Основная информация', {
-            'fields': ('title', 'slug', 'description', 'short_description', 'image', 'image_preview')
-        }),
-        ('Цены и длительность', {
-            'fields': ('price', 'price_with_abonement', 'duration')
-        }),
-        ('Запись на услугу', {
-            'fields': ('show_booking_button', 'booking_form')
-        }),
-        ('Настройки', {
-            'fields': ('order', 'is_active')
-        }),
-    )
-    
-    def image_preview(self, obj):
-        if obj and obj.image:
-            return f'<img src="{obj.image.url}" style="max-width: 100px; max-height: 100px;" />'
-        return "Нет изображения"
-    image_preview.allow_tags = True
-    image_preview.short_description = 'Превью'
-
-
-@admin.register(Specialist)
-class SpecialistAdmin(admin.ModelAdmin):
-    list_display = ['name', 'position', 'branch', 'order', 'is_active', 'photo_preview']
-    list_editable = ['order', 'is_active']
-    list_filter = ['is_active', 'branch']
-    search_fields = ['name', 'position']
-    readonly_fields = ['photo_preview']
-    
-    def photo_preview(self, obj):
-        if obj and obj.photo:
-            return f'<img src="{obj.photo.url}" style="max-width: 100px; max-height: 100px; border-radius: 50%;" />'
-        return "Нет фото"
-    photo_preview.allow_tags = True
-    photo_preview.short_description = 'Фото'
-
-
-@admin.register(Review)
-class ReviewAdmin(admin.ModelAdmin):
-    list_display = ['author_name', 'rating', 'is_published', 'order', 'created_at', 'photo_preview']
-    list_editable = ['is_published', 'order']
-    list_filter = ['is_published', 'rating']
-    search_fields = ['author_name', 'text']
-    readonly_fields = ['photo_preview']
-    
-    def photo_preview(self, obj):
-        if obj and obj.author_photo:
-            return f'<img src="{obj.author_photo.url}" style="max-width: 100px; max-height: 100px; border-radius: 50%;" />'
-        return "Нет фото"
-    photo_preview.allow_tags = True
-    photo_preview.short_description = 'Фото'
-
-
-@admin.register(Promotion)
-class PromotionAdmin(admin.ModelAdmin):
-    list_display = ['title', 'start_date', 'end_date', 'is_active', 'order', 'image_preview']
-    list_editable = ['is_active', 'order']
-    list_filter = ['is_active', 'start_date', 'end_date']
-    search_fields = ['title', 'description']
-    prepopulated_fields = {'slug': ('title',)}
-    readonly_fields = ['image_preview']
-    
-    def image_preview(self, obj):
-        if obj and obj.image:
-            return f'<img src="{obj.image.url}" style="max-width: 100px; max-height: 100px;" />'
-        return "Нет изображения"
-    image_preview.allow_tags = True
-    image_preview.short_description = 'Превью'
-
-
-@admin.register(Article)
-class ArticleAdmin(admin.ModelAdmin):
-    list_display = ['title', 'is_published', 'views_count', 'created_at', 'image_preview']
-    list_editable = ['is_published']
-    list_filter = ['is_published', 'created_at']
-    search_fields = ['title', 'content']
-    prepopulated_fields = {'slug': ('title',)}
-    readonly_fields = ['image_preview']
-    
-    def get_queryset(self, request):
-        """Возвращает все статьи, включая неопубликованные"""
-        qs = super().get_queryset(request)
-        return qs  # Показываем все статьи в админке
-    
-    def image_preview(self, obj):
-        if obj and obj.image:
-            return f'<img src="{obj.image.url}" style="max-width: 100px; max-height: 100px;" />'
-        return "Нет изображения"
-    image_preview.allow_tags = True
-    image_preview.short_description = 'Превью'
 
 
 # ==================== КОНТАКТЫ ====================
@@ -134,19 +15,176 @@ class ContactAdmin(admin.ModelAdmin):
     list_editable = ['is_active']
 
 
+# ==================== КОНСТРУКТОР СТРАНИЦ ====================
+class CatalogItemInline(admin.TabularInline):
+    model = CatalogItem
+    extra = 1
+    fields = ['title', 'image', 'description', 'button_type', 'button_text', 'button_booking_form', 'button_quiz', 'button_url', 'order', 'is_active']
+    show_change_link = True
+    fk_name = 'page'
+
+
+class GalleryImageInline(admin.TabularInline):
+    model = GalleryImage
+    extra = 1
+    fields = ['image', 'description', 'order', 'is_active']
+    show_change_link = True
+    fk_name = 'page'
+
+
+class HomePageBlockInline(admin.TabularInline):
+    model = HomePageBlock
+    extra = 1
+    fields = ['content_page', 'title', 'show_title', 'order', 'is_active']
+    show_change_link = True
+    fk_name = 'page'
+
+
+@admin.register(ContentPage)
+class ContentPageAdmin(admin.ModelAdmin):
+    list_display = ['title', 'page_type', 'slug', 'is_active', 'order', 'created_at']
+    list_editable = ['is_active', 'order']
+    list_filter = ['page_type', 'is_active', 'created_at']
+    search_fields = ['title', 'slug', 'description']
+    prepopulated_fields = {'slug': ('title',)}
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('title', 'slug', 'page_type', 'description')
+        }),
+        ('Настройки', {
+            'fields': ('is_active', 'order')
+        }),
+    )
+    
+    def get_inlines(self, request, obj):
+        """Показываем разные inline в зависимости от типа страницы"""
+        if obj and obj.pk:
+            if obj.page_type == 'catalog':
+                return [CatalogItemInline]
+            elif obj.page_type == 'gallery':
+                return [GalleryImageInline]
+            elif obj.page_type == 'home':
+                return [HomePageBlockInline]
+        return []
+
+
+@admin.register(CatalogItem)
+class CatalogItemAdmin(admin.ModelAdmin):
+    list_display = ['title', 'page', 'button_type', 'order', 'is_active', 'image_preview']
+    list_editable = ['order', 'is_active']
+    list_filter = ['page', 'button_type', 'is_active']
+    search_fields = ['title', 'description']
+    readonly_fields = ['image_preview']
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('page', 'title', 'description', 'image', 'image_preview')
+        }),
+        ('Кнопка', {
+            'fields': ('button_type', 'button_text', 'button_booking_form', 'button_quiz', 'button_url'),
+            'description': 'Настройте тип кнопки и соответствующие параметры. Для типа "Форма записи" выберите форму из списка. Для типа "Квиз" выберите квиз из списка. Для типа "Внешняя ссылка" укажите URL.'
+        }),
+        ('Настройки', {
+            'fields': ('order', 'is_active')
+        }),
+    )
+    
+    def image_preview(self, obj):
+        if obj and obj.image:
+            return format_html(
+                '<img src="{}" style="max-width: 100px; max-height: 100px; object-fit: contain;" />',
+                obj.image.url
+            )
+        return "Нет изображения"
+    image_preview.short_description = 'Превью'
+
+
+@admin.register(GalleryImage)
+class GalleryImageAdmin(admin.ModelAdmin):
+    list_display = ['page', 'order', 'is_active', 'image_preview', 'created_at']
+    list_editable = ['order', 'is_active']
+    list_filter = ['page', 'is_active', 'created_at']
+    readonly_fields = ['image_preview']
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('page', 'image', 'image_preview', 'description')
+        }),
+        ('Настройки', {
+            'fields': ('order', 'is_active')
+        }),
+    )
+    
+    def image_preview(self, obj):
+        if obj and obj.image:
+            return format_html(
+                '<img src="{}" style="max-width: 200px; max-height: 200px; object-fit: contain;" />',
+                obj.image.url
+            )
+        return "Нет изображения"
+    image_preview.short_description = 'Превью'
+
+
+@admin.register(HomePageBlock)
+class HomePageBlockAdmin(admin.ModelAdmin):
+    list_display = ['page', 'content_page', 'title', 'show_title', 'title_tag', 'title_align', 'order', 'is_active']
+    list_editable = ['order', 'is_active', 'show_title']
+    list_filter = ['page', 'is_active', 'show_title', 'title_tag', 'title_align']
+    search_fields = ['title', 'content_page__title']
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('page', 'content_page', 'title')
+        }),
+        ('Настройки отображения заголовка', {
+            'fields': ('show_title', 'title_tag', 'title_align', 'title_size', 
+                      'title_color', 'title_bold', 'title_italic', 'title_custom_css'),
+            'description': 'Настройте внешний вид заголовка блока на главной странице'
+        }),
+        ('Настройки', {
+            'fields': ('order', 'is_active')
+        }),
+    )
+
+
 # ==================== НАСТРОЙКИ САЙТА ====================
+@admin.register(Menu)
+class MenuAdmin(admin.ModelAdmin):
+    list_display = ['name', 'description', 'is_active', 'items_count', 'created_at']
+    list_editable = ['is_active']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['name', 'description']
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('name', 'description', 'is_active')
+        }),
+    )
+    
+    def items_count(self, obj):
+        return obj.items.filter(is_active=True).count()
+    items_count.short_description = 'Активных пунктов'
+
+
+class MenuItemInline(admin.TabularInline):
+    model = MenuItem
+    extra = 1
+    fields = ['title', 'image', 'content_page', 'url', 'parent', 'order', 'is_active', 'is_external']
+    show_change_link = True
+
+
 @admin.register(MenuItem)
 class MenuItemAdmin(admin.ModelAdmin):
-    list_display = ['display_name', 'parent', 'url', 'order', 'is_active', 'is_external', 'image_preview']
+    list_display = ['display_name', 'menu', 'parent', 'url', 'order', 'is_active', 'is_external', 'image_preview']
     list_editable = ['order', 'is_active', 'is_external']
-    list_filter = ['is_active', 'parent']
+    list_filter = ['menu', 'is_active', 'parent']
     search_fields = ['title', 'url']
     list_display_links = ['display_name']
     
     fieldsets = (
         ('Основная информация', {
-            'fields': ('title', 'image', 'image_preview', 'url', 'parent'),
-            'description': 'Укажите либо текст (title), либо загрузите изображение. Если указаны оба, приоритет у изображения.'
+            'fields': ('menu', 'title', 'image', 'image_preview', 'content_page', 'url', 'parent'),
+            'description': 'Укажите либо текст (title), либо загрузите изображение. Выберите страницу контента или укажите URL вручную.'
         }),
         ('Настройки', {
             'fields': ('order', 'is_active', 'is_external')
@@ -175,7 +213,7 @@ class MenuItemAdmin(admin.ModelAdmin):
 
 @admin.register(HeaderSettings)
 class HeaderSettingsAdmin(admin.ModelAdmin):
-    list_display = ['logo_text', 'logo_height', 'header_height', 'show_menu', 'show_phone']
+    list_display = ['logo_text', 'logo_height', 'header_height', 'show_menu', 'menu', 'show_phone']
     fieldsets = (
         ('Логотип', {
             'fields': ('logo_text', 'logo_image', 'logo_url', 'logo_height', 'logo_preview')
@@ -185,7 +223,8 @@ class HeaderSettingsAdmin(admin.ModelAdmin):
             'description': 'Высота шапки используется для расчета отступа контента, чтобы он не перекрывался фиксированной шапкой.'
         }),
         ('Меню', {
-            'fields': ('show_menu',)
+            'fields': ('show_menu', 'menu'),
+            'description': 'Выберите меню, которое будет отображаться в шапке. Можно создать несколько меню для тестирования разных версий.'
         }),
         ('Телефон', {
             'fields': ('show_phone', 'phone_text')
@@ -227,8 +266,8 @@ class HeroSettingsAdmin(admin.ModelAdmin):
             'description': 'Настройте расположение (горизонтальное и вертикальное), размер и масштаб фонового изображения, а также затемнение для читаемости текста.'
         }),
         ('Настройки текста', {
-            'fields': ('text_align',),
-            'description': 'Выберите выравнивание заголовка и подзаголовка.'
+            'fields': ('text_align', 'content_width', 'content_width_custom'),
+            'description': 'Выберите выравнивание заголовка и подзаголовка, а также ширину полезной области для текста.'
         }),
         ('Настройки', {
             'fields': ('is_active',)
@@ -290,13 +329,14 @@ class HeroSettingsAdmin(admin.ModelAdmin):
 
 @admin.register(FooterSettings)
 class FooterSettingsAdmin(admin.ModelAdmin):
-    list_display = ['copyright_text', 'show_contacts', 'show_navigation']
+    list_display = ['copyright_text', 'show_contacts', 'show_navigation', 'menu']
     fieldsets = (
         ('Копирайт', {
             'fields': ('copyright_text',)
         }),
         ('Отображение', {
-            'fields': ('show_contacts', 'show_navigation', 'show_social')
+            'fields': ('show_contacts', 'show_navigation', 'menu', 'show_social'),
+            'description': 'Выберите меню, которое будет отображаться в футере. Можно создать несколько меню для тестирования разных версий.'
         }),
         ('Дополнительно', {
             'fields': ('additional_text',)
@@ -414,11 +454,11 @@ def custom_get_app_list(self, request):
         # Группируем модели content по категориям
         if app_label == 'content':
             # Определяем категорию модели
-            if model in [Branch, Service, Specialist, Review, Promotion, Article]:
-                category = 'Контент сайта'
-            elif model == Contact:
+            if model == Contact:
                 category = 'Контакты'
-            elif model in [MenuItem, HeaderSettings, HeroSettings, FooterSettings, SiteSettings, PrivacyPolicy]:
+            elif model in [ContentPage, CatalogItem, GalleryImage, HomePageBlock]:
+                category = 'Контент'
+            elif model in [Menu, MenuItem, HeaderSettings, HeroSettings, FooterSettings, SiteSettings, PrivacyPolicy]:
                 category = 'Настройки сайта'
             else:
                 category = 'Контент'

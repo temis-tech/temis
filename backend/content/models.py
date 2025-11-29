@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.text import slugify
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+from ckeditor.fields import RichTextField
 from .utils.image_processing import process_uploaded_image
 import re
 
@@ -258,13 +259,217 @@ class Contact(models.Model):
         return self.phone
 
 
+class ContentPage(models.Model):
+    """Страница контента - основа конструктора"""
+    PAGE_TYPES = [
+        ('catalog', 'Каталог'),
+        ('gallery', 'Галерея'),
+        ('home', 'Главная'),
+    ]
+    
+    title = models.CharField('Название страницы', max_length=200)
+    slug = models.SlugField('URL', unique=True, blank=True, 
+                           help_text='Автоматически генерируется из названия, если не указан')
+    page_type = models.CharField('Тип страницы', max_length=20, choices=PAGE_TYPES, default='catalog')
+    description = RichTextField('Описание', blank=True, 
+                                  help_text='Описание страницы с поддержкой форматирования')
+    is_active = models.BooleanField('Активна', default=True)
+    order = models.IntegerField('Порядок', default=0)
+    created_at = models.DateTimeField('Создана', auto_now_add=True)
+    updated_at = models.DateTimeField('Обновлена', auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Страница контента'
+        verbose_name_plural = 'Страницы контента'
+        ordering = ['order', 'title']
+    
+    def __str__(self):
+        return f'{self.get_page_type_display()}: {self.title}'
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = transliterate_slug(self.title)
+        super().save(*args, **kwargs)
+    
+    def get_absolute_url(self):
+        return f'/{self.slug}/'
+
+
+class CatalogItem(models.Model):
+    """Элемент каталога"""
+    BUTTON_TYPES = [
+        ('booking', 'Запись'),
+        ('quiz', 'Квиз'),
+        ('external', 'Внешняя ссылка'),
+        ('none', 'Без кнопки'),
+    ]
+    
+    page = models.ForeignKey(ContentPage, on_delete=models.CASCADE, related_name='catalog_items',
+                            verbose_name='Страница', limit_choices_to={'page_type': 'catalog'})
+    title = models.CharField('Название', max_length=200)
+    description = RichTextField('Описание', blank=True)
+    image = models.ImageField('Изображение', upload_to='catalog/', blank=True, null=True)
+    order = models.IntegerField('Порядок', default=0)
+    is_active = models.BooleanField('Активен', default=True)
+    
+    # Настройки кнопки
+    button_type = models.CharField('Тип кнопки', max_length=20, choices=BUTTON_TYPES, default='none')
+    button_text = models.CharField('Текст кнопки', max_length=100, blank=True, default='Записаться')
+    button_booking_form = models.ForeignKey('booking.BookingForm', on_delete=models.SET_NULL, null=True, blank=True,
+                                            verbose_name='Форма записи',
+                                            help_text='Выберите форму записи (если тип кнопки - "Запись")',
+                                            limit_choices_to={'is_active': True})
+    button_quiz = models.ForeignKey('quizzes.Quiz', on_delete=models.SET_NULL, null=True, blank=True,
+                                     verbose_name='Квиз',
+                                     help_text='Выберите квиз (если тип кнопки - "Квиз")',
+                                     limit_choices_to={'is_active': True})
+    button_url = models.CharField('URL кнопки', max_length=500, blank=True,
+                                  help_text='Внешняя ссылка (если тип кнопки - "Внешняя ссылка")')
+    
+    created_at = models.DateTimeField('Создан', auto_now_add=True)
+    updated_at = models.DateTimeField('Обновлен', auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Элемент каталога'
+        verbose_name_plural = 'Элементы каталога'
+        ordering = ['order', 'title']
+    
+    def __str__(self):
+        return self.title
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.image and hasattr(self.image, 'file'):
+            try:
+                process_uploaded_image(self.image, image_type='general')
+                super().save(update_fields=['image'])
+            except Exception as e:
+                print(f"Ошибка обработки изображения для CatalogItem {self.id}: {e}")
+
+
+class GalleryImage(models.Model):
+    """Изображение в галерее"""
+    page = models.ForeignKey(ContentPage, on_delete=models.CASCADE, related_name='gallery_images',
+                            verbose_name='Страница', limit_choices_to={'page_type': 'gallery'})
+    image = models.ImageField('Изображение', upload_to='gallery/')
+    description = RichTextField('Описание', blank=True)
+    order = models.IntegerField('Порядок', default=0)
+    is_active = models.BooleanField('Активна', default=True)
+    created_at = models.DateTimeField('Создана', auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Изображение галереи'
+        verbose_name_plural = 'Изображения галереи'
+        ordering = ['order', 'created_at']
+    
+    def __str__(self):
+        return f'Изображение #{self.id} - {self.page.title}'
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.image and hasattr(self.image, 'file'):
+            try:
+                process_uploaded_image(self.image, image_type='general')
+                super().save(update_fields=['image'])
+            except Exception as e:
+                print(f"Ошибка обработки изображения для GalleryImage {self.id}: {e}")
+
+
+class HomePageBlock(models.Model):
+    """Блок на главной странице - ссылка на другую страницу контента"""
+    TITLE_TAG_CHOICES = [
+        ('h1', 'H1'),
+        ('h2', 'H2'),
+        ('h3', 'H3'),
+        ('h4', 'H4'),
+        ('h5', 'H5'),
+        ('h6', 'H6'),
+    ]
+    
+    TITLE_ALIGN_CHOICES = [
+        ('left', 'Слева'),
+        ('center', 'По центру'),
+        ('right', 'Справа'),
+        ('justify', 'По ширине'),
+    ]
+    
+    TITLE_SIZE_CHOICES = [
+        ('small', 'Маленький'),
+        ('medium', 'Средний'),
+        ('large', 'Большой'),
+        ('xlarge', 'Очень большой'),
+    ]
+    
+    page = models.ForeignKey(ContentPage, on_delete=models.CASCADE, related_name='home_blocks',
+                            verbose_name='Главная страница', limit_choices_to={'page_type': 'home'})
+    content_page = models.ForeignKey(ContentPage, on_delete=models.CASCADE, related_name='+',
+                                    verbose_name='Страница для отображения',
+                                    help_text='Выберите страницу контента для отображения в этом блоке')
+    title = models.CharField('Заголовок блока', max_length=200, blank=True,
+                              help_text='Если не указан, будет использован заголовок страницы')
+    
+    # Настройки отображения заголовка
+    show_title = models.BooleanField('Показывать заголовок', default=True,
+                                     help_text='Отображать заголовок блока на странице')
+    title_tag = models.CharField('Тег заголовка', max_length=2, choices=TITLE_TAG_CHOICES, default='h2',
+                                 help_text='HTML тег для заголовка (H1-H6)')
+    title_align = models.CharField('Выравнивание', max_length=10, choices=TITLE_ALIGN_CHOICES, default='center',
+                                   help_text='Выравнивание заголовка')
+    title_size = models.CharField('Размер', max_length=10, choices=TITLE_SIZE_CHOICES, default='large',
+                                  help_text='Размер заголовка')
+    title_color = models.CharField('Цвет', max_length=7, default='#333333',
+                                   help_text='Цвет заголовка в формате HEX (например, #FF820E)')
+    title_bold = models.BooleanField('Жирный', default=False)
+    title_italic = models.BooleanField('Курсив', default=False)
+    title_custom_css = models.TextField('Дополнительные CSS стили', blank=True,
+                                       help_text='Дополнительные CSS стили для заголовка (например: text-decoration: underline; margin-bottom: 20px;)')
+    
+    order = models.IntegerField('Порядок', default=0)
+    is_active = models.BooleanField('Активен', default=True)
+    created_at = models.DateTimeField('Создан', auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Блок главной страницы'
+        verbose_name_plural = 'Блоки главной страницы'
+        ordering = ['order', 'created_at']
+    
+    def __str__(self):
+        return f'{self.page.title} → {self.content_page.title}'
+
+
+class Menu(models.Model):
+    """Меню - группа пунктов меню для возможности создания нескольких версий"""
+    name = models.CharField('Название меню', max_length=100, unique=True,
+                            help_text='Например: "Основное меню", "Меню версия 2"')
+    description = models.CharField('Описание', max_length=200, blank=True,
+                                  help_text='Краткое описание для чего это меню')
+    is_active = models.BooleanField('Активно', default=True)
+    created_at = models.DateTimeField('Создано', auto_now_add=True)
+    updated_at = models.DateTimeField('Обновлено', auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Меню'
+        verbose_name_plural = 'Меню'
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+
+
 class MenuItem(models.Model):
     """Пункт меню"""
+    menu = models.ForeignKey(Menu, on_delete=models.CASCADE, related_name='items',
+                            verbose_name='Меню', null=True, blank=True,
+                            help_text='Выберите меню, к которому относится этот пункт')
     title = models.CharField('Название (текст)', max_length=100, blank=True,
                             help_text='Оставьте пустым, если используете изображение')
     image = models.ImageField('Изображение', upload_to='menu/', blank=True, null=True,
                              help_text='Загрузите изображение вместо текста')
-    url = models.CharField('URL', max_length=200, help_text='Например: /services или http://example.com')
+    url = models.CharField('URL', max_length=200, blank=True,
+                          help_text='Заполните, если используете внешнюю ссылку или кастомный URL')
+    content_page = models.ForeignKey(ContentPage, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='menu_items', verbose_name='Страница контента',
+                                    help_text='Выберите страницу контента, если меню ведет на неё')
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, 
                               related_name='children', verbose_name='Родительский пункт',
                               help_text='Выберите родительский пункт для создания вложенного меню')
@@ -275,7 +480,7 @@ class MenuItem(models.Model):
 
     class Meta:
         verbose_name = 'Пункт меню'
-        verbose_name_plural = 'Меню'
+        verbose_name_plural = 'Пункты меню'
         ordering = ['order', 'title']
 
     def __str__(self):
@@ -308,6 +513,9 @@ class HeaderSettings(models.Model):
                                        validators=[MinValueValidator(60), MaxValueValidator(300)],
                                        help_text='Общая высота шапки в пикселях (от 60 до 300). Используется для отступа контента.')
     show_menu = models.BooleanField('Показывать меню', default=True)
+    menu = models.ForeignKey(Menu, on_delete=models.SET_NULL, null=True, blank=True,
+                            related_name='header_settings', verbose_name='Меню для отображения',
+                            help_text='Выберите меню, которое будет отображаться в шапке. Если не выбрано, будет использоваться меню по умолчанию.')
     show_phone = models.BooleanField('Показывать телефон', default=False)
     phone_text = models.CharField('Текст телефона', max_length=50, blank=True)
     
@@ -402,6 +610,20 @@ class HeroSettings(models.Model):
     text_align = models.CharField('Выравнивание текста', max_length=10, choices=TEXT_ALIGN_CHOICES,
                                   default='left', help_text='Выравнивание заголовка и подзаголовка')
     
+    CONTENT_WIDTH_CHOICES = [
+        ('narrow', 'Узкая (600px)'),
+        ('medium', 'Средняя (800px)'),
+        ('wide', 'Широкая (1000px)'),
+        ('full', 'На всю ширину (1200px)'),
+        ('custom', 'Произвольная'),
+    ]
+    
+    content_width = models.CharField('Ширина контента', max_length=20, choices=CONTENT_WIDTH_CHOICES,
+                                     default='narrow', help_text='Ширина полезной области для текста в Hero секции')
+    content_width_custom = models.IntegerField('Произвольная ширина (px)', null=True, blank=True,
+                                                validators=[MinValueValidator(300), MaxValueValidator(2000)],
+                                                help_text='Используется только если выбрана "Произвольная" ширина (от 300 до 2000px)')
+    
     is_active = models.BooleanField('Активна', default=True)
     
     class Meta:
@@ -432,6 +654,9 @@ class FooterSettings(models.Model):
                                       default='© 2024. Все права защищены')
     show_contacts = models.BooleanField('Показывать контакты', default=True)
     show_navigation = models.BooleanField('Показывать навигацию', default=True)
+    menu = models.ForeignKey(Menu, on_delete=models.SET_NULL, null=True, blank=True,
+                            related_name='footer_settings', verbose_name='Меню для отображения',
+                            help_text='Выберите меню, которое будет отображаться в футере. Если не выбрано, будет использоваться меню по умолчанию.')
     show_social = models.BooleanField('Показывать соцсети', default=False)
     additional_text = models.TextField('Дополнительный текст', blank=True)
     

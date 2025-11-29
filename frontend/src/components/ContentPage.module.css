@@ -1,0 +1,456 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.description {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 2rem;
+  line-height: 1.7;
+}
+
+.description :global(p) {
+  margin-bottom: 1rem;
+}
+
+.description :global(ul),
+.description :global(ol) {
+  margin-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+.description :global(li) {
+  margin-bottom: 0.5rem;
+}
+
+.description :global(strong) {
+  font-weight: 600;
+  color: #333;
+}
+
+.description :global(em) {
+  font-style: italic;
+}
+
+.description :global(a) {
+  color: #FF820E;
+  text-decoration: underline;
+}
+
+.description :global(a:hover) {
+  color: #ff9500;
+}
+
+.description :global(h1),
+.description :global(h2),
+.description :global(h3),
+.description :global(h4),
+.description :global(h5),
+.description :global(h6) {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.description :global(h1) {
+  font-size: 2rem;
+}
+
+.description :global(h2) {
+  font-size: 1.75rem;
+}
+
+.description :global(h3) {
+  font-size: 1.5rem;
+}
+
+.description :global(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.description :global(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.description :global(table th),
+.description :global(table td) {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+.description :global(table th) {
+  background-color: #f5f5f5;
+  font-weight: 600;
+}
+
+.itemDescription :global(p) {
+  margin-bottom: 0.5rem;
+}
+
+.itemDescription :global(ul),
+.itemDescription :global(ol) {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.itemDescription :global(strong) {
+  font-weight: 600;
+}
+
+.itemDescription :global(em) {
+  font-style: italic;
+}
+
+.itemDescription :global(a) {
+  color: #FF820E;
+  text-decoration: underline;
+}
+
+.itemDescription :global(a:hover) {
+  color: #ff9500;
+}
+
+/* Catalog Styles */
+.catalogGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.catalogItem {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  overflow: visible;
+}
+
+.catalogItem:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.imageWrapper {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.itemTitle {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.itemDescription {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  flex-grow: 1;
+}
+
+.button {
+  margin-top: auto;
+  background: #FF820E;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+  font-family: 'TildaSans', Arial, sans-serif;
+  width: 100%;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 130, 14, 0.4);
+  background: #ff9500;
+}
+
+/* Gallery Styles */
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.galleryItem {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.galleryItem:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.imageDescription {
+  padding: 1rem;
+  color: #666;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.imageDescription :global(p) {
+  margin-bottom: 0.5rem;
+}
+
+.imageDescription :global(ul),
+.imageDescription :global(ol) {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.imageDescription :global(strong) {
+  font-weight: 600;
+}
+
+.imageDescription :global(em) {
+  font-style: italic;
+}
+
+.imageDescription :global(a) {
+  color: #FF820E;
+  text-decoration: underline;
+}
+
+.imageDescription :global(a:hover) {
+  color: #ff9500;
+}
+
+/* Home Page Blocks */
+.homeBlock {
+  margin-bottom: 4rem;
+}
+
+.blockTitle {
+  margin-bottom: 2rem;
+  line-height: 1.3;
+}
+
+/* Размеры заголовков */
+.titleSize_small {
+  font-size: 1.25rem;
+}
+
+.titleSize_medium {
+  font-size: 1.75rem;
+}
+
+.titleSize_large {
+  font-size: 2.5rem;
+}
+
+.titleSize_xlarge {
+  font-size: 3.5rem;
+}
+
+@media (max-width: 768px) {
+  .titleSize_small {
+    font-size: 1.1rem;
+  }
+
+  .titleSize_medium {
+    font-size: 1.5rem;
+  }
+
+  .titleSize_large {
+    font-size: 2rem;
+  }
+
+  .titleSize_xlarge {
+    font-size: 2.5rem;
+  }
+}
+
+/* Booking Form */
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.modalContent {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.bookingForm {
+  padding: 2rem;
+}
+
+.form {
+  margin-top: 2rem;
+}
+
+.field {
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.required {
+  color: #ff0000;
+  margin-left: 0.25rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #FF820E;
+  box-shadow: 0 0 0 3px rgba(255, 130, 14, 0.1);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.helpText {
+  font-size: 0.875rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.submitButton {
+  background: #FF820E;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+  font-family: 'TildaSans', Arial, sans-serif;
+}
+
+.submitButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 130, 14, 0.4);
+  background: #ff9500;
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  background: #f0f0f0;
+  color: #333;
+  border: none;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+  font-family: 'TildaSans', Arial, sans-serif;
+}
+
+.cancelButton:hover {
+  background: #e0e0e0;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .catalogGrid,
+  .galleryGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .modalOverlay {
+    padding: 1rem;
+  }
+
+  .modalContent {
+    max-height: 95vh;
+  }
+
+  .bookingForm {
+    padding: 1.5rem;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .submitButton,
+  .cancelButton {
+    width: 100%;
+  }
+}
+

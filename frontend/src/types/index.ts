@@ -1,73 +1,4 @@
-export interface Branch {
-  id: number;
-  name: string;
-  address: string;
-  metro: string;
-  phone: string;
-  image?: string;
-  order: number;
-}
-
-export interface Service {
-  id: number;
-  title: string;
-  slug: string;
-  description: string;
-  short_description?: string;
-  price: string;
-  price_with_abonement?: string;
-  duration: string;
-  image?: string;
-  order: number;
-  show_booking_button?: boolean;
-  booking_form_id?: number;
-  booking_form_title?: string;
-}
-
-export interface Specialist {
-  id: number;
-  name: string;
-  position: string;
-  bio?: string;
-  photo?: string;
-  branch?: number;
-  branch_name?: string;
-  order: number;
-}
-
-export interface Review {
-  id: number;
-  author_name: string;
-  author_photo?: string;
-  text: string;
-  rating: number;
-  order: number;
-  created_at: string;
-}
-
-export interface Promotion {
-  id: number;
-  title: string;
-  slug: string;
-  description: string;
-  image?: string;
-  start_date?: string;
-  end_date?: string;
-  order: number;
-  created_at: string;
-}
-
-export interface Article {
-  id: number;
-  title: string;
-  slug: string;
-  content: string;
-  short_description?: string;
-  image?: string;
-  views_count: number;
-  created_at: string;
-  updated_at: string;
-}
+// Старые типы удалены - используем универсальную систему ContentPage
 
 export interface Contact {
   id: number;
@@ -143,5 +74,54 @@ export interface SubmissionAnswer {
   selected_options_text: string[];
   text_answer?: string;
   points: number;
+}
+
+export interface CatalogItem {
+  id: number;
+  title: string;
+  description: string;
+  image?: string;
+  button_type: 'booking' | 'quiz' | 'external' | 'none';
+  button_text: string;
+  button_booking_form_id?: number;
+  button_quiz_slug?: string;
+  button_url?: string;
+  order: number;
+}
+
+export interface GalleryImage {
+  id: number;
+  image: string;
+  description: string;
+  order: number;
+}
+
+export interface HomePageBlock {
+  id: number;
+  content_page: number;
+  title?: string;
+  show_title: boolean;
+  title_tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+  title_align: 'left' | 'center' | 'right' | 'justify';
+  title_size: 'small' | 'medium' | 'large' | 'xlarge';
+  title_color: string;
+  title_bold: boolean;
+  title_italic: boolean;
+  title_custom_css?: string;
+  order: number;
+  is_active: boolean;
+  content_page_data?: ContentPage;
+}
+
+export interface ContentPage {
+  id: number;
+  title: string;
+  slug: string;
+  page_type: 'catalog' | 'gallery' | 'home' | 'text';
+  description: string;
+  is_active: boolean;
+  catalog_items?: CatalogItem[];
+  gallery_images?: GalleryImage[];
+  home_blocks?: HomePageBlock[];
 }
 

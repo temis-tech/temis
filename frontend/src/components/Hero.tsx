@@ -24,6 +24,8 @@ interface HeroSettings {
   show_overlay?: boolean;
   overlay_opacity?: number;
   text_align?: string;
+  content_width?: 'narrow' | 'medium' | 'wide' | 'full' | 'custom';
+  content_width_custom?: number | null;
   is_active?: boolean;
 }
 
@@ -50,6 +52,26 @@ export default function Hero() {
   const showOverlay = heroSettings.show_overlay !== false; // по умолчанию true
   const overlayOpacity = heroSettings.overlay_opacity ? parseFloat(heroSettings.overlay_opacity.toString()) : 0.3;
   const textAlign = (heroSettings.text_align || 'left') as 'left' | 'center' | 'right';
+  
+  // Определяем ширину контента
+  const getContentWidth = () => {
+    const widthType = heroSettings.content_width || 'narrow';
+    if (widthType === 'custom' && heroSettings.content_width_custom) {
+      return `${heroSettings.content_width_custom}px`;
+    }
+    const widthMap: Record<string, string> = {
+      'narrow': '600px',
+      'medium': '800px',
+      'wide': '1000px',
+      'full': '1200px',
+    };
+    return widthMap[widthType] || '600px';
+  };
+  
+  const containerStyle = {
+    textAlign: textAlign,
+    maxWidth: getContentWidth(),
+  };
   
   // Комбинируем горизонтальное и вертикальное выравнивание для backgroundPosition
   const backgroundPosition = `${imagePosition} ${imageVerticalAlign}`;
@@ -115,7 +137,7 @@ export default function Hero() {
             style={{ opacity: overlayOpacity }}
           />
         )}
-        <div className={styles.container} style={{ textAlign: textAlign }}>
+        <div className={styles.container} style={containerStyle}>
           <h1 
             className={styles.title}
             dangerouslySetInnerHTML={{ __html: heroSettings.title }}

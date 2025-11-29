@@ -1,14 +1,37 @@
 import { contentApi } from '@/lib/api';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ContentPage from '@/components/ContentPage';
 import styles from './contacts.module.css';
 
 export default async function ContactsPage() {
-  const [contacts, branches] = await Promise.all([
-    contentApi.getContacts().then(res => res.data.results?.[0] || res.data?.[0]),
-    contentApi.getBranches().then(res => res.data.results || res.data),
-  ]);
+  // Пытаемся найти страницу контактов через конструктор
+  let contactsPage = null;
+  try {
+    const response = await contentApi.getContentPageBySlug('contacts').catch(() => null);
+    if (response?.data) {
+      contactsPage = response.data;
+    }
+  } catch (error) {
+    // Игнорируем ошибку
+  }
 
+  const contacts = await contentApi.getContacts().then(res => res.data.results?.[0] || res.data?.[0]).catch(() => null);
+
+  // Если есть страница контактов через конструктор, используем её
+  if (contactsPage) {
+    return (
+      <>
+        <Header />
+        <main className={styles.main}>
+          <ContentPage page={contactsPage} />
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  // Иначе показываем простую страницу с контактами
   return (
     <>
       <Header />
@@ -34,19 +57,9 @@ export default async function ContactsPage() {
             </div>
           )}
 
-          <div className={styles.branches}>
-            <h2>Наши филиалы</h2>
-            <div className={styles.branchesGrid}>
-              {branches.map((branch: any) => (
-                <div key={branch.id} className={styles.branchCard}>
-                  <h3>{branch.name}</h3>
-                  <p className={styles.address}>📍 {branch.address}</p>
-                  <p className={styles.metro}>🚇 {branch.metro}</p>
-                  <p className={styles.phone}>{branch.phone}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <p style={{ marginTop: '2rem', color: '#666' }}>
+            Создайте страницу контактов через конструктор страниц в админке для более гибкой настройки.
+          </p>
         </div>
       </main>
       <Footer />

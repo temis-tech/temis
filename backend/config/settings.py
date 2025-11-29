@@ -20,6 +20,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'ckeditor',
+    'ckeditor_uploader',
     'content',
     'quizzes',
     'booking',
@@ -87,6 +89,30 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# CKEditor настройки
+CKEDITOR_UPLOAD_PATH = 'uploads/'
+# Используем CDN для CKEditor 4.25.1-lts (последняя безопасная версия)
+# Примечание: django-ckeditor 6.7.3 поставляется с CKEditor 4.22.1, но мы можем переопределить через CDN
+CKEDITOR_CDN_URL = 'https://cdn.ckeditor.com/4.25.1-lts/standard-all/'
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toolbar': 'full',
+        'height': 300,
+        'width': '100%',
+        'toolbar_Custom': [
+            ['Bold', 'Italic', 'Underline'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ['Link', 'Unlink'],
+            ['RemoveFormat', 'Source'],
+            ['Image', 'Table', 'HorizontalRule'],
+            ['Styles', 'Format', 'Font', 'FontSize'],
+            ['TextColor', 'BGColor'],
+        ],
+        'toolbar': 'Custom',
+        'language': 'ru',
+    },
+}
 
 # Домен API для замены localhost в URL изображений
 API_DOMAIN = config('API_DOMAIN', default='api.rainbow-say.estenomada.es')

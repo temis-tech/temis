@@ -2,7 +2,8 @@ from rest_framework import serializers
 from django.conf import settings
 from .models import (
     Branch, Service, Specialist, Review, Promotion, Article, Contact,
-    MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings
+    Menu, MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings,
+    ContentPage, CatalogItem, GalleryImage, HomePageBlock
 )
 
 
@@ -128,30 +129,69 @@ class ContactSerializer(serializers.ModelSerializer):
 class MenuItemSerializer(serializers.ModelSerializer):
     children = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
     
     class Meta:
         model = MenuItem
-        fields = ['id', 'title', 'image', 'url', 'parent', 'order', 'is_external', 'children']
+        fields = ['id', 'title', 'image', 'url', 'content_page', 'parent', 'order', 'is_external', 'children']
     
     def get_children(self, obj):
         children = obj.children.filter(is_active=True).order_by('order')
-        return MenuItemSerializer(children, many=True).data
+        return MenuItemSerializer(children, many=True, context=self.context).data
     
     def get_image(self, obj):
         """Возвращает полный URL изображения"""
         return get_image_url(obj.image, self.context.get('request'))
+    
+    def get_url(self, obj):
+        """Возвращает URL из content_page или из поля url"""
+        if obj.content_page:
+            return obj.content_page.get_absolute_url()
+        return obj.url or '/'
+
+
+class MenuSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Menu
+        fields = ['id', 'name', 'description', 'items']
+    
+    def get_items(self, obj):
+        items = obj.items.filter(is_active=True, parent__isnull=True).order_by('order')
+        return MenuItemSerializer(items, many=True, context=self.context).data
 
 
 class HeaderSettingsSerializer(serializers.ModelSerializer):
     logo_image = serializers.SerializerMethodField()
+    menu = serializers.SerializerMethodField()
     
     class Meta:
         model = HeaderSettings
         fields = ['logo_text', 'logo_image', 'logo_url', 'logo_height', 'header_height', 
-                 'show_menu', 'show_phone', 'phone_text']
+                 'show_menu', 'menu', 'show_phone', 'phone_text']
     
     def get_logo_image(self, obj):
         return get_image_url(obj.logo_image, self.context.get('request'))
+    
+    def get_menu(self, obj):
+        """Возвращает меню, если оно выбрано, иначе возвращает меню по умолчанию"""
+        if obj.menu:
+            return MenuSerializer(obj.menu, context=self.context).data
+        
+        # Если меню не выбрано, возвращаем первое активное меню или меню без привязки
+        default_menu = Menu.objects.filter(is_active=True).first()
+        if default_menu:
+            return MenuSerializer(default_menu, context=self.context).data
+        
+        # Если нет меню, возвращаем пункты меню без привязки к меню (для обратной совместимости)
+        items = MenuItem.objects.filter(is_active=True, parent__isnull=True, menu__isnull=True).order_by('order')
+        return {
+            'id': None,
+            'name': 'Меню по умолчанию',
+            'description': '',
+            'items': MenuItemSerializer(items, many=True, context=self.context).data
+        }
 
 
 class HeroSettingsSerializer(serializers.ModelSerializer):
@@ -164,7 +204,7 @@ class HeroSettingsSerializer(serializers.ModelSerializer):
         fields = ['title', 'subtitle', 'button_text', 'button_url', 'button_type', 'button_quiz_slug', 
                   'button_booking_form_id', 'background_image', 'background_color',
                   'image_position', 'image_vertical_align', 'image_size', 'image_scale', 'show_overlay', 
-                  'overlay_opacity', 'text_align', 'is_active']
+                  'overlay_opacity', 'text_align', 'content_width', 'content_width_custom', 'is_active']
     
     def get_background_image(self, obj):
         """Возвращает полный URL фонового изображения"""
@@ -184,9 +224,28 @@ class HeroSettingsSerializer(serializers.ModelSerializer):
 
 
 class FooterSettingsSerializer(serializers.ModelSerializer):
+    menu = serializers.SerializerMethodField()
+    
     class Meta:
         model = FooterSettings
-        fields = ['copyright_text', 'show_contacts', 'show_navigation', 'show_social', 'additional_text']
+        fields = ['copyright_text', 'show_contacts', 'show_navigation', 'show_social', 'additional_text', 'menu']
+    
+    def get_menu(self, obj):
+        """Возвращает меню для футера, если оно выбрано"""
+        if hasattr(obj, 'menu') and obj.menu:
+            return MenuSerializer(obj.menu, context=self.context).data
+        # Если меню не выбрано, возвращаем первое активное меню
+        default_menu = Menu.objects.filter(is_active=True).first()
+        if default_menu:
+            return MenuSerializer(default_menu, context=self.context).data
+        # Если нет меню, возвращаем пункты меню без привязки
+        items = MenuItem.objects.filter(is_active=True, parent__isnull=True, menu__isnull=True).order_by('order')
+        return {
+            'id': None,
+            'name': 'Меню по умолчанию',
+            'description': '',
+            'items': MenuItemSerializer(items, many=True, context=self.context).data
+        }
 
 
 class PrivacyPolicySerializer(serializers.ModelSerializer):
@@ -200,4 +259,102 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
         model = SiteSettings
         fields = ['primary_color', 'gradient_start', 'gradient_end', 'secondary_color', 
                  'text_color', 'background_color']
+
+
+class CatalogItemSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    button_booking_form_id = serializers.SerializerMethodField()
+    button_quiz_slug = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CatalogItem
+        fields = ['id', 'title', 'description', 'image', 'button_type', 'button_text',
+                 'button_booking_form_id', 'button_quiz_slug', 'button_url', 'order']
+    
+    def get_image(self, obj):
+        return get_image_url(obj.image, self.context.get('request'))
+    
+    def get_button_booking_form_id(self, obj):
+        """Возвращает ID формы записи, если она активна"""
+        if obj.button_booking_form and obj.button_booking_form.is_active:
+            return obj.button_booking_form.id
+        return None
+    
+    def get_button_quiz_slug(self, obj):
+        """Возвращает slug квиза, если он активен"""
+        if obj.button_quiz and obj.button_quiz.is_active and obj.button_quiz.slug:
+            return obj.button_quiz.slug
+        return None
+
+
+class GalleryImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = GalleryImage
+        fields = ['id', 'image', 'description', 'order']
+    
+    def get_image(self, obj):
+        return get_image_url(obj.image, self.context.get('request'))
+
+
+class HomePageBlockSerializer(serializers.ModelSerializer):
+    content_page_data = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = HomePageBlock
+        fields = ['id', 'content_page', 'title', 'show_title', 'title_tag', 'title_align', 
+                 'title_size', 'title_color', 'title_bold', 'title_italic', 'title_custom_css',
+                 'order', 'is_active', 'content_page_data']
+    
+    def get_content_page_data(self, obj):
+        """Возвращает данные страницы контента"""
+        if obj.content_page:
+            # Используем упрощенный сериализатор, чтобы избежать рекурсии
+            # Если страница типа 'home', не сериализуем её home_blocks
+            if obj.content_page.page_type == 'home':
+                # Для страниц типа 'home' возвращаем только базовую информацию
+                return {
+                    'id': obj.content_page.id,
+                    'title': obj.content_page.title,
+                    'slug': obj.content_page.slug,
+                    'page_type': obj.content_page.page_type,
+                    'description': obj.content_page.description,
+                    'is_active': obj.content_page.is_active,
+                    'home_blocks': []  # Не сериализуем вложенные блоки, чтобы избежать рекурсии
+                }
+            # Для других типов страниц используем полный сериализатор
+            serializer = ContentPageSerializer(obj.content_page, context=self.context)
+            return serializer.data
+        return None
+
+
+class ContentPageSerializer(serializers.ModelSerializer):
+    catalog_items = serializers.SerializerMethodField()
+    gallery_images = serializers.SerializerMethodField()
+    home_blocks = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ContentPage
+        fields = ['id', 'title', 'slug', 'page_type', 'description', 'is_active', 'catalog_items',
+                 'gallery_images', 'home_blocks']
+    
+    def get_catalog_items(self, obj):
+        if obj.page_type == 'catalog':
+            items = obj.catalog_items.filter(is_active=True).order_by('order')
+            return CatalogItemSerializer(items, many=True, context=self.context).data
+        return []
+    
+    def get_gallery_images(self, obj):
+        if obj.page_type == 'gallery':
+            images = obj.gallery_images.filter(is_active=True).order_by('order')
+            return GalleryImageSerializer(images, many=True, context=self.context).data
+        return []
+    
+    def get_home_blocks(self, obj):
+        if obj.page_type == 'home':
+            blocks = obj.home_blocks.filter(is_active=True).order_by('order')
+            # Используем упрощенный сериализатор для блоков, чтобы избежать глубокой рекурсии
+            return HomePageBlockSerializer(blocks, many=True, context=self.context).data
+        return []
 

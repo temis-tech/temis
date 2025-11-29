@@ -3,13 +3,23 @@ import { contentApi } from '@/lib/api';
 import HeaderClient from './HeaderClient';
 
 export default async function Header() {
-  const [headerSettings, menuItems] = await Promise.all([
-    contentApi.getHeaderSettings().then(res => res.data).catch(() => null),
-    contentApi.getMenu().then(res => res.data.results || res.data || []).catch(() => []),
-  ]);
+  const headerSettings = await contentApi.getHeaderSettings().then(res => res.data).catch((err) => {
+    console.error('Error fetching header settings:', err);
+    return null;
+  });
 
-  // Убеждаемся, что menuItems - это массив
+  // Получаем меню из настроек шапки (может быть выбрано конкретное меню)
+  const menuItems = headerSettings?.menu?.items || [];
   const safeMenuItems = Array.isArray(menuItems) ? menuItems : [];
+  
+  // Отладочная информация
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Header settings:', {
+      show_menu: headerSettings?.show_menu,
+      menu: headerSettings?.menu,
+      menuItems: safeMenuItems.length,
+    });
+  }
 
   const headerHeight = headerSettings?.header_height || 140;
   const mobileHeaderHeight = Math.min(headerHeight * 0.85, 120);

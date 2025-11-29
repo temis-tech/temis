@@ -25,25 +25,20 @@ const api = axios.create({
 
 // Content API
 export const contentApi = {
-  getBranches: () => api.get('/content/branches/'),
-  getServices: () => api.get('/content/services/'),
-  getServiceBySlug: (slug: string) => api.get(`/content/services/by-slug/${slug}/`),
-  getSpecialists: () => api.get('/content/specialists/'),
-  getSpecialistsByBranch: (branchId: number) => api.get(`/content/specialists/by_branch/?branch_id=${branchId}`),
-  getReviews: () => api.get('/content/reviews/'),
-  getPromotions: () => api.get('/content/promotions/'),
-  getPromotionBySlug: (slug: string) => api.get(`/content/promotions/by-slug/${slug}/`),
-  getArticles: () => api.get('/content/articles/'),
-  getArticleBySlug: (slug: string) => api.get(`/content/articles/by-slug/${slug}/`),
+  // Контакты (используется в Footer)
   getContacts: () => api.get('/content/contacts/'),
+  // Настройки сайта
   getMenu: () => api.get('/content/menu/'),
   getHeaderSettings: () => api.get('/content/settings/header/'),
   getHeroSettings: () => api.get('/content/settings/hero/'),
   getFooterSettings: () => api.get('/content/settings/footer/'),
   getPrivacyPolicy: () => api.get('/content/privacy-policy/'),
+  // Бронирование
   getBookingForm: (id: number) => api.get(`/booking/forms/${id}/`),
   submitBooking: (data: any) => api.post('/booking/submissions/', data),
   submitBookingWithQuiz: (data: any) => api.post('/booking/submissions/submit_with_quiz/', data),
+  // Универсальные страницы контента (конструктор)
+  getContentPageBySlug: (slug: string) => api.get(`/content/pages/by-slug/${slug}/`),
 };
 
 // Quizzes API

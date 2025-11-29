@@ -64,30 +64,33 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
   };
 
   const handleSubmit = async () => {
+    console.log('handleSubmit called');
     setSubmitting(true);
     
-    const submissionData = {
-      answers: quiz.questions.map(q => {
-        const answer: any = {
-          question_id: q.id,
-        };
-        if (q.question_type === 'text') {
-          answer.text_answer = (answers[q.id] as string) || '';
-        } else {
-          answer.option_ids = (answers[q.id] as number[]) || [];
-        }
-        return answer;
-      }),
-      user_name: userData.name || '',
-      user_phone: userData.phone || '',
-      user_email: userData.email || '',
-    };
-
-    console.log('Quiz: Отправка данных квиза', { quiz: quiz.id, submissionData });
-
     try {
+      const submissionData = {
+        answers: quiz.questions.map(q => {
+          const answer: any = {
+            question_id: q.id,
+          };
+          if (q.question_type === 'text') {
+            answer.text_answer = (answers[q.id] as string) || '';
+          } else {
+            answer.option_ids = (answers[q.id] as number[]) || [];
+          }
+          return answer;
+        }),
+        user_name: userData.name || '',
+        user_phone: userData.phone || '',
+        user_email: userData.email || '',
+      };
+
+      console.log('Quiz: Отправка данных квиза', { quiz: quiz.id, submissionData });
+
       // Отправляем квиз
+      console.log('Calling quizzesApi.submitQuiz with:', { ...submissionData, quiz: quiz.id });
       const quizResponse = await quizzesApi.submitQuiz({ ...submissionData, quiz: quiz.id });
+      console.log('Quiz response received:', quizResponse);
       const quizSubmissionData = quizResponse.data;
       
       setResult(quizSubmissionData);
@@ -132,10 +135,24 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
 
   const handleBookingFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formId || !serviceId || !result?.id) return;
+    e.stopPropagation();
+    console.log('Quiz: handleBookingFormSubmit called', { formId, serviceId, resultId: result?.id });
+    
+    if (!formId || !serviceId || !result?.id) {
+      console.error('Quiz: Missing required data', { formId, serviceId, resultId: result?.id });
+      alert('Ошибка: отсутствуют необходимые данные для отправки формы');
+      return;
+    }
     
     setSubmittingBooking(true);
     try {
+      console.log('Quiz: Submitting booking form with quiz', {
+        form_id: formId,
+        service_id: serviceId,
+        quiz_submission_id: result.id,
+        data: bookingFormData
+      });
+      
       await contentApi.submitBookingWithQuiz({
         form_id: formId,
         service_id: serviceId,
@@ -143,11 +160,14 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
         quiz_submission_id: result.id
       });
       
+      console.log('Quiz: Booking form submitted successfully');
       alert(bookingForm?.success_message || 'Спасибо! Мы свяжемся с вами в ближайшее время.');
       router.push('/');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting booking form:', error);
-      alert('Ошибка при отправке формы. Попробуйте еще раз.');
+      const errorMessage = error.response?.data?.error || error.message || 'Ошибка при отправке формы';
+      console.error('Error details:', error.response?.data);
+      alert(`Ошибка при отправке формы: ${errorMessage}`);
     } finally {
       setSubmittingBooking(false);
     }
@@ -269,7 +289,14 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
                 ))}
               
               <div className={styles.actions}>
-                <button type="submit" className={styles.submitButton} disabled={submittingBooking}>
+                <button 
+                  type="submit" 
+                  className={styles.submitButton} 
+                  disabled={submittingBooking}
+                  onClick={(e) => {
+                    console.log('Quiz: Submit button clicked in form');
+                  }}
+                >
                   {submittingBooking ? 'Отправка...' : bookingForm.submit_button_text}
                 </button>
               </div>
@@ -370,14 +397,19 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
         </button>
         {currentQuestionIndex === quiz.questions.length - 1 ? (
           <button 
-            onClick={handleSubmit} 
+            onClick={(e) => {
+              e.preventDefault();
+              console.log('Submit button clicked');
+              handleSubmit();
+            }} 
             className={styles.submitButton}
             disabled={submitting}
+            type="button"
           >
             {submitting ? 'Отправка...' : 'Завершить квиз'}
           </button>
         ) : (
-          <button onClick={handleNext}>
+          <button onClick={handleNext} type="button">
             Далее
           </button>
         )}

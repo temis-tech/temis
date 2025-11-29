@@ -1,21 +1,15 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    BranchViewSet, ServiceViewSet, SpecialistViewSet,
-    ReviewViewSet, PromotionViewSet, ArticleViewSet, ContactViewSet,
+    ContactViewSet,
     MenuItemViewSet, HeaderSettingsView, HeroSettingsView,
-    FooterSettingsView, PrivacyPolicyView, SiteSettingsView
+    FooterSettingsView, PrivacyPolicyView, SiteSettingsView, ContentPageViewSet
 )
 
 router = DefaultRouter()
-router.register(r'branches', BranchViewSet, basename='branch')
-router.register(r'services', ServiceViewSet, basename='service')
-router.register(r'specialists', SpecialistViewSet, basename='specialist')
-router.register(r'reviews', ReviewViewSet, basename='review')
-router.register(r'promotions', PromotionViewSet, basename='promotion')
-router.register(r'articles', ArticleViewSet, basename='article')
 router.register(r'contacts', ContactViewSet, basename='contact')
 router.register(r'menu', MenuItemViewSet, basename='menuitem')
+router.register(r'pages', ContentPageViewSet, basename='contentpage')
 
 urlpatterns = [
     path('', include(router.urls)),
