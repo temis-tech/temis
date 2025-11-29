@@ -1,0 +1,128 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 80vh;
+}
+
+.content {
+  background: white;
+  border-radius: 16px;
+  padding: 3rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.backLink {
+  display: inline-block;
+  color: #FF820E;
+  text-decoration: none;
+  margin-bottom: 2rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  font-family: 'TildaSans', Arial, sans-serif;
+}
+
+.backLink:hover {
+  color: #ff9500;
+}
+
+.imageWrapper {
+  width: 100%;
+  height: 400px;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.title {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: #FF820E;
+  font-family: 'TildaSans', Arial, sans-serif;
+  font-weight: 500;
+}
+
+.price {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 8px;
+}
+
+.priceMain {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #FF820E;
+  font-family: 'TildaSans', Arial, sans-serif;
+}
+
+.priceAbonement {
+  font-size: 1.2rem;
+  color: #666;
+  text-decoration: line-through;
+}
+
+.duration {
+  font-size: 1rem;
+  color: #999;
+}
+
+.description {
+  line-height: 1.8;
+  color: #333;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.description p {
+  margin-bottom: 1rem;
+}
+
+.bookingButton {
+  background: #FF820E;
+  color: white;
+  border: none;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  font-family: 'TildaSans', Arial, sans-serif;
+}
+
+.bookingButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 130, 14, 0.4);
+  background: #ff9500;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .content {
+    padding: 2rem 1.5rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .price {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+

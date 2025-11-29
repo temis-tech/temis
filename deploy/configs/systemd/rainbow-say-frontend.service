@@ -1,0 +1,21 @@
+[Unit]
+Description=Rainbow Say Next.js Frontend
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/rainbow-say/frontend
+Environment=NODE_ENV=production
+Environment=PORT=3001
+ExecStart=/usr/bin/node /var/www/rainbow-say/frontend/.next/standalone/server.js
+Restart=always
+RestartSec=10
+
+# Если используешь npm start вместо standalone:
+# ExecStart=/usr/bin/npm start
+# Environment="PATH=/usr/bin:/usr/local/bin"
+
+[Install]
+WantedBy=multi-user.target
+

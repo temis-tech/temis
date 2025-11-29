@@ -1,0 +1,202 @@
+.header {
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  height: var(--header-height, 140px);
+  min-height: var(--header-height, 140px);
+}
+
+.header:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.8rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  min-height: var(--header-height, 140px);
+}
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #FF820E;
+  font-family: 'TildaSans', Arial, sans-serif;
+  transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 0.75rem;
+}
+
+.logo:hover {
+  transform: scale(1.05);
+}
+
+.logoImage {
+  width: auto;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+}
+
+.logoText {
+  display: inline-block;
+}
+
+.nav {
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.nav a {
+  color: #333;
+  font-weight: 500;
+  font-size: 1rem;
+  position: relative;
+  padding: 0.5rem 0;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.nav a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #FF820E;
+  transition: width 0.3s ease;
+}
+
+.nav a:hover {
+  color: #FF820E;
+}
+
+.nav a:hover::after {
+  width: 100%;
+}
+
+.menuImageLink {
+  padding: 0;
+}
+
+.menuImageLink::after {
+  display: none;
+}
+
+.menuImage {
+  max-height: 40px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.menuImageLink:hover .menuImage {
+  transform: scale(1.1);
+}
+
+.phone {
+  color: #FF820E;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-family: 'TildaSans', Arial, sans-serif;
+}
+
+.phone:hover {
+  color: #ff9500;
+}
+
+.menuButton {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 1001;
+}
+
+.menuButton span {
+  width: 28px;
+  height: 3px;
+  background: #333;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.menuButton:hover span {
+  background: #667eea;
+}
+
+@media (max-width: 968px) {
+  .nav {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0.6rem 1.5rem;
+  }
+
+  .menuButton {
+    display: flex;
+  }
+
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.98);
+    flex-direction: column;
+    padding: 5rem 2rem 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    gap: 2rem;
+    justify-content: flex-start;
+  }
+
+  .navOpen {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .nav a {
+    font-size: 1.2rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #eee;
+    width: 100%;
+  }
+
+  .nav a::after {
+    display: none;
+  }
+  
+  .menuImage {
+    max-height: 60px;
+  }
+}

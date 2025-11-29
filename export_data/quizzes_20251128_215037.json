@@ -1,0 +1,141 @@
+[
+{
+  "model": "quizzes.quiz",
+  "pk": 1,
+  "fields": {
+    "title": "Опрос",
+    "slug": "opros",
+    "description": "",
+    "is_active": true,
+    "created_at": "2025-11-28T19:20:08.948Z",
+    "updated_at": "2025-11-28T19:20:08.948Z"
+  }
+},
+{
+  "model": "quizzes.question",
+  "pk": 1,
+  "fields": {
+    "quiz": 1,
+    "text": "Есть проблемы?",
+    "order": 0,
+    "question_type": "multiple",
+    "is_required": true,
+    "created_at": "2025-11-28T19:20:08.950Z"
+  }
+},
+{
+  "model": "quizzes.question",
+  "pk": 2,
+  "fields": {
+    "quiz": 1,
+    "text": "Много проблем?",
+    "order": 1,
+    "question_type": "single",
+    "is_required": true,
+    "created_at": "2025-11-28T19:20:08.951Z"
+  }
+},
+{
+  "model": "quizzes.question",
+  "pk": 3,
+  "fields": {
+    "quiz": 1,
+    "text": "Как давно были проблемы?",
+    "order": 2,
+    "question_type": "single",
+    "is_required": true,
+    "created_at": "2025-11-28T19:20:08.952Z"
+  }
+},
+{
+  "model": "quizzes.answeroption",
+  "pk": 1,
+  "fields": {
+    "question": 1,
+    "text": "Да",
+    "points": 1,
+    "order": 0,
+    "created_at": "2025-11-28T19:20:30.913Z"
+  }
+},
+{
+  "model": "quizzes.answeroption",
+  "pk": 2,
+  "fields": {
+    "question": 1,
+    "text": "Нет",
+    "points": 0,
+    "order": 0,
+    "created_at": "2025-11-28T19:20:37.713Z"
+  }
+},
+{
+  "model": "quizzes.answeroption",
+  "pk": 3,
+  "fields": {
+    "question": 2,
+    "text": "0",
+    "points": 0,
+    "order": 0,
+    "created_at": "2025-11-28T19:21:10.411Z"
+  }
+},
+{
+  "model": "quizzes.answeroption",
+  "pk": 4,
+  "fields": {
+    "question": 2,
+    "text": "1",
+    "points": 1,
+    "order": 0,
+    "created_at": "2025-11-28T19:21:18.604Z"
+  }
+},
+{
+  "model": "quizzes.answeroption",
+  "pk": 5,
+  "fields": {
+    "question": 2,
+    "text": "2",
+    "points": 2,
+    "order": 0,
+    "created_at": "2025-11-28T19:21:24.814Z"
+  }
+},
+{
+  "model": "quizzes.answeroption",
+  "pk": 6,
+  "fields": {
+    "question": 3,
+    "text": "Вчера",
+    "points": 0,
+    "order": 0,
+    "created_at": "2025-11-28T19:21:46.086Z"
+  }
+},
+{
+  "model": "quizzes.answeroption",
+  "pk": 7,
+  "fields": {
+    "question": 3,
+    "text": "И сейчас есть",
+    "points": 1,
+    "order": 0,
+    "created_at": "2025-11-28T19:21:54.848Z"
+  }
+},
+{
+  "model": "quizzes.resultrange",
+  "pk": 1,
+  "fields": {
+    "quiz": 1,
+    "min_points": 1,
+    "max_points": 3,
+    "title": "Ответ",
+    "description": "",
+    "image": "",
+    "order": 5,
+    "created_at": "2025-11-28T19:20:08.953Z"
+  }
+}
+]

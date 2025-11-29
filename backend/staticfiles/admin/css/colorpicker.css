@@ -1,0 +1,60 @@
+/* Color picker widget styles */
+.color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.color-picker-input {
+    width: 60px !important;
+    height: 60px !important;
+    border: 2px solid #ddd !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    background: none !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.color-picker-input::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+.color-picker-input::-webkit-color-swatch {
+    border: none;
+    border-radius: 6px;
+}
+
+.color-picker-input::-moz-color-swatch {
+    border: none;
+    border-radius: 6px;
+}
+
+.color-picker-text {
+    flex: 1;
+}
+
+.color-picker-hint {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 0.25rem;
+    font-style: italic;
+}
+
+/* Улучшаем отображение текстового поля цвета */
+.color-picker-wrapper input[type="text"] {
+    flex: 1;
+    max-width: 200px;
+    font-family: monospace;
+    font-size: 1rem;
+}
+
+/* Стили для полей градиента */
+.field-gradient_start .color-picker-wrapper,
+.field-gradient_end .color-picker-wrapper {
+    margin-top: 1rem;
+}
