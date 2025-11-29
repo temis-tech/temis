@@ -41,3 +41,6 @@ Thumbs.db
 .env.local
 .env.*.local
 
+# Deployment archives
+rainbow-say-deploy-*.tar.gz
+
