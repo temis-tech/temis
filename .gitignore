@@ -186,6 +186,13 @@ htmlcov/
 # ============================================
 # Temporary / Debug scripts
 # ============================================
+# Вся папка scripts/temp/ - для временных скриптов, которые не должны попадать в git
+# Исключаем README.md из игнорирования
+!scripts/temp/README.md
+# Игнорируем всё остальное в scripts/temp/
+scripts/temp/*
+
+# Старые временные скрипты (на случай если остались)
 scripts/*-fix.sh
 scripts/fix-*.sh
 scripts/check-*.sh
