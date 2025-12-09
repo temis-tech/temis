@@ -182,3 +182,19 @@ htmlcov/
 *.backup
 *.old
 *.orig
+
+# ============================================
+# Temporary / Debug scripts
+# ============================================
+scripts/*-fix.sh
+scripts/fix-*.sh
+scripts/check-*.sh
+scripts/setup-ssh-key.sh
+scripts/setup-github-ssh.sh
+scripts/copy-ssh-key.sh
+scripts/change-git-account.sh
+scripts/upload-src.sh
+scripts/import-data-fix.sh
+scripts/deploy-full.sh
+scripts/start-dev.sh
+scripts/setup-github-secrets.sh
