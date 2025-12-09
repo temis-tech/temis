@@ -53,6 +53,9 @@ db.sqlite3-*
 backend/media/
 backend/staticfiles/
 backend/static/
+**/media/
+**/staticfiles/
+**/static/
 
 # Django migrations (optional - раскомментируй если не хочешь коммитить миграции)
 # */migrations/*.py
