@@ -33,12 +33,17 @@ export const contentApi = {
   getHeroSettings: () => api.get('/content/settings/hero/'),
   getFooterSettings: () => api.get('/content/settings/footer/'),
   getPrivacyPolicy: () => api.get('/content/privacy-policy/'),
+  getWelcomeBanners: () => api.get('/content/banners/'),
   // Бронирование
   getBookingForm: (id: number) => api.get(`/booking/forms/${id}/`),
   submitBooking: (data: any) => api.post('/booking/submissions/', data),
   submitBookingWithQuiz: (data: any) => api.post('/booking/submissions/submit_with_quiz/', data),
   // Универсальные страницы контента (конструктор)
   getContentPageBySlug: (slug: string) => api.get(`/content/pages/by-slug/${slug}/`),
+  // Элементы каталога
+  getCatalogItemBySlug: (slug: string) => api.get(`/content/catalog-items/by-slug/${slug}/`),
+  // Услуги
+  getServiceBySlug: (slug: string) => api.get(`/content/services/by-slug/${slug}/`),
 };
 
 // Quizzes API

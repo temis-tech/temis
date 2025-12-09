@@ -34,23 +34,23 @@ class BookingFormAdmin(admin.ModelAdmin):
         ('Настройки формы', {
             'fields': ('submit_button_text', 'success_message')
         }),
-        ('Квиз по умолчанию', {
+        ('Анкета по умолчанию', {
             'fields': ('default_quiz', 'default_quiz_status'),
-            'description': 'Если указан квиз по умолчанию, он будет открываться всегда при отправке формы (без проверки условий). Правила формы будут игнорироваться.'
+            'description': 'Если указан анкета по умолчанию, он будет открываться всегда при отправке формы (без проверки условий). Правила формы будут игнорироваться.'
         }),
     )
     inlines = [FormFieldInline, FormRuleInline]
     
     def default_quiz_status(self, obj):
-        """Показывает статус квиза по умолчанию"""
+        """Показывает статус анкетаа по умолчанию"""
         if not obj.default_quiz:
-            return 'Квиз не установлен'
+            return 'Анкета не установлен'
         if not obj.default_quiz.is_active:
-            return '⚠️ Квиз неактивен'
+            return '⚠️ Анкета неактивен'
         if not obj.default_quiz.slug:
-            return '⚠️ У квиза нет slug'
-        return f'✅ Квиз готов: {obj.default_quiz.title}'
-    default_quiz_status.short_description = 'Статус квиза по умолчанию'
+            return '⚠️ У анкетаа нет slug'
+        return f'✅ Анкета готов: {obj.default_quiz.title}'
+    default_quiz_status.short_description = 'Статус анкетаа по умолчанию'
     
     def fields_count(self, obj):
         return obj.fields.count()
@@ -89,22 +89,22 @@ class FormRuleAdmin(admin.ModelAdmin):
         ('Основная информация', {
             'fields': ('form', 'field', 'field_value', 'order', 'is_active')
         }),
-        ('Квиз', {
+        ('Анкета', {
             'fields': ('quiz', 'quiz_status'),
-            'description': 'Выберите квиз, который откроется при срабатывании правила. Квиз должен быть активен и иметь slug.'
+            'description': 'Выберите анкета, который откроется при срабатывании правила. Анкета должен быть активен и иметь slug.'
         }),
     )
     
     def quiz_status(self, obj):
-        """Показывает статус квиза"""
+        """Показывает статус анкетаа"""
         if not obj.quiz:
-            return '⚠️ Квиз не выбран'
+            return '⚠️ Анкета не выбран'
         if not obj.quiz.is_active:
-            return '⚠️ Квиз неактивен'
+            return '⚠️ Анкета неактивен'
         if not obj.quiz.slug:
-            return '⚠️ У квиза нет slug'
-        return '✅ Квиз готов к использованию'
-    quiz_status.short_description = 'Статус квиза'
+            return '⚠️ У анкетаа нет slug'
+        return '✅ Анкета готов к использованию'
+    quiz_status.short_description = 'Статус анкетаа'
 
 
 @admin.register(BookingSubmission)

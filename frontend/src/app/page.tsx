@@ -1,9 +1,9 @@
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
+import WelcomeBanners from '@/components/WelcomeBanners';
 import Footer from '@/components/Footer';
 import ContentPage from '@/components/ContentPage';
 import { contentApi } from '@/lib/api';
-import { notFound } from 'next/navigation';
 
 // Отключаем статическую генерацию для главной страницы, чтобы меню обновлялось динамически
 export const dynamic = 'force-dynamic';
@@ -35,6 +35,7 @@ export default async function Home() {
       <Header />
       <main style={{ minHeight: '100vh' }}>
         <Hero />
+        <WelcomeBanners />
         {homePage && homePage.page_type === 'home' && homePage.is_active ? (
           <ContentPage page={homePage} />
         ) : (

@@ -41,8 +41,8 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Обновлен')),
             ],
             options={
-                'verbose_name': 'Квиз',
-                'verbose_name_plural': 'Квизы',
+                'verbose_name': 'Анкета',
+                'verbose_name_plural': 'Анкетаы',
                 'ordering': ['-created_at'],
             },
         ),
@@ -65,7 +65,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='question',
             name='quiz',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='questions', to='quizzes.quiz', verbose_name='Квиз'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='questions', to='quizzes.quiz', verbose_name='Анкета'),
         ),
         migrations.CreateModel(
             name='ResultRange',
@@ -78,7 +78,7 @@ class Migration(migrations.Migration):
                 ('image', models.ImageField(blank=True, null=True, upload_to='quiz_results/', verbose_name='Изображение')),
                 ('order', models.IntegerField(default=0, verbose_name='Порядок')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Создан')),
-                ('quiz', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='result_ranges', to='quizzes.quiz', verbose_name='Квиз')),
+                ('quiz', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='result_ranges', to='quizzes.quiz', verbose_name='Анкета')),
             ],
             options={
                 'verbose_name': 'Диапазон результатов',
@@ -95,12 +95,12 @@ class Migration(migrations.Migration):
                 ('user_phone', models.CharField(blank=True, max_length=20, verbose_name='Телефон пользователя')),
                 ('user_email', models.EmailField(blank=True, max_length=254, verbose_name='Email пользователя')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Создана')),
-                ('quiz', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='submissions', to='quizzes.quiz', verbose_name='Квиз')),
+                ('quiz', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='submissions', to='quizzes.quiz', verbose_name='Анкета')),
                 ('result', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='submissions', to='quizzes.resultrange', verbose_name='Результат')),
             ],
             options={
-                'verbose_name': 'Отправка квиза',
-                'verbose_name_plural': 'Отправки квизов',
+                'verbose_name': 'Отправка анкетаа',
+                'verbose_name_plural': 'Отправки анкетаов',
                 'ordering': ['-created_at'],
             },
         ),

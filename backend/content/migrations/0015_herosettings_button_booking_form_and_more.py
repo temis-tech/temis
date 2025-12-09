@@ -21,12 +21,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='herosettings',
             name='button_quiz',
-            field=models.ForeignKey(blank=True, help_text='Выберите квиз, который откроется при нажатии (если тип = "Опрос")', null=True, on_delete=django.db.models.deletion.SET_NULL, to='quizzes.quiz', verbose_name='Квиз для кнопки'),
+            field=models.ForeignKey(blank=True, help_text='Выберите анкета, который откроется при нажатии (если тип = "Опрос")', null=True, on_delete=django.db.models.deletion.SET_NULL, to='quizzes.quiz', verbose_name='Анкета для кнопки'),
         ),
         migrations.AddField(
             model_name='herosettings',
             name='button_type',
-            field=models.CharField(choices=[('link', 'Ссылка'), ('quiz', 'Опрос (квиз)'), ('booking', 'Прямая запись')], default='link', help_text='Что произойдет при нажатии на кнопку', max_length=20, verbose_name='Тип кнопки'),
+            field=models.CharField(choices=[('link', 'Ссылка'), ('quiz', 'Опрос (анкета)'), ('booking', 'Прямая запись')], default='link', help_text='Что произойдет при нажатии на кнопку', max_length=20, verbose_name='Тип кнопки'),
         ),
         migrations.AlterField(
             model_name='herosettings',

@@ -4,8 +4,10 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import BookingForm, BookingSubmission, FormRule
 from .serializers import BookingFormSerializer, BookingSubmissionSerializer
+from .tasks import process_booking_submission_async
 from content.models import Service
 from quizzes.models import Quiz, QuizSubmission
+import threading
 
 
 class BookingFormViewSet(viewsets.ReadOnlyModelViewSet):
@@ -26,6 +28,11 @@ class BookingSubmissionViewSet(viewsets.ModelViewSet):
         form_id = request.data.get('form_id')
         service_id = request.data.get('service_id')
         form_data = request.data.get('data', {})
+        
+        # Логируем входящие данные для отладки
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f'BookingSubmission create: form_id={form_id}, service_id={service_id}, data={form_data}')
         
         try:
             form = BookingForm.objects.get(id=form_id, is_active=True)
@@ -50,8 +57,8 @@ class BookingSubmissionViewSet(viewsets.ModelViewSet):
         for rule in form.rules.filter(is_active=True).order_by('order'):
             field_value = form_data.get(rule.field.name, '')
             if str(field_value) == str(rule.field_value) and rule.quiz:
-                # Правило сработало - открываем квиз
-                # Квиз будет обработан на фронтенде
+                # Правило сработало - открываем анкета
+                # Анкета будет обработан на фронтенде
                 pass
         
         # Создаем отправку формы
@@ -61,12 +68,21 @@ class BookingSubmissionViewSet(viewsets.ModelViewSet):
             data=form_data
         )
         
+        # Запускаем асинхронную обработку интеграций (MoyKlass, Telegram)
+        # Не ждем завершения - сразу возвращаем ответ пользователю
+        thread = threading.Thread(
+            target=process_booking_submission_async,
+            args=(submission.id,),
+            daemon=True
+        )
+        thread.start()
+        
         serializer = self.get_serializer(submission)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     @action(detail=False, methods=['post'])
     def submit_with_quiz(self, request):
-        """Отправка формы с результатами квиза"""
+        """Отправка формы с результатами анкетаа"""
         form_id = request.data.get('form_id')
         service_id = request.data.get('service_id')
         form_data = request.data.get('data', {})
@@ -97,6 +113,15 @@ class BookingSubmissionViewSet(viewsets.ModelViewSet):
             data=form_data,
             quiz_submission=quiz_submission
         )
+        
+        # Запускаем асинхронную обработку интеграций (MoyKlass, Telegram)
+        # Не ждем завершения - сразу возвращаем ответ пользователю
+        thread = threading.Thread(
+            target=process_booking_submission_async,
+            args=(submission.id,),
+            daemon=True
+        )
+        thread.start()
         
         serializer = self.get_serializer(submission)
         return Response(serializer.data, status=status.HTTP_201_CREATED)

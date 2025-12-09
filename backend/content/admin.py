@@ -4,7 +4,8 @@ from django import forms
 from .models import (
     Contact,
     Menu, MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings,
-    ContentPage, CatalogItem, GalleryImage, HomePageBlock
+    ContentPage, CatalogItem, GalleryImage, HomePageBlock,
+    WelcomeBanner, WelcomeBannerCard
 )
 
 
@@ -70,19 +71,24 @@ class ContentPageAdmin(admin.ModelAdmin):
 
 @admin.register(CatalogItem)
 class CatalogItemAdmin(admin.ModelAdmin):
-    list_display = ['title', 'page', 'button_type', 'order', 'is_active', 'image_preview']
-    list_editable = ['order', 'is_active']
-    list_filter = ['page', 'button_type', 'is_active']
-    search_fields = ['title', 'description']
+    list_display = ['title', 'page', 'has_own_page', 'slug', 'button_type', 'order', 'is_active', 'image_preview']
+    list_editable = ['order', 'is_active', 'has_own_page']
+    list_filter = ['page', 'has_own_page', 'button_type', 'is_active']
+    search_fields = ['title', 'description', 'slug']
     readonly_fields = ['image_preview']
+    prepopulated_fields = {'slug': ('title',)}
     
     fieldsets = (
         ('Основная информация', {
             'fields': ('page', 'title', 'description', 'image', 'image_preview')
         }),
+        ('Страница элемента', {
+            'fields': ('has_own_page', 'slug'),
+            'description': 'Включите "Может быть открыт как страница", чтобы карточка имела свой URL и могла быть открыта как отдельная страница. URL будет автоматически сгенерирован из названия.'
+        }),
         ('Кнопка', {
             'fields': ('button_type', 'button_text', 'button_booking_form', 'button_quiz', 'button_url'),
-            'description': 'Настройте тип кнопки и соответствующие параметры. Для типа "Форма записи" выберите форму из списка. Для типа "Квиз" выберите квиз из списка. Для типа "Внешняя ссылка" укажите URL.'
+            'description': 'Настройте тип кнопки и соответствующие параметры. Для типа "Форма записи" выберите форму из списка. Для типа "Анкета" выберите анкету (бывший анкета). Для типа "Внешняя ссылка" укажите URL.'
         }),
         ('Настройки', {
             'fields': ('order', 'is_active')
@@ -143,6 +149,42 @@ class HomePageBlockAdmin(admin.ModelAdmin):
         }),
         ('Настройки', {
             'fields': ('order', 'is_active')
+        }),
+    )
+
+
+class WelcomeBannerCardInline(admin.TabularInline):
+    model = WelcomeBannerCard
+    extra = 1
+    fields = [
+        'title', 'description', 'image', 'button_type', 'button_text',
+        'button_url', 'button_booking_form', 'button_quiz', 'order', 'is_active'
+    ]
+    show_change_link = True
+
+
+@admin.register(WelcomeBanner)
+class WelcomeBannerAdmin(admin.ModelAdmin):
+    list_display = ['title', 'display_type', 'is_active', 'start_at', 'end_at', 'order']
+    list_editable = ['is_active', 'order']
+    list_filter = ['is_active', 'display_type', 'content_width', 'start_at', 'end_at']
+    search_fields = ['title', 'subtitle']
+    inlines = [WelcomeBannerCardInline]
+
+    fieldsets = (
+        ('Контент', {
+            'fields': ('title', 'subtitle')
+        }),
+        ('Оформление', {
+            'fields': ('background_color', 'text_color', 'content_width')
+        }),
+        ('Тип отображения', {
+            'fields': ('display_type', 'blur_background'),
+            'description': 'Выберите, как будет отображаться баннер. Для модального окна можно настроить размытие фона.'
+        }),
+        ('Доступность', {
+            'fields': ('start_at', 'end_at', 'is_active', 'order'),
+            'description': 'Укажите временной период, в течение которого баннер будет отображаться'
         }),
     )
 
@@ -256,7 +298,7 @@ class HeroSettingsAdmin(admin.ModelAdmin):
         }),
         ('Кнопка', {
             'fields': ('button_text', 'button_type', 'button_url', 'button_quiz', 'button_booking_form'),
-            'description': 'Настройте действие кнопки: ссылка, открытие квиза или формы записи. Если выбран тип "Ссылка", укажите URL. Если "Опрос" - выберите квиз. Если "Прямая запись" - выберите форму записи.'
+            'description': 'Настройте действие кнопки: ссылка, открытие анкеты или формы записи. Если выбран тип "Ссылка", укажите URL. Если "Анкета" - выберите её. Если "Прямая запись" - выберите форму.'
         }),
         ('Внешний вид', {
             'fields': ('background_image', 'image_preview', 'background_color')

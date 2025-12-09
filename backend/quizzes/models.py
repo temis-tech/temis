@@ -4,7 +4,7 @@ from django.utils.text import slugify
 
 
 class Quiz(models.Model):
-    """Квиз/Анкета"""
+    """Анкета/Анкета"""
     title = models.CharField('Название', max_length=200)
     slug = models.SlugField('URL', unique=True, blank=True)
     description = models.TextField('Описание', blank=True)
@@ -13,8 +13,8 @@ class Quiz(models.Model):
     updated_at = models.DateTimeField('Обновлен', auto_now=True)
 
     class Meta:
-        verbose_name = 'Квиз'
-        verbose_name_plural = 'Квизы'
+        verbose_name = 'Анкета'
+        verbose_name_plural = 'Анкетаы'
         ordering = ['-created_at']
 
     def __str__(self):
@@ -27,8 +27,8 @@ class Quiz(models.Model):
 
 
 class Question(models.Model):
-    """Вопрос в квизе"""
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions', verbose_name='Квиз')
+    """Вопрос в анкетае"""
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions', verbose_name='Анкета')
     text = models.TextField('Текст вопроса')
     order = models.IntegerField('Порядок', default=0)
     question_type = models.CharField('Тип вопроса', max_length=20, 
@@ -69,7 +69,7 @@ class AnswerOption(models.Model):
 
 class ResultRange(models.Model):
     """Диапазон результатов по баллам"""
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='result_ranges', verbose_name='Квиз')
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='result_ranges', verbose_name='Анкета')
     min_points = models.IntegerField('Минимальные баллы', validators=[MinValueValidator(0)])
     max_points = models.IntegerField('Максимальные баллы', validators=[MinValueValidator(0)], null=True, blank=True)
     title = models.CharField('Заголовок результата', max_length=200)
@@ -96,8 +96,8 @@ class ResultRange(models.Model):
 
 
 class QuizSubmission(models.Model):
-    """Отправка квиза пользователем"""
-    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='submissions', verbose_name='Квиз')
+    """Отправка анкетаа пользователем"""
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='submissions', verbose_name='Анкета')
     total_points = models.IntegerField('Всего баллов', default=0)
     result = models.ForeignKey(ResultRange, on_delete=models.SET_NULL, null=True, blank=True, 
                               verbose_name='Результат', related_name='submissions')
@@ -107,8 +107,8 @@ class QuizSubmission(models.Model):
     created_at = models.DateTimeField('Создана', auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Отправка квиза'
-        verbose_name_plural = 'Отправки квизов'
+        verbose_name = 'Отправка анкетаа'
+        verbose_name_plural = 'Отправки анкетаов'
         ordering = ['-created_at']
 
     def __str__(self):

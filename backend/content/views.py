@@ -2,16 +2,18 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.db import models
+from django.utils import timezone
 from .models import (
     Contact,
     MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings,
-    ContentPage
+    ContentPage, WelcomeBanner, CatalogItem, Service
 )
 from .serializers import (
     ContactSerializer,
     MenuItemSerializer, HeaderSettingsSerializer, HeroSettingsSerializer,
     FooterSettingsSerializer, PrivacyPolicySerializer, SiteSettingsSerializer,
-    ContentPageSerializer
+    ContentPageSerializer, WelcomeBannerSerializer, CatalogItemSerializer, ServiceSerializer
 )
 
 
@@ -93,3 +95,66 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(serializer.data)
         except ContentPage.DoesNotExist:
             return Response({'error': 'Страница не найдена'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class WelcomeBannerViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = WelcomeBannerSerializer
+
+    def get_queryset(self):
+        now = timezone.now()
+        queryset = WelcomeBanner.objects.filter(is_active=True).order_by('order')
+        queryset = queryset.filter(
+            models.Q(start_at__isnull=True) | models.Q(start_at__lte=now),
+            models.Q(end_at__isnull=True) | models.Q(end_at__gte=now),
+        )
+        queryset = queryset.prefetch_related('cards')
+        return queryset
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+
+class CatalogItemViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet для элементов каталога"""
+    queryset = CatalogItem.objects.filter(is_active=True, has_own_page=True)
+    serializer_class = CatalogItemSerializer
+    lookup_field = 'slug'
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
+    @action(detail=False, methods=['get'], url_path='by-slug/(?P<slug>[^/.]+)')
+    def by_slug(self, request, slug=None):
+        """Получить элемент каталога по slug"""
+        try:
+            item = self.queryset.get(slug=slug)
+            serializer = self.get_serializer(item)
+            return Response(serializer.data)
+        except CatalogItem.DoesNotExist:
+            return Response({'error': 'Элемент каталога не найден'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet для услуг"""
+    queryset = Service.objects.filter(is_active=True, has_own_page=True)
+    serializer_class = ServiceSerializer
+    lookup_field = 'slug'
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
+    @action(detail=False, methods=['get'], url_path='by-slug/(?P<slug>[^/.]+)')
+    def by_slug(self, request, slug=None):
+        """Получить услугу по slug"""
+        try:
+            service = self.queryset.get(slug=slug)
+            serializer = self.get_serializer(service)
+            return Response(serializer.data)
+        except Service.DoesNotExist:
+            return Response({'error': 'Услуга не найдена'}, status=status.HTTP_404_NOT_FOUND)

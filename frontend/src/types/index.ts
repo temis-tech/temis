@@ -81,6 +81,9 @@ export interface CatalogItem {
   title: string;
   description: string;
   image?: string;
+  has_own_page?: boolean;
+  slug?: string;
+  url?: string | null;
   button_type: 'booking' | 'quiz' | 'external' | 'none';
   button_text: string;
   button_booking_form_id?: number;
@@ -123,5 +126,33 @@ export interface ContentPage {
   catalog_items?: CatalogItem[];
   gallery_images?: GalleryImage[];
   home_blocks?: HomePageBlock[];
+}
+
+export interface WelcomeBannerCard {
+  id: number;
+  title: string;
+  description?: string;
+  image?: string;
+  button_type: 'none' | 'link' | 'booking' | 'quiz';
+  button_text?: string;
+  button_url?: string;
+  button_booking_form_id?: number;
+  button_quiz_slug?: string;
+  order: number;
+  is_active?: boolean;
+}
+
+export interface WelcomeBanner {
+  id: number;
+  title?: string;
+  subtitle?: string;
+  background_color: string;
+  text_color: string;
+  content_width: 'narrow' | 'medium' | 'wide' | 'full';
+  display_type: 'section' | 'modal';
+  blur_background: number;
+  start_at?: string | null;
+  end_at?: string | null;
+  cards: WelcomeBannerCard[];
 }
 

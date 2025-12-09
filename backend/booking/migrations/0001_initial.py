@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
                 ('data', models.JSONField(default=dict, help_text='Все данные, отправленные через форму', verbose_name='Данные формы')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Создана')),
                 ('form', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='submissions', to='booking.bookingform', verbose_name='Форма')),
-                ('quiz_submission', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='booking_submissions', to='quizzes.quizsubmission', verbose_name='Отправка квиза')),
+                ('quiz_submission', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='booking_submissions', to='quizzes.quizsubmission', verbose_name='Отправка анкетаа')),
                 ('service', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='bookings', to='content.service', verbose_name='Услуга')),
             ],
             options={
@@ -81,7 +81,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Создано')),
                 ('field', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='booking.formfield', verbose_name='Поле')),
                 ('form', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='rules', to='booking.bookingform', verbose_name='Форма')),
-                ('quiz', models.ForeignKey(blank=True, help_text='Квиз, который откроется при срабатывании правила', null=True, on_delete=django.db.models.deletion.CASCADE, to='quizzes.quiz', verbose_name='Квиз/Анкета')),
+                ('quiz', models.ForeignKey(blank=True, help_text='Анкета, который откроется при срабатывании правила', null=True, on_delete=django.db.models.deletion.CASCADE, to='quizzes.quiz', verbose_name='Анкета/Анкета')),
             ],
             options={
                 'verbose_name': 'Правило формы',

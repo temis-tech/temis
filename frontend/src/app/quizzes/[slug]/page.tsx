@@ -23,8 +23,8 @@ export default async function QuizPage({
           padding: '2rem'
         }}>
           <div style={{ textAlign: 'center', padding: '2rem' }}>
-            <h1>Квиз не найден</h1>
-            <p>Квиз с указанным адресом не существует или был удален.</p>
+            <h1>Анкета не найдена</h1>
+            <p>Анкета с указанным адресом не существует или была удалена.</p>
           </div>
         </main>
         <Footer />

@@ -103,6 +103,8 @@ cp -r backend/config "${TEMP_DIR}/backend/" 2>/dev/null || true
 cp -r backend/content "${TEMP_DIR}/backend/" 2>/dev/null || true
 cp -r backend/quizzes "${TEMP_DIR}/backend/" 2>/dev/null || true
 cp -r backend/booking "${TEMP_DIR}/backend/" 2>/dev/null || true
+cp -r backend/moyklass "${TEMP_DIR}/backend/" 2>/dev/null || true
+cp -r backend/telegram "${TEMP_DIR}/backend/" 2>/dev/null || true
 
 # Создаем архив из временной директории
 cd "${TEMP_DIR}"

@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='bookingform',
             name='default_quiz',
-            field=models.ForeignKey(blank=True, help_text='Квиз, который откроется всегда при отправке формы (без условий). Если указан, будет показан вместо отправки формы.', null=True, on_delete=django.db.models.deletion.SET_NULL, to='quizzes.quiz', verbose_name='Квиз по умолчанию'),
+            field=models.ForeignKey(blank=True, help_text='Анкета, который откроется всегда при отправке формы (без условий). Если указан, будет показан вместо отправки формы.', null=True, on_delete=django.db.models.deletion.SET_NULL, to='quizzes.quiz', verbose_name='Анкета по умолчанию'),
         ),
     ]

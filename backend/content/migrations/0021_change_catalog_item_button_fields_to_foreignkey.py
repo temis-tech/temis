@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='catalogitem',
             name='button_quiz',
-            field=models.ForeignKey(blank=True, help_text='Выберите квиз (если тип кнопки - "Квиз")', limit_choices_to={'is_active': True}, null=True, on_delete=django.db.models.deletion.SET_NULL, to='quizzes.quiz', verbose_name='Квиз'),
+            field=models.ForeignKey(blank=True, help_text='Выберите анкета (если тип кнопки - "Анкета")', limit_choices_to={'is_active': True}, null=True, on_delete=django.db.models.deletion.SET_NULL, to='quizzes.quiz', verbose_name='Анкета'),
         ),
         migrations.AddField(
             model_name='catalogitem',

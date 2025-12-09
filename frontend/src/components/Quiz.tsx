@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Quiz as QuizType, Question, AnswerOption } from '@/types';
 import { contentApi, quizzesApi } from '@/lib/api';
-import { normalizeImageUrl } from '@/lib/utils';
+import { normalizeImageUrl, normalizePhone, validatePhone, filterPhoneInput } from '@/lib/utils';
 import styles from './Quiz.module.css';
 
 interface QuizProps {
@@ -23,6 +23,7 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [bookingForm, setBookingForm] = useState<any>(null);
   const [bookingFormData, setBookingFormData] = useState<Record<string, any>>({});
+  const [bookingFieldErrors, setBookingFieldErrors] = useState<Record<string, string>>({});
   const [submittingBooking, setSubmittingBooking] = useState(false);
   const router = useRouter();
 
@@ -81,13 +82,13 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
           return answer;
         }),
         user_name: userData.name || '',
-        user_phone: userData.phone || '',
+        user_phone: normalizePhone(userData.phone) || '', // Нормализуем телефон перед отправкой
         user_email: userData.email || '',
       };
 
-      console.log('Quiz: Отправка данных квиза', { quiz: quiz.id, submissionData });
+      console.log('Quiz: Отправка данных анкетаа', { quiz: quiz.id, submissionData });
 
-      // Отправляем квиз
+      // Отправляем анкета
       console.log('Calling quizzesApi.submitQuiz with:', { ...submissionData, quiz: quiz.id });
       const quizResponse = await quizzesApi.submitQuiz({ ...submissionData, quiz: quiz.id });
       console.log('Quiz response received:', quizResponse);
@@ -110,7 +111,7 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
             if (fieldName.includes('name') || fieldName.includes('имя')) {
               formData[field.name] = userData.name || '';
             } else if (fieldName.includes('phone') || fieldName.includes('телефон')) {
-              formData[field.name] = userData.phone || '';
+              formData[field.name] = userData.phone || ''; // Не форматируем, оставляем как есть
             } else if (fieldName.includes('email') || fieldName.includes('почт')) {
               formData[field.name] = userData.email || '';
             } else if (field.default_value) {
@@ -125,9 +126,9 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
       }
     } catch (error: any) {
       console.error('Error submitting quiz:', error);
-      const errorMessage = error.response?.data?.error || error.response?.data?.traceback || error.message || 'Ошибка при отправке квиза';
+      const errorMessage = error.response?.data?.error || error.response?.data?.traceback || error.message || 'Ошибка при отправке анкетаа';
       console.error('Error details:', error.response?.data);
-      alert(`Ошибка при отправке квиза: ${errorMessage}`);
+      alert(`Ошибка при отправке анкетаа: ${errorMessage}`);
     } finally {
       setSubmitting(false);
     }
@@ -138,25 +139,57 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
     e.stopPropagation();
     console.log('Quiz: handleBookingFormSubmit called', { formId, serviceId, resultId: result?.id });
     
-    if (!formId || !serviceId || !result?.id) {
+    if (!formId || !result?.id) {
       console.error('Quiz: Missing required data', { formId, serviceId, resultId: result?.id });
       alert('Ошибка: отсутствуют необходимые данные для отправки формы');
       return;
     }
     
-    setSubmittingBooking(true);
+        setSubmittingBooking(true);
     try {
+      // Проверяем ошибки валидации перед отправкой
+      if (Object.keys(bookingFieldErrors).length > 0) {
+        alert('Пожалуйста, исправьте ошибки в форме');
+        setSubmittingBooking(false);
+        return;
+      }
+      
+      // Валидируем и нормализуем телефоны перед отправкой
+      const normalizedData = { ...bookingFormData };
+      const validationErrors: string[] = [];
+      
+      bookingForm?.fields.forEach((field: any) => {
+        if (field.field_type === 'phone' && normalizedData[field.name]) {
+          // Валидируем телефон
+          const phoneError = validatePhone(normalizedData[field.name]);
+          if (phoneError) {
+            validationErrors.push(`${field.label}: ${phoneError}`);
+            setBookingFieldErrors({ ...bookingFieldErrors, [field.name]: phoneError });
+          } else {
+            // Нормализуем телефон (оставляем только цифры)
+            normalizedData[field.name] = normalizePhone(normalizedData[field.name]);
+          }
+        }
+      });
+      
+      // Если есть ошибки валидации, показываем их
+      if (validationErrors.length > 0) {
+        alert('Пожалуйста, исправьте ошибки в форме');
+        setSubmittingBooking(false);
+        return;
+      }
+      
       console.log('Quiz: Submitting booking form with quiz', {
         form_id: formId,
         service_id: serviceId,
         quiz_submission_id: result.id,
-        data: bookingFormData
+        data: normalizedData
       });
       
       await contentApi.submitBookingWithQuiz({
         form_id: formId,
-        service_id: serviceId,
-        data: bookingFormData,
+        service_id: serviceId ?? null,
+        data: normalizedData,
         quiz_submission_id: result.id
       });
       
@@ -225,6 +258,57 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
           </label>
         );
       
+      case 'phone':
+        const hasError = bookingFieldErrors[field.name];
+        return (
+          <>
+            <input
+              type="tel"
+              id={field.name}
+              name={field.name}
+              value={value}
+              onChange={(e) => {
+                // Фильтруем ввод - удаляем только недопустимые символы (буквы и спецсимволы)
+                // НЕ форматируем номер, только очищаем
+                const filtered = filterPhoneInput(e.target.value);
+                setBookingFormData({ ...bookingFormData, [field.name]: filtered });
+                
+                // Валидация в реальном времени
+                const phoneError = validatePhone(filtered, true);
+                if (phoneError) {
+                  setBookingFieldErrors((prev) => ({ ...prev, [field.name]: phoneError }));
+                } else {
+                  setBookingFieldErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors[field.name];
+                    return newErrors;
+                  });
+                }
+              }}
+              onBlur={(e) => {
+                // Финальная валидация при потере фокуса (isTyping = false)
+                const phoneError = validatePhone(e.target.value, false);
+                if (phoneError) {
+                  setBookingFieldErrors((prev) => ({ ...prev, [field.name]: phoneError }));
+                } else {
+                  setBookingFieldErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors[field.name];
+                    return newErrors;
+                  });
+                }
+              }}
+              placeholder={field.placeholder || 'Номер телефона'}
+              required={field.is_required}
+              className={`${styles.input} ${hasError ? styles.inputError : ''}`}
+              maxLength={20} // Достаточно для любого формата
+            />
+            {hasError && (
+              <div className={styles.fieldError}>{hasError}</div>
+            )}
+          </>
+        );
+      
       default:
         return (
           <input
@@ -248,7 +332,7 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
     if (showBookingForm && bookingForm) {
       return (
         <div className={styles.result}>
-          <h2>Результат квиза</h2>
+          <h2>Результат анкетаа</h2>
           {resultRange ? (
             <>
               <h3>{resultRange.title}</h3>
@@ -309,7 +393,7 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
     // Если формы нет, показываем только результат
     return (
       <div className={styles.result}>
-        <h2>Результат квиза</h2>
+        <h2>Результат анкетаа</h2>
         {resultRange ? (
           <>
             <h3>{resultRange.title}</h3>
@@ -406,7 +490,7 @@ export default function Quiz({ quiz, serviceId, formId }: QuizProps) {
             disabled={submitting}
             type="button"
           >
-            {submitting ? 'Отправка...' : 'Завершить квиз'}
+            {submitting ? 'Отправка...' : 'Завершить анкета'}
           </button>
         ) : (
           <button onClick={handleNext} type="button">

@@ -70,8 +70,89 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Deploy notification
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    
+    - name: Add server to known hosts
       run: |
-        echo "Deployment would happen here"
-        echo "Add your deployment steps (e.g., deploy to server, Vercel, etc.)"
+        ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+    
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm ci
+        npm run build
+    
+    - name: Deploy to server
+      run: |
+        # Создаем временную директорию для деплоя
+        DEPLOY_DIR=$(mktemp -d)
+        
+        # Копируем файлы
+        mkdir -p "${DEPLOY_DIR}/frontend" "${DEPLOY_DIR}/backend"
+        
+        # Frontend - копируем собранные файлы и исходники
+        cp -r frontend/.next "${DEPLOY_DIR}/frontend/" || true
+        cp -r frontend/public "${DEPLOY_DIR}/frontend/" || true
+        cp -r frontend/src "${DEPLOY_DIR}/frontend/" || true
+        cp frontend/package*.json "${DEPLOY_DIR}/frontend/" || true
+        cp frontend/next.config.js "${DEPLOY_DIR}/frontend/" || true
+        cp frontend/tsconfig.json "${DEPLOY_DIR}/frontend/" || true
+        
+        # Backend - копируем все приложения
+        cp -r backend/* "${DEPLOY_DIR}/backend/" || true
+        
+        # Создаем архив
+        cd "${DEPLOY_DIR}"
+        tar -czf /tmp/deploy.tar.gz frontend/ backend/
+        
+        # Загружаем на сервер
+        scp -o StrictHostKeyChecking=no /tmp/deploy.tar.gz ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/
+        
+        # Выполняем деплой на сервере
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'ENDSSH'
+          set -e
+          
+          SITE_PATH="/var/www/rainbow-say"
+          SITE_NAME="rainbow-say"
+          
+          echo "📦 Распаковываю архив..."
+          cd /tmp
+          sudo tar -xzf deploy.tar.gz -C "${SITE_PATH}"
+          
+          echo "📦 Устанавливаю зависимости фронтенда..."
+          cd "${SITE_PATH}/frontend"
+          sudo -u www-data npm install --production || sudo -u www-data npm install
+          
+          echo "📦 Устанавливаю зависимости бэкенда..."
+          cd "${SITE_PATH}/backend"
+          
+          if [ ! -d "venv" ]; then
+            echo "🐍 Создаю виртуальное окружение..."
+            sudo -u www-data python3 -m venv venv
+          fi
+          
+          sudo -u www-data ./venv/bin/pip install --upgrade pip
+          sudo -u www-data ./venv/bin/pip install -r requirements.txt
+          
+          echo "🗄️  Выполняю миграции..."
+          if [ -f "${SITE_PATH}/backend/.env" ]; then
+            sudo -u www-data ./venv/bin/python manage.py migrate --noinput || true
+            sudo -u www-data ./venv/bin/python manage.py collectstatic --noinput || true
+          fi
+          
+          echo "🔄 Перезапускаю сервисы..."
+          sudo systemctl restart ${SITE_NAME}-frontend || echo "⚠️  Сервис frontend не найден"
+          sudo systemctl restart ${SITE_NAME}-backend || echo "⚠️  Сервис backend не найден"
+          
+          echo "✅ Деплой завершен!"
+          
+          rm -f /tmp/deploy.tar.gz
+        ENDSSH
+        
+        # Очистка
+        rm -rf "${DEPLOY_DIR}"
+        rm -f /tmp/deploy.tar.gz
 

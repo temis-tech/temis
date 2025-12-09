@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { contentApi, quizzesApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import { normalizePhone, validatePhone, filterPhoneInput } from '@/lib/utils';
 import styles from './BookingForm.module.css';
 
 interface BookingFormProps {
@@ -51,6 +52,7 @@ interface BookingFormData {
 export default function BookingForm({ formId, serviceId, serviceTitle, onClose }: BookingFormProps) {
   const [form, setForm] = useState<BookingFormData | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,13 +92,13 @@ export default function BookingForm({ formId, serviceId, serviceTitle, onClose }
       
       setForm(formData);
       
-      // Если есть квиз по умолчанию, сразу открываем его вместо формы
+      // Если есть анкета по умолчанию, сразу открываем вместо формы
       if (formData.default_quiz_slug && formData.default_quiz_title) {
-        console.log('BookingForm: Установлен квиз по умолчанию, открываем сразу', {
+        console.log('BookingForm: Установлена анкета по умолчанию, открываем сразу', {
           slug: formData.default_quiz_slug,
           title: formData.default_quiz_title
         });
-        // Закрываем форму и переходим на квиз
+        // Закрываем форму и переходим на анкета
         onClose();
         router.push(`/quizzes/${formData.default_quiz_slug}?service_id=${serviceId}&form_id=${formId}`);
         return;
@@ -119,21 +121,58 @@ export default function BookingForm({ formId, serviceId, serviceTitle, onClose }
   };
 
   const handleChange = (name: string, value: any) => {
-    const newData = { ...formData, [name]: value };
-    setFormData(newData);
+    // Для полей телефона применяем маску и валидацию
+    const field = form?.fields.find(f => f.name === name);
+    let updatedFormData: Record<string, any>;
+    
+    if (field?.field_type === 'phone') {
+      // Фильтруем ввод - удаляем только недопустимые символы (буквы и спецсимволы)
+      // НЕ форматируем номер, только очищаем
+      const filtered = filterPhoneInput(value);
+      updatedFormData = { ...formData, [name]: filtered };
+      setFormData(updatedFormData);
+      
+      // Валидация в реальном времени
+      const phoneError = validatePhone(filtered, true);
+      
+      if (phoneError) {
+        setFieldErrors((prev) => {
+          const updated = { ...prev, [name]: phoneError };
+          return updated;
+        });
+      } else {
+        // Очищаем ошибку если валидно
+        setFieldErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[name];
+          return newErrors;
+        });
+      }
+    } else {
+      updatedFormData = { ...formData, [name]: value };
+      setFormData(updatedFormData);
+      // Очищаем ошибку для этого поля, если она была
+      if (fieldErrors[name]) {
+        setFieldErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[name];
+          return newErrors;
+        });
+      }
+    }
     
     // Проверяем правила после изменения поля
     if (form) {
-      // Если есть квиз по умолчанию, он имеет приоритет - не проверяем правила
+      // Если есть анкета по умолчанию, он имеет приоритет - не проверяем правила
       if (form.default_quiz_slug && form.default_quiz_title) {
-        console.log('BookingForm: Квиз по умолчанию установлен, правила игнорируются');
+        console.log('BookingForm: Анкета по умолчанию установлена, правила игнорируются');
         return;
       }
       
-      // Сбрасываем показ квиза, если значение изменилось
+      // Сбрасываем показ анкетаа, если значение изменилось
       setShowQuiz(null);
       
-      // Проверяем все активные правила с активным квизом
+      // Проверяем все активные правила с активным анкетаом
       const activeRules = form.rules.filter(r => {
         const hasQuiz = r.is_active && r.quiz_slug && r.quiz_slug.trim();
         if (!hasQuiz) {
@@ -158,7 +197,7 @@ export default function BookingForm({ formId, serviceId, serviceTitle, onClose }
           continue;
         }
         
-        const fieldValue = newData[fieldName];
+        const fieldValue = updatedFormData[fieldName];
         // Приводим значения к строкам для сравнения, чтобы избежать проблем с типами
         const fieldValueStr = String(fieldValue || '').trim();
         const ruleValueStr = String(rule.field_value || '').trim();
@@ -179,8 +218,8 @@ export default function BookingForm({ formId, serviceId, serviceTitle, onClose }
         });
         
         if (fieldValueStr === ruleValueStr) {
-          console.log('BookingForm: Правило сработало, открываем квиз', rule.quiz_slug);
-          setShowQuiz({ slug: rule.quiz_slug!, title: rule.quiz_title || 'Квиз' });
+          console.log('BookingForm: Правило сработало, открываем анкета', rule.quiz_slug);
+          setShowQuiz({ slug: rule.quiz_slug!, title: rule.quiz_title || 'Анкета' });
           return;
         }
       }
@@ -193,17 +232,49 @@ export default function BookingForm({ formId, serviceId, serviceTitle, onClose }
     setError(null);
 
     try {
-      // Проверяем квиз из правил
+      // Проверяем анкета из правил
       if (showQuiz) {
-        // Если есть квиз, переходим на него
+        // Если есть анкета, переходим на него
         router.push(`/quizzes/${showQuiz.slug}?service_id=${serviceId}&form_id=${formId}`);
         onClose();
       } else {
+        // Проверяем ошибки валидации перед отправкой
+        if (Object.keys(fieldErrors).length > 0) {
+          setError('Пожалуйста, исправьте ошибки в форме');
+          setSubmitting(false);
+          return;
+        }
+        
+        // Валидируем и нормализуем телефоны перед отправкой
+        const normalizedData = { ...formData };
+        const validationErrors: string[] = [];
+        
+        form?.fields.forEach((field) => {
+          if (field.field_type === 'phone' && normalizedData[field.name]) {
+            // Валидируем телефон
+            const phoneError = validatePhone(normalizedData[field.name]);
+            if (phoneError) {
+              validationErrors.push(`${field.label}: ${phoneError}`);
+              setFieldErrors({ ...fieldErrors, [field.name]: phoneError });
+            } else {
+              // Нормализуем телефон (оставляем только цифры)
+              normalizedData[field.name] = normalizePhone(normalizedData[field.name]);
+            }
+          }
+        });
+        
+        // Если есть ошибки валидации, показываем их
+        if (validationErrors.length > 0) {
+          setError('Пожалуйста, исправьте ошибки в форме');
+          setSubmitting(false);
+          return;
+        }
+        
         // Отправляем форму
         await contentApi.submitBooking({
           form_id: formId,
           service_id: serviceId,
-          data: formData
+          data: normalizedData
         });
         
         alert(form?.success_message || 'Спасибо! Мы свяжемся с вами в ближайшее время.');
@@ -297,6 +368,42 @@ export default function BookingForm({ formId, serviceId, serviceTitle, onClose }
           />
         );
       
+      case 'phone':
+        const hasError = fieldErrors[field.name];
+        return (
+          <>
+            <input
+              type="tel"
+              id={field.name}
+              name={field.name}
+              value={value}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              onBlur={(e) => {
+                // Финальная валидация при потере фокуса (isTyping = false)
+                const phoneError = validatePhone(e.target.value, false);
+                if (phoneError) {
+                  setFieldErrors((prev) => ({ ...prev, [field.name]: phoneError }));
+                } else {
+                  setFieldErrors((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors[field.name];
+                    return newErrors;
+                  });
+                }
+              }}
+              placeholder={field.placeholder || 'Номер телефона'}
+              required={field.is_required}
+              className={`${styles.input} ${hasError ? styles.inputError : ''}`}
+              maxLength={20} // Достаточно для любого формата
+            />
+            {hasError && (
+              <div className={styles.fieldError} style={{ color: '#e74c3c', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                {hasError}
+              </div>
+            )}
+          </>
+        );
+      
       default:
         return (
           <input
@@ -346,7 +453,7 @@ export default function BookingForm({ formId, serviceId, serviceTitle, onClose }
         
         {showQuiz && (
           <div className={styles.quizNotice}>
-            После отправки формы откроется квиз: <strong>{showQuiz.title}</strong>
+            После отправки формы откроется анкета: <strong>{showQuiz.title}</strong>
           </div>
         )}
         

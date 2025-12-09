@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.text import slugify
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+from django.utils import timezone
 from ckeditor.fields import RichTextField
 from .utils.image_processing import process_uploaded_image
 import re
@@ -69,6 +70,8 @@ class Service(models.Model):
                                                 validators=[MinValueValidator(0)], blank=True, null=True)
     duration = models.CharField('Длительность', max_length=50, default='45 минут')
     image = models.ImageField('Изображение', upload_to='services/', blank=True, null=True)
+    has_own_page = models.BooleanField('Может быть открыта как страница', default=False,
+                                      help_text='Если включено, услуга будет иметь свой URL и может быть открыта как отдельная страница')
     show_booking_button = models.BooleanField('Показывать кнопку "Записаться"', default=True,
                                              help_text='Отображать кнопку записи на карточке и странице услуги')
     booking_form = models.ForeignKey('booking.BookingForm', on_delete=models.SET_NULL, 
@@ -88,8 +91,14 @@ class Service(models.Model):
     def __str__(self):
         return self.title
 
+    def get_absolute_url(self):
+        """Возвращает URL страницы услуги"""
+        if self.has_own_page and self.slug:
+            return f'/services/{self.slug}/'
+        return None
+    
     def save(self, *args, **kwargs):
-        if not self.slug:
+        if not self.slug and self.has_own_page:
             self.slug = transliterate_slug(self.title) or f'service-{self.id or 0}'
         
         # Сохраняем сначала
@@ -299,7 +308,7 @@ class CatalogItem(models.Model):
     """Элемент каталога"""
     BUTTON_TYPES = [
         ('booking', 'Запись'),
-        ('quiz', 'Квиз'),
+        ('quiz', 'Анкета'),
         ('external', 'Внешняя ссылка'),
         ('none', 'Без кнопки'),
     ]
@@ -307,8 +316,12 @@ class CatalogItem(models.Model):
     page = models.ForeignKey(ContentPage, on_delete=models.CASCADE, related_name='catalog_items',
                             verbose_name='Страница', limit_choices_to={'page_type': 'catalog'})
     title = models.CharField('Название', max_length=200)
+    slug = models.SlugField('URL', unique=True, blank=True,
+                           help_text='Автоматически генерируется из названия, если не указан. Используется для создания страницы элемента.')
     description = RichTextField('Описание', blank=True)
     image = models.ImageField('Изображение', upload_to='catalog/', blank=True, null=True)
+    has_own_page = models.BooleanField('Может быть открыт как страница', default=False,
+                                      help_text='Если включено, карточка будет иметь свой URL и может быть открыта как отдельная страница')
     order = models.IntegerField('Порядок', default=0)
     is_active = models.BooleanField('Активен', default=True)
     
@@ -320,8 +333,8 @@ class CatalogItem(models.Model):
                                             help_text='Выберите форму записи (если тип кнопки - "Запись")',
                                             limit_choices_to={'is_active': True})
     button_quiz = models.ForeignKey('quizzes.Quiz', on_delete=models.SET_NULL, null=True, blank=True,
-                                     verbose_name='Квиз',
-                                     help_text='Выберите квиз (если тип кнопки - "Квиз")',
+                                     verbose_name='Анкета',
+                                     help_text='Выберите анкету (если тип кнопки - "Анкета")',
                                      limit_choices_to={'is_active': True})
     button_url = models.CharField('URL кнопки', max_length=500, blank=True,
                                   help_text='Внешняя ссылка (если тип кнопки - "Внешняя ссылка")')
@@ -337,7 +350,15 @@ class CatalogItem(models.Model):
     def __str__(self):
         return self.title
     
+    def get_absolute_url(self):
+        """Возвращает URL страницы элемента каталога"""
+        if self.has_own_page and self.slug:
+            return f'/catalog/{self.slug}/'
+        return None
+    
     def save(self, *args, **kwargs):
+        if not self.slug and self.has_own_page:
+            self.slug = transliterate_slug(self.title) or f'catalog-item-{self.id or 0}'
         super().save(*args, **kwargs)
         if self.image and hasattr(self.image, 'file'):
             try:
@@ -373,6 +394,93 @@ class GalleryImage(models.Model):
                 super().save(update_fields=['image'])
             except Exception as e:
                 print(f"Ошибка обработки изображения для GalleryImage {self.id}: {e}")
+
+
+class WelcomeBanner(models.Model):
+    WIDTH_CHOICES = [
+        ('narrow', 'Узкая (600px)'),
+        ('medium', 'Средняя (800px)'),
+        ('wide', 'Широкая (1000px)'),
+        ('full', 'На всю ширину (1200px)'),
+    ]
+    
+    DISPLAY_TYPE_CHOICES = [
+        ('section', 'Раздел сайта'),
+        ('modal', 'Модальное окно'),
+    ]
+
+    title = models.CharField('Заголовок', max_length=200, blank=True)
+    subtitle = RichTextField('Описание', blank=True)
+    background_color = models.CharField('Цвет фона', max_length=7, default='#FFFFFF')
+    text_color = models.CharField('Цвет текста', max_length=7, default='#1C1C1C')
+    content_width = models.CharField('Ширина контента', max_length=10, choices=WIDTH_CHOICES, default='full')
+    display_type = models.CharField('Тип отображения', max_length=10, choices=DISPLAY_TYPE_CHOICES, default='section',
+                                   help_text='Как будет отображаться баннер: как обычный раздел или модальное окно')
+    blur_background = models.IntegerField('Блюр фона под модальным окном', default=0,
+                                         validators=[MinValueValidator(0), MaxValueValidator(100)],
+                                         help_text='Уровень размытия фона под модальным окном (0-100%). Работает только для типа "Модальное окно"')
+    start_at = models.DateTimeField('Активен с', null=True, blank=True)
+    end_at = models.DateTimeField('Активен до', null=True, blank=True)
+    is_active = models.BooleanField('Активен', default=True)
+    order = models.IntegerField('Порядок', default=0)
+    created_at = models.DateTimeField('Создан', auto_now_add=True)
+    updated_at = models.DateTimeField('Обновлен', auto_now=True)
+
+    class Meta:
+        verbose_name = 'Приветственный баннер'
+        verbose_name_plural = 'Приветственные баннеры'
+        ordering = ['order', '-start_at']
+
+    def __str__(self):
+        return self.title or f'Баннер #{self.id}'
+
+    def is_available(self):
+        now = timezone.now()
+        if self.start_at and now < self.start_at:
+            return False
+        if self.end_at and now > self.end_at:
+            return False
+        return True
+
+
+class WelcomeBannerCard(models.Model):
+    BUTTON_TYPES = [
+        ('none', 'Без кнопки'),
+        ('link', 'Ссылка'),
+        ('booking', 'Форма записи'),
+        ('quiz', 'Анкета'),
+    ]
+
+    banner = models.ForeignKey(WelcomeBanner, on_delete=models.CASCADE, related_name='cards', verbose_name='Баннер')
+    title = models.CharField('Заголовок', max_length=200)
+    description = RichTextField('Описание', blank=True)
+    image = models.ImageField('Изображение', upload_to='welcome_banners/', blank=True, null=True)
+    button_type = models.CharField('Тип кнопки', max_length=20, choices=BUTTON_TYPES, default='none')
+    button_text = models.CharField('Текст кнопки', max_length=100, blank=True)
+    button_url = models.URLField('Ссылка', max_length=500, blank=True)
+    button_booking_form = models.ForeignKey('booking.BookingForm', on_delete=models.SET_NULL, null=True, blank=True,
+                                            verbose_name='Форма записи', limit_choices_to={'is_active': True})
+    button_quiz = models.ForeignKey('quizzes.Quiz', on_delete=models.SET_NULL, null=True, blank=True,
+                                    verbose_name='Анкета', limit_choices_to={'is_active': True})
+    order = models.IntegerField('Порядок', default=0)
+    is_active = models.BooleanField('Активна', default=True)
+
+    class Meta:
+        verbose_name = 'Карточка приветственного баннера'
+        verbose_name_plural = 'Карточки приветственного баннера'
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.image and hasattr(self.image, 'file'):
+            try:
+                process_uploaded_image(self.image, image_type='general')
+                super().save(update_fields=['image'])
+            except Exception as e:
+                print(f"Ошибка обработки изображения для WelcomeBannerCard {self.id}: {e}")
 
 
 class HomePageBlock(models.Model):
@@ -551,15 +659,15 @@ class HeroSettings(models.Model):
     
     BUTTON_TYPE_CHOICES = [
         ('link', 'Ссылка'),
-        ('quiz', 'Опрос (квиз)'),
+        ('quiz', 'Опрос (анкета)'),
         ('booking', 'Прямая запись'),
     ]
     
     button_type = models.CharField('Тип кнопки', max_length=20, choices=BUTTON_TYPE_CHOICES, default='link',
                                    help_text='Что произойдет при нажатии на кнопку')
     button_quiz = models.ForeignKey('quizzes.Quiz', on_delete=models.SET_NULL, null=True, blank=True,
-                                    verbose_name='Квиз для кнопки',
-                                    help_text='Выберите квиз, который откроется при нажатии (если тип = "Опрос")')
+                                    verbose_name='Анкета для кнопки',
+                                    help_text='Выберите анкета, который откроется при нажатии (если тип = "Опрос")')
     button_booking_form = models.ForeignKey('booking.BookingForm', on_delete=models.SET_NULL, null=True, blank=True,
                                             verbose_name='Форма записи для кнопки',
                                             help_text='Выберите форму записи, которая откроется при нажатии (если тип = "Прямая запись")')

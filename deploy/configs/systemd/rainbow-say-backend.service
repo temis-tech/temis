@@ -10,8 +10,12 @@ Environment="PATH=/var/www/rainbow-say/backend/venv/bin"
 EnvironmentFile=/var/www/rainbow-say/backend/.env
 ExecStart=/var/www/rainbow-say/backend/venv/bin/gunicorn \
     --bind 127.0.0.1:8001 \
-    --workers 3 \
+    --workers 1 \
+    --threads 2 \
     --timeout 120 \
+    --worker-class gthread \
+    --max-requests 1000 \
+    --max-requests-jitter 50 \
     --access-logfile /var/log/rainbow-say-backend-access.log \
     --error-logfile /var/log/rainbow-say-backend-error.log \
     config.wsgi:application

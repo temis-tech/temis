@@ -4,4 +4,8 @@ from django.apps import AppConfig
 class QuizzesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'quizzes'
-    verbose_name = 'Квизы и анкеты'  # Группировка в админке
+    
+    def ready(self):
+        """Подключаем сигналы при запуске приложения"""
+        import quizzes.signals  # noqa
+    verbose_name = 'Анкетаы и анкеты'  # Группировка в админке

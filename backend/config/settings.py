@@ -25,6 +25,8 @@ INSTALLED_APPS = [
     'content',
     'quizzes',
     'booking',
+    'moyklass',
+    'telegram',
 ]
 
 MIDDLEWARE = [
@@ -135,4 +137,27 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# CSRF настройки для работы с HTTPS
+CSRF_TRUSTED_ORIGINS = [
+    "https://api.rainbow-say.estenomada.es",
+    "https://rainbow-say.estenomada.es",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+
+# Настройки безопасности для HTTPS
+if not DEBUG:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = False  # Nginx уже обрабатывает редирект
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Настройки кэша для отслеживания отправленных уведомлений
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
 

@@ -97,7 +97,7 @@ export default function Hero() {
     const buttonType = heroSettings.button_type || 'link';
 
     if (buttonType === 'quiz' && heroSettings.button_quiz_slug) {
-      // Переход на квиз
+      // Переход на анкету
       router.push(`/quizzes/${heroSettings.button_quiz_slug}`);
     } else if (buttonType === 'booking' && heroSettings.button_booking_form_id) {
       // Открытие формы записи

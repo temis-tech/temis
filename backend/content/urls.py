@@ -3,13 +3,17 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ContactViewSet,
     MenuItemViewSet, HeaderSettingsView, HeroSettingsView,
-    FooterSettingsView, PrivacyPolicyView, SiteSettingsView, ContentPageViewSet
+    FooterSettingsView, PrivacyPolicyView, SiteSettingsView, ContentPageViewSet,
+    WelcomeBannerViewSet, CatalogItemViewSet, ServiceViewSet
 )
 
 router = DefaultRouter()
 router.register(r'contacts', ContactViewSet, basename='contact')
 router.register(r'menu', MenuItemViewSet, basename='menuitem')
 router.register(r'pages', ContentPageViewSet, basename='contentpage')
+router.register(r'banners', WelcomeBannerViewSet, basename='welcomebanner')
+router.register(r'catalog-items', CatalogItemViewSet, basename='catalogitem')
+router.register(r'services', ServiceViewSet, basename='service')
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -1,0 +1,202 @@
+.wrapper {
+  padding: 1.5rem 1rem 0;
+}
+
+.banner {
+  border-radius: 16px;
+  padding: 2rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.bannerInner {
+  margin: 0 auto;
+}
+
+.bannerHeader {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.bannerTitle {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.bannerSubtitle {
+  margin-top: 0.5rem;
+  color: inherit;
+  line-height: 1.6;
+}
+
+.cards {
+  display: grid;
+  gap: 1rem;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cardImageWrapper {
+  width: 100%;
+  height: 160px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardTitle {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: inherit;
+}
+
+.cardDescription {
+  flex: 1;
+  color: inherit;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.cardDescription :global(p) {
+  margin: 0 0 0.5rem;
+}
+
+.cardButton {
+  align-self: flex-start;
+  padding: 0.75rem 1.5rem;
+  border-radius: 999px;
+  border: none;
+  background: #1E1E1E;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.cardButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Модальное окно */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 2rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.modalContent {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modalClose {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background 0.2s;
+  color: #333;
+}
+
+.modalClose:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.modalContent .banner {
+  margin: 0;
+  border-radius: 16px;
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 1rem;
+  }
+
+  .banner {
+    padding: 1.5rem 1rem;
+  }
+
+  .cards {
+    grid-template-columns: 1fr !important;
+  }
+
+  .modalOverlay {
+    padding: 1rem;
+  }
+
+  .modalContent {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 12px;
+  }
+
+  .modalClose {
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    font-size: 1.25rem;
+  }
+}
+

@@ -3,7 +3,8 @@ from django.conf import settings
 from .models import (
     Branch, Service, Specialist, Review, Promotion, Article, Contact,
     Menu, MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings,
-    ContentPage, CatalogItem, GalleryImage, HomePageBlock
+    ContentPage, CatalogItem, GalleryImage, HomePageBlock,
+    WelcomeBanner, WelcomeBannerCard
 )
 
 
@@ -63,15 +64,20 @@ class ServiceSerializer(serializers.ModelSerializer):
     booking_form_id = serializers.IntegerField(source='booking_form.id', read_only=True, allow_null=True)
     booking_form_title = serializers.CharField(source='booking_form.title', read_only=True, allow_null=True)
     image = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
     
     class Meta:
         model = Service
         fields = ['id', 'title', 'slug', 'description', 'short_description', 'price', 
-                 'price_with_abonement', 'duration', 'image', 'order', 
+                 'price_with_abonement', 'duration', 'image', 'has_own_page', 'url', 'order', 
                  'show_booking_button', 'booking_form_id', 'booking_form_title']
     
     def get_image(self, obj):
         return get_image_url(obj.image, self.context.get('request'))
+    
+    def get_url(self, obj):
+        """Возвращает URL страницы услуги, если она может быть открыта как страница"""
+        return obj.get_absolute_url()
 
 
 class SpecialistSerializer(serializers.ModelSerializer):
@@ -211,7 +217,7 @@ class HeroSettingsSerializer(serializers.ModelSerializer):
         return get_image_url(obj.background_image, self.context.get('request'))
     
     def get_button_quiz_slug(self, obj):
-        """Возвращает slug квиза для кнопки, если он активен"""
+        """Возвращает slug анкетаа для кнопки, если он активен"""
         if obj.button_quiz and obj.button_quiz.is_active and obj.button_quiz.slug:
             return obj.button_quiz.slug
         return None
@@ -265,11 +271,13 @@ class CatalogItemSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     button_booking_form_id = serializers.SerializerMethodField()
     button_quiz_slug = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
     
     class Meta:
         model = CatalogItem
-        fields = ['id', 'title', 'description', 'image', 'button_type', 'button_text',
-                 'button_booking_form_id', 'button_quiz_slug', 'button_url', 'order']
+        fields = ['id', 'title', 'description', 'image', 'has_own_page', 'slug', 'url',
+                 'button_type', 'button_text', 'button_booking_form_id', 'button_quiz_slug', 
+                 'button_url', 'order']
     
     def get_image(self, obj):
         return get_image_url(obj.image, self.context.get('request'))
@@ -281,10 +289,14 @@ class CatalogItemSerializer(serializers.ModelSerializer):
         return None
     
     def get_button_quiz_slug(self, obj):
-        """Возвращает slug квиза, если он активен"""
+        """Возвращает slug анкетаа, если он активен"""
         if obj.button_quiz and obj.button_quiz.is_active and obj.button_quiz.slug:
             return obj.button_quiz.slug
         return None
+    
+    def get_url(self, obj):
+        """Возвращает URL страницы элемента каталога, если он может быть открыт как страница"""
+        return obj.get_absolute_url()
 
 
 class GalleryImageSerializer(serializers.ModelSerializer):
@@ -326,7 +338,47 @@ class HomePageBlockSerializer(serializers.ModelSerializer):
             # Для других типов страниц используем полный сериализатор
             serializer = ContentPageSerializer(obj.content_page, context=self.context)
             return serializer.data
+
+
+class WelcomeBannerCardSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    button_booking_form_id = serializers.SerializerMethodField()
+    button_quiz_slug = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WelcomeBannerCard
+        fields = [
+            'id', 'title', 'description', 'image', 'button_type', 'button_text',
+            'button_url', 'button_booking_form_id', 'button_quiz_slug', 'order', 'is_active'
+        ]
+
+    def get_image(self, obj):
+        return get_image_url(obj.image, self.context.get('request'))
+
+    def get_button_booking_form_id(self, obj):
+        if obj.button_booking_form and obj.button_booking_form.is_active:
+            return obj.button_booking_form.id
         return None
+
+    def get_button_quiz_slug(self, obj):
+        if obj.button_quiz and obj.button_quiz.is_active and obj.button_quiz.slug:
+            return obj.button_quiz.slug
+        return None
+
+
+class WelcomeBannerSerializer(serializers.ModelSerializer):
+    cards = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WelcomeBanner
+        fields = [
+            'id', 'title', 'subtitle', 'background_color', 'text_color',
+            'content_width', 'display_type', 'blur_background', 'start_at', 'end_at', 'cards'
+        ]
+
+    def get_cards(self, obj):
+        cards = obj.cards.filter(is_active=True).order_by('order')
+        return WelcomeBannerCardSerializer(cards, many=True, context=self.context).data
 
 
 class ContentPageSerializer(serializers.ModelSerializer):

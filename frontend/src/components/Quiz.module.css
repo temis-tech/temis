@@ -132,6 +132,23 @@
   border-color: #4a90e2;
 }
 
+.inputError {
+  border-color: #e74c3c !important;
+  background-color: #fff5f5;
+}
+
+.inputError:focus {
+  border-color: #e74c3c !important;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+.fieldError {
+  color: #e74c3c;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: block;
+}
+
 .submitButton {
   padding: 1rem 2rem;
   background: #28a745;
