@@ -137,6 +137,7 @@ User=www-data
 WorkingDirectory=/var/www/rainbow-say/frontend
 Environment=NODE_ENV=production
 Environment=PORT=3001
+Environment=NEXT_PUBLIC_API_URL=https://api.dev.logoped-spb.pro/api
 ExecStart=/usr/bin/node /var/www/rainbow-say/frontend/.next/standalone/server.js
 Restart=always
 RestartSec=10
