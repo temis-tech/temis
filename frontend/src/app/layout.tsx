@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { contentApi } from '@/lib/api'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
   title: 'Логопедический центр "Радуга слов" - СПб',
@@ -43,7 +45,9 @@ export default async function RootLayout({
         }} />
       </head>
       <body suppressHydrationWarning>
+        <Header />
         {children}
+        <Footer />
       </body>
     </html>
   )

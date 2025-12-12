@@ -1,6 +1,4 @@
 import { contentApi } from '@/lib/api';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import ContentPage from '@/components/ContentPage';
 import { notFound } from 'next/navigation';
 
@@ -27,24 +25,20 @@ export default async function DynamicPage({ params }: { params: { slug: string }
     }
 
     return (
-      <>
-        <Header />
-        <main>
-          <div style={{ paddingTop: '2rem' }}>
-            <h1 style={{ 
-              textAlign: 'center', 
-              fontSize: '2.5rem', 
-              marginBottom: '2rem',
-              color: '#FF820E',
-              fontWeight: 600
-            }}>
-              {page.title}
-            </h1>
-            <ContentPage page={page} />
-          </div>
-        </main>
-        <Footer />
-      </>
+      <main>
+        <div style={{ paddingTop: '2rem' }}>
+          <h1 style={{ 
+            textAlign: 'center', 
+            fontSize: '2.5rem', 
+            marginBottom: '2rem',
+            color: '#FF820E',
+            fontWeight: 600
+          }}>
+            {page.title}
+          </h1>
+          <ContentPage page={page} />
+        </div>
+      </main>
     );
   } catch (error: any) {
     if (error.response?.status === 404) {

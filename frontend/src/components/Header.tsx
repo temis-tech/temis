@@ -21,26 +21,8 @@ export default async function Header() {
     });
   }
 
-  // CSS переменная теперь устанавливается в layout.tsx глобально
-  // Оставляем здесь только для обратной совместимости, если layout не загрузился
-  const headerHeight = headerSettings?.header_height || 140;
-  const mobileHeaderHeight = Math.min(headerHeight * 0.85, 120);
-
   return (
     <>
-      {/* Дублируем установку переменной на случай, если layout не загрузился */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          :root {
-            --header-height: ${headerHeight}px;
-          }
-          @media (max-width: 768px) {
-            :root {
-              --header-height: ${mobileHeaderHeight}px;
-            }
-          }
-        `
-      }} />
       <HeaderClient 
         logoText={headerSettings?.logo_text || 'Радуга слов'}
         logoImage={headerSettings?.logo_image || undefined}

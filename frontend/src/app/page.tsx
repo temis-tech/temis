@@ -1,7 +1,5 @@
-import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import WelcomeBanners from '@/components/WelcomeBanners';
-import Footer from '@/components/Footer';
 import ContentPage from '@/components/ContentPage';
 import { contentApi } from '@/lib/api';
 
@@ -31,29 +29,24 @@ export default async function Home() {
   }
 
   return (
-    <>
-      <Header />
-      <main style={{ 
-        minHeight: '100vh',
-        paddingTop: 'var(--header-height, 140px)'
-      }}>
-        <Hero />
-        <WelcomeBanners />
-        {homePage && homePage.page_type === 'home' && homePage.is_active ? (
-          <ContentPage page={homePage} />
-        ) : (
-          <div style={{ padding: '2rem', textAlign: 'center' }}>
-            <p>Создайте главную страницу в админке через конструктор страниц</p>
-            {homePage && (
-              <p style={{ color: '#999', fontSize: '0.9rem', marginTop: '1rem' }}>
-                Debug: page_type={homePage.page_type}, is_active={String(homePage.is_active)}
-              </p>
-            )}
-          </div>
-        )}
-      </main>
-      <Footer />
-    </>
+    <main style={{ 
+      minHeight: '100vh'
+    }}>
+      <Hero />
+      <WelcomeBanners />
+      {homePage && homePage.page_type === 'home' && homePage.is_active ? (
+        <ContentPage page={homePage} />
+      ) : (
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <p>Создайте главную страницу в админке через конструктор страниц</p>
+          {homePage && (
+            <p style={{ color: '#999', fontSize: '0.9rem', marginTop: '1rem' }}>
+              Debug: page_type={homePage.page_type}, is_active={String(homePage.is_active)}
+            </p>
+          )}
+        </div>
+      )}
+    </main>
   );
 }
 
