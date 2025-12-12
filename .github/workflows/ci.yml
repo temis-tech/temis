@@ -136,6 +136,8 @@ jobs:
           
           echo "🔧 Очищаю npm кэш и старые файлы..."
           sudo rm -rf /var/www/.npm
+          sudo mkdir -p /home/www-data/.npm
+          sudo chown -R www-data:www-data /home/www-data
           cd "${SITE_PATH}/frontend"
           sudo rm -rf node_modules package-lock.json
           
