@@ -564,7 +564,7 @@ def custom_get_app_list(self, request, app_label=None):
             elif model in [HeaderSettings, Menu, MenuItem, FooterSettings, SocialNetwork]:
                 category = 'Шапка и Подвал'
             elif model in [HeroSettings, SiteSettings]:
-                category = 'Настройки сайта'
+                category = 'Настройки цвета сайта'
             elif model == PrivacyPolicy:
                 category = 'Политики'
             else:

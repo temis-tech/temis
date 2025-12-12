@@ -945,11 +945,11 @@ class SiteSettings(models.Model):
                                        help_text='Цвет фона страницы (HEX)')
     
     class Meta:
-        verbose_name = 'Настройки сайта'
-        verbose_name_plural = 'Настройки сайта'
+        verbose_name = 'Настройки цвета сайта'
+        verbose_name_plural = 'Настройки цвета сайта'
 
     def __str__(self):
-        return 'Настройки сайта'
+        return 'Настройки цвета сайта'
     
     def save(self, *args, **kwargs):
         # Разрешаем только одну запись
