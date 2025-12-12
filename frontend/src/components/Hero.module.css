@@ -2,7 +2,7 @@
   color: white;
   padding: 6rem 2rem;
   padding-top: 6rem;
-  margin-top: calc(-1 * var(--header-height, 140px));
+  margin-top: calc(-1 * var(--header-height, 140px)) !important;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -105,7 +105,7 @@
 @media (max-width: 768px) {
   .hero {
     padding: 4rem 1.5rem;
-    margin-top: calc(-1 * var(--header-height, 120px));
+    margin-top: calc(-1 * var(--header-height, 120px)) !important;
   }
 
   .title {

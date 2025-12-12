@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   },
 }
 
+// Отключаем кэширование для layout, чтобы настройки шапки всегда были актуальными
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function RootLayout({
   children,
 }: {
@@ -28,17 +32,19 @@ export default async function RootLayout({
         <style dangerouslySetInnerHTML={{
           __html: `
             :root {
-              --header-height: ${headerHeight}px;
+              --header-height: ${headerHeight}px !important;
             }
             @media (max-width: 768px) {
               :root {
-                --header-height: ${mobileHeaderHeight}px;
+                --header-height: ${mobileHeaderHeight}px !important;
               }
             }
           `
         }} />
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   )
 }

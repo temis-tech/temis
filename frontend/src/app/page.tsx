@@ -33,7 +33,10 @@ export default async function Home() {
   return (
     <>
       <Header />
-      <main style={{ minHeight: '100vh' }}>
+      <main style={{ 
+        minHeight: '100vh',
+        paddingTop: 'var(--header-height, 140px)'
+      }}>
         <Hero />
         <WelcomeBanners />
         {homePage && homePage.page_type === 'home' && homePage.is_active ? (
