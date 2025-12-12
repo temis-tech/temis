@@ -139,6 +139,10 @@ def set_webhook(webhook_url):
             'url': webhook_url
         }, timeout=10)
         
+        # Логируем ответ для отладки
+        logger.info(f'Telegram API response status: {response.status_code}')
+        logger.info(f'Telegram API response: {response.text}')
+        
         response.raise_for_status()
         
         # Сохраняем URL webhook в настройках
@@ -148,6 +152,9 @@ def set_webhook(webhook_url):
         return True
     except requests.exceptions.RequestException as e:
         logger.error(f'Ошибка установки webhook: {str(e)}')
+        if hasattr(e, 'response') and e.response is not None:
+            logger.error(f'Response status: {e.response.status_code}')
+            logger.error(f'Response text: {e.response.text}')
         return False
 
 
