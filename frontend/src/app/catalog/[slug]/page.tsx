@@ -1,6 +1,5 @@
 import { contentApi } from '@/lib/api';
 import { normalizeImageUrl } from '@/lib/utils';
-import { getVideoEmbedUrl } from '@/lib/videoUtils';
 import BookingForm from '@/components/BookingForm';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -43,7 +42,7 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
             {item.title}
           </h1>
           
-          {item.image && !item.video_url && (
+          {item.image && (
             <div style={{ 
               width: '100%', 
               maxWidth: '800px', 
@@ -60,45 +59,6 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
               />
             </div>
           )}
-          
-          {item.video_url && (() => {
-            const videoEmbed = getVideoEmbedUrl(item.video_url);
-            if (videoEmbed) {
-              const videoWidth = item.video_width || 800;
-              const videoHeight = item.video_height || 450;
-              const aspectRatio = (videoHeight / videoWidth) * 100;
-              
-              return (
-                <div style={{ 
-                  width: '100%', 
-                  maxWidth: `${videoWidth}px`, 
-                  margin: '0 auto 2rem',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  position: 'relative',
-                  paddingBottom: `${aspectRatio}%`,
-                  height: 0
-                }}>
-                  <iframe
-                    src={videoEmbed.embedUrl}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      border: 'none',
-                      borderRadius: '12px'
-                    }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title={item.title}
-                  />
-                </div>
-              );
-            }
-            return null;
-          })()}
           
           {item.description && (
             <div 
