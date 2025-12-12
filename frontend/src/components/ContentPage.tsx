@@ -243,12 +243,17 @@ export default function ContentPage({ page }: ContentPageProps) {
           />
         )}
         {renderCatalog()}
-        {page.gallery_images && page.gallery_images.length > 0 && (
+        {/* Галерея для страницы типа 'gallery' */}
+        {page.gallery_images && page.gallery_images.length > 0 ? (
           <Gallery
             images={page.gallery_images}
             displayType={page.gallery_display_type || 'grid'}
             enableFullscreen={page.gallery_enable_fullscreen !== false}
           />
+        ) : (
+          <div style={{ padding: '2rem', textAlign: 'center', color: '#999' }}>
+            Нет изображений в галерее. Добавьте изображения в админке.
+          </div>
         )}
         {renderBookingForm()}
       </div>

@@ -17,6 +17,11 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
   const [currentImageIndex, setCurrentImageIndex] = useState<number | null>(null)
   const [carouselIndex, setCarouselIndex] = useState(0)
 
+  // Проверка на пустой массив
+  if (!images || images.length === 0) {
+    return null
+  }
+
   // Обработка открытия изображения на весь экран
   const handleImageClick = (index: number) => {
     if (enableFullscreen) {
