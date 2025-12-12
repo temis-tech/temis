@@ -27,15 +27,17 @@ export default async function DynamicPage({ params }: { params: { slug: string }
     return (
       <main>
         <div style={{ paddingTop: '2rem' }}>
-          <h1 style={{ 
-            textAlign: 'center', 
-            fontSize: '2.5rem', 
-            marginBottom: '2rem',
-            color: '#FF820E',
-            fontWeight: 600
-          }}>
-            {page.title}
-          </h1>
+          {page.show_title !== false && (
+            <h1 style={{ 
+              textAlign: 'center', 
+              fontSize: '2.5rem', 
+              marginBottom: '2rem',
+              color: '#FF820E',
+              fontWeight: 600
+            }}>
+              {page.title}
+            </h1>
+          )}
           <ContentPage page={page} />
         </div>
       </main>

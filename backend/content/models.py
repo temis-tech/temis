@@ -274,6 +274,7 @@ class ContentPage(models.Model):
         ('catalog', 'Каталог'),
         ('gallery', 'Галерея'),
         ('home', 'Главная'),
+        ('text', 'Описание'),
     ]
     
     title = models.CharField('Название страницы', max_length=200)
@@ -282,6 +283,8 @@ class ContentPage(models.Model):
     page_type = models.CharField('Тип страницы', max_length=20, choices=PAGE_TYPES, default='catalog')
     description = RichTextField('Описание', blank=True, 
                                   help_text='Описание страницы с поддержкой форматирования')
+    show_title = models.BooleanField('Показывать заголовок на странице', default=True,
+                                     help_text='Если отключено, заголовок страницы не будет отображаться на сайте')
     is_active = models.BooleanField('Активна', default=True)
     order = models.IntegerField('Порядок', default=0)
     created_at = models.DateTimeField('Создана', auto_now_add=True)

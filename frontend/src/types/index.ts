@@ -123,6 +123,7 @@ export interface ContentPage {
   slug: string;
   page_type: 'catalog' | 'gallery' | 'home' | 'text';
   description: string;
+  show_title?: boolean;
   is_active: boolean;
   catalog_items?: CatalogItem[];
   gallery_images?: GalleryImage[];
