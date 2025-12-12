@@ -28,13 +28,13 @@ export default async function Home() {
     console.error('Error loading home page:', error);
   }
 
+  const hasContent = homePage && homePage.page_type === 'home' && homePage.is_active;
+
   return (
-    <main style={{ 
-      minHeight: '100vh'
-    }}>
+    <main>
       <Hero />
       <WelcomeBanners />
-      {homePage && homePage.page_type === 'home' && homePage.is_active ? (
+      {hasContent ? (
         <ContentPage page={homePage} />
       ) : (
         <div style={{ padding: '2rem', textAlign: 'center' }}>
