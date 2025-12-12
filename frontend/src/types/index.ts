@@ -80,7 +80,8 @@ export interface CatalogItem {
   width?: 'narrow' | 'medium' | 'wide' | 'full';
   id: number;
   title: string;
-  description: string;
+  card_description?: string;  // Описание для карточки (превью) с форматированием
+  description?: string;  // Описание для страницы элемента
   card_image?: string;  // Изображение для карточки (превью)
   image?: string;  // Изображение для страницы
   image_align?: 'left' | 'right' | 'center' | 'full';

@@ -349,7 +349,7 @@ class CatalogItemSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CatalogItem
-        fields = ['id', 'title', 'description', 'card_image', 'image', 'image_align', 'image_size', 'has_own_page', 'slug', 'url', 'width',
+        fields = ['id', 'title', 'card_description', 'description', 'card_image', 'image', 'image_align', 'image_size', 'has_own_page', 'slug', 'url', 'width',
                  'button_type', 'button_text', 'button_booking_form_id', 'button_quiz_slug', 
                  'button_url', 'video_url', 'order']
     

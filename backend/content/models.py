@@ -372,7 +372,14 @@ class CatalogItem(models.Model):
     title = models.CharField('Название', max_length=200)
     slug = models.SlugField('URL', unique=True, blank=True,
                            help_text='Автоматически генерируется из названия, если не указан. Используется для создания страницы элемента.')
-    description = RichTextField('Описание', blank=True)
+    
+    # Описание для превью карточки
+    card_description = RichTextField('Описание для карточки (превью)', blank=True,
+                                     help_text='Краткое описание, которое будет отображаться в карточке элемента в списке каталога. Поддерживает форматирование текста.')
+    
+    # Описание для страницы элемента
+    description = RichTextField('Описание для страницы', blank=True,
+                                help_text='Полное описание, которое будет отображаться на странице элемента (если включен режим "Может быть открыт как страница").')
     
     # Изображение для карточки (превью в списке)
     card_image = models.ImageField('Изображение для карточки', upload_to='catalog/cards/', blank=True, null=True,

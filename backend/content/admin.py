@@ -102,8 +102,8 @@ class CatalogItemAdmin(admin.ModelAdmin):
             'fields': ('page', 'title')
         }),
         ('Карточка (превью в списке)', {
-            'fields': ('card_image', 'card_image_preview', 'width', 'button_type', 'button_text', 'button_booking_form', 'button_quiz', 'button_url'),
-            'description': 'Настройки отображения карточки элемента в списке каталога. Изображение, ширина карточки и настройки кнопки.'
+            'fields': ('card_image', 'card_image_preview', 'card_description', 'width', 'button_type', 'button_text', 'button_booking_form', 'button_quiz', 'button_url'),
+            'description': 'Настройки отображения карточки элемента в списке каталога. Изображение, краткое описание (с форматированием), ширина карточки и настройки кнопки.'
         }),
         ('Страница элемента', {
             'fields': ('has_own_page', 'slug', 'description', 'image', 'page_image_preview', 'image_align', 'image_size', 'video_url'),
