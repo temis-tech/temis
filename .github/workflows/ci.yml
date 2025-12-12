@@ -145,6 +145,11 @@ jobs:
           # Используем переменную окружения для npm кэша в домашней директории www-data
           sudo -u www-data env NPM_CONFIG_CACHE=/home/www-data/.npm npm install --omit=dev || sudo -u www-data env NPM_CONFIG_CACHE=/home/www-data/.npm npm install
           
+          echo "🔨 Пересобираю Next.js на сервере..."
+          # Очищаем кэш Next.js и пересобираем
+          sudo rm -rf "${SITE_PATH}/frontend/.next/cache" || true
+          sudo -u www-data env NPM_CONFIG_CACHE=/home/www-data/.npm NEXT_PUBLIC_API_URL=https://api.dev.logoped-spb.pro/api npm run build
+          
           echo "📦 Устанавливаю зависимости бэкенда..."
           cd "${SITE_PATH}/backend"
           
@@ -179,6 +184,12 @@ jobs:
           echo "🔄 Перезапускаю сервисы..."
           sudo systemctl restart ${SITE_NAME}-frontend || echo "⚠️  Сервис frontend не найден"
           sudo systemctl restart ${SITE_NAME}-backend || echo "⚠️  Сервис backend не найден"
+          
+          echo "🔄 Перезагружаю nginx..."
+          sudo systemctl reload nginx || sudo systemctl restart nginx || echo "⚠️  Nginx не найден"
+          
+          echo "🧹 Очищаю кэш Next.js..."
+          sudo rm -rf "${SITE_PATH}/frontend/.next/cache" || true
           
           echo "✅ Деплой завершен!"
           
