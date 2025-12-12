@@ -926,8 +926,7 @@ class PrivacyPolicy(models.Model):
     
     def get_absolute_url(self):
         """Возвращает URL страницы политики"""
-        from django.urls import reverse
-        return reverse('content:policy-detail', kwargs={'slug': self.slug})
+        return f'/policies/{self.slug}/'
 
 
 class SiteSettings(models.Model):
