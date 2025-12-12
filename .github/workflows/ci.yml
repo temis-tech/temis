@@ -101,15 +101,19 @@ jobs:
         # Копируем файлы
         mkdir -p "${DEPLOY_DIR}/frontend" "${DEPLOY_DIR}/backend"
         
-        # Frontend - копируем собранные файлы и исходники
-        cp -r frontend/.next "${DEPLOY_DIR}/frontend/" || true
-        cp -r frontend/public "${DEPLOY_DIR}/frontend/" || true
-        cp -r frontend/src "${DEPLOY_DIR}/frontend/" || true
-        cp frontend/package*.json "${DEPLOY_DIR}/frontend/" || true
-        cp frontend/next.config.js "${DEPLOY_DIR}/frontend/" || true
-        cp frontend/tsconfig.json "${DEPLOY_DIR}/frontend/" || true
-        cp frontend/next-env.d.ts "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
-        cp frontend/.eslintrc.json "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
+        # Frontend - копируем все необходимые файлы
+        # Копируем всю директорию frontend, исключая node_modules и .next (пересоберем на сервере)
+        rsync -av --exclude='node_modules' --exclude='.next' --exclude='.git' frontend/ "${DEPLOY_DIR}/frontend/" || {
+          # Fallback на cp если rsync недоступен
+          cp -r frontend/.next "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
+          cp -r frontend/public "${DEPLOY_DIR}/frontend/" || true
+          cp -r frontend/src "${DEPLOY_DIR}/frontend/" || true
+          cp frontend/package*.json "${DEPLOY_DIR}/frontend/" || true
+          cp frontend/next.config.js "${DEPLOY_DIR}/frontend/" || true
+          cp frontend/tsconfig.json "${DEPLOY_DIR}/frontend/" || true
+          cp frontend/next-env.d.ts "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
+          cp frontend/.eslintrc.json "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
+        }
         
         # Backend - копируем все приложения
         cp -r backend/* "${DEPLOY_DIR}/backend/" || true
