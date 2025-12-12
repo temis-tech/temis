@@ -37,13 +37,42 @@ def get_image_url(image_field, request=None):
         image_url = image_url.replace('http://127.0.0.1:8001', f'{protocol}://{api_domain}')
         return image_url
     
-    # Если есть request, используем build_absolute_uri
-    if request:
-        return request.build_absolute_uri(image_url)
-    
-    # Если URL уже абсолютный, возвращаем как есть
+    # Если URL уже абсолютный, проверяем и исправляем домен
     if image_url.startswith('http://') or image_url.startswith('https://'):
+        # Используем переменную окружения или дефолтный домен
+        api_domain = getattr(settings, 'API_DOMAIN', 'api.dev.logoped-spb.pro')
+        protocol = 'https' if not settings.DEBUG else 'http'
+        
+        # Заменяем неправильные домены на правильный API домен
+        import re
+        # Заменяем dev.logoped-spb.pro на api.dev.logoped-spb.pro
+        image_url = re.sub(
+            r'https?://dev\.logoped-spb\.pro(/media/.*)',
+            f'{protocol}://{api_domain}\\1',
+            image_url
+        )
+        # Заменяем любые другие домены с /media/ на правильный API домен
+        image_url = re.sub(
+            r'https?://[^/]+(/media/.*)',
+            f'{protocol}://{api_domain}\\1',
+            image_url
+        )
         return image_url
+    
+    # Если есть request, используем build_absolute_uri, но затем исправляем домен
+    if request:
+        absolute_url = request.build_absolute_uri(image_url)
+        # Исправляем домен если он неправильный
+        api_domain = getattr(settings, 'API_DOMAIN', 'api.dev.logoped-spb.pro')
+        protocol = 'https' if not settings.DEBUG else 'http'
+        import re
+        # Заменяем dev.logoped-spb.pro на api.dev.logoped-spb.pro
+        absolute_url = re.sub(
+            r'https?://dev\.logoped-spb\.pro(/media/.*)',
+            f'{protocol}://{api_domain}\\1',
+            absolute_url
+        )
+        return absolute_url
     
     # Иначе возвращаем относительный путь (будет обработан на фронтенде)
     return image_url
