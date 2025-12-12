@@ -4,6 +4,7 @@ Management команда для установки webhook для Telegram бо
 """
 from django.core.management.base import BaseCommand
 from django.conf import settings
+from config.constants import get_api_domain, get_protocol, TELEGRAM_WEBHOOK_PATH
 from telegram.bot import set_webhook, get_bot_settings
 
 
@@ -31,9 +32,9 @@ class Command(BaseCommand):
         if options['url']:
             webhook_url = options['url']
         else:
-            api_domain = getattr(settings, 'API_DOMAIN', 'api.rainbow-say.estenomada.es')
-            protocol = 'https' if not settings.DEBUG else 'http'
-            webhook_url = f'{protocol}://{api_domain}/api/telegram/webhook/'
+            api_domain = get_api_domain()
+            protocol = get_protocol()
+            webhook_url = f'{protocol}://{api_domain}{TELEGRAM_WEBHOOK_PATH}'
         
         self.stdout.write(f'Устанавливаю webhook: {webhook_url}')
         

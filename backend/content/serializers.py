@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.conf import settings
+from config.constants import get_api_domain, get_protocol, get_media_base_url, MEDIA_PATH
 from .models import (
     Branch, Service, Specialist, Review, Promotion, Article, Contact,
     Menu, MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings,
@@ -29,9 +30,8 @@ def get_image_url(image_field, request=None):
     
     # Если URL содержит localhost, заменяем на правильный домен
     if 'localhost' in image_url or '127.0.0.1' in image_url:
-        # Используем переменную окружения или дефолтный домен
-        api_domain = getattr(settings, 'API_DOMAIN', 'api.rainbow-say.estenomada.es')
-        protocol = 'https' if not settings.DEBUG else 'http'
+        api_domain = get_api_domain()
+        protocol = get_protocol()
         # Заменяем localhost на правильный домен
         image_url = image_url.replace('http://localhost:8001', f'{protocol}://{api_domain}')
         image_url = image_url.replace('http://127.0.0.1:8001', f'{protocol}://{api_domain}')
@@ -39,9 +39,8 @@ def get_image_url(image_field, request=None):
     
     # Если URL уже абсолютный, проверяем и исправляем домен
     if image_url.startswith('http://') or image_url.startswith('https://'):
-        # Используем переменную окружения или дефолтный домен
-        api_domain = getattr(settings, 'API_DOMAIN', 'api.dev.logoped-spb.pro')
-        protocol = 'https' if not settings.DEBUG else 'http'
+        api_domain = get_api_domain()
+        protocol = get_protocol()
         
         # Если URL уже содержит правильный API домен, возвращаем как есть
         if api_domain in image_url:
@@ -51,13 +50,13 @@ def get_image_url(image_field, request=None):
         import re
         # Заменяем dev.logoped-spb.pro на api.dev.logoped-spb.pro
         image_url = re.sub(
-            r'https?://dev\.logoped-spb\.pro(/media/.*)',
+            r'https?://dev\.logoped-spb\.pro(' + MEDIA_PATH + r'/.*)',
             f'{protocol}://{api_domain}\\1',
             image_url
         )
         # Заменяем любые другие домены с /media/ на правильный API домен
         image_url = re.sub(
-            r'https?://[^/]+(/media/.*)',
+            r'https?://[^/]+(' + MEDIA_PATH + r'/.*)',
             f'{protocol}://{api_domain}\\1',
             image_url
         )
@@ -65,8 +64,8 @@ def get_image_url(image_field, request=None):
     
     # Если есть request, формируем абсолютный URL используя правильный API домен
     if request:
-        api_domain = getattr(settings, 'API_DOMAIN', 'api.dev.logoped-spb.pro')
-        protocol = 'https' if not settings.DEBUG else 'http'
+        api_domain = get_api_domain()
+        protocol = get_protocol()
         
         # Если image_url уже абсолютный, исправляем домен
         if image_url.startswith('http://') or image_url.startswith('https://'):
@@ -77,13 +76,13 @@ def get_image_url(image_field, request=None):
             
             # Заменяем dev.logoped-spb.pro на api.dev.logoped-spb.pro
             image_url = re.sub(
-                r'https?://dev\.logoped-spb\.pro(/media/.*)',
+                r'https?://dev\.logoped-spb\.pro(' + MEDIA_PATH + r'/.*)',
                 f'{protocol}://{api_domain}\\1',
                 image_url
             )
             # Заменяем любые другие домены с /media/ на правильный API домен
             image_url = re.sub(
-                r'https?://[^/]+(/media/.*)',
+                r'https?://[^/]+(' + MEDIA_PATH + r'/.*)',
                 f'{protocol}://{api_domain}\\1',
                 image_url
             )

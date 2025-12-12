@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import format_html
+from config.constants import get_api_domain, get_protocol, TELEGRAM_WEBHOOK_PATH
 from .models import TelegramBotSettings, TelegramUser
 from .bot import set_webhook, delete_webhook, get_bot_settings
 
@@ -26,9 +27,9 @@ class TelegramBotSettingsAdmin(admin.ModelAdmin):
             # Установка webhook
             obj = self.get_object(request, object_id)
             if obj:
-                api_domain = getattr(settings, 'API_DOMAIN', 'api.rainbow-say.estenomada.es')
-                protocol = 'https' if not settings.DEBUG else 'http'
-                webhook_url = f'{protocol}://{api_domain}/api/telegram/webhook/'
+                api_domain = get_api_domain()
+                protocol = get_protocol()
+                webhook_url = f'{protocol}://{api_domain}{TELEGRAM_WEBHOOK_PATH}'
                 
                 if not obj.token:
                     messages.error(request, 'Укажите токен бота перед установкой webhook')
@@ -81,9 +82,9 @@ class TelegramBotSettingsAdmin(admin.ModelAdmin):
         if not obj:
             return ''
         
-        api_domain = getattr(settings, 'API_DOMAIN', 'api.rainbow-say.estenomada.es')
-        protocol = 'https' if not settings.DEBUG else 'http'
-        webhook_url = f'{protocol}://{api_domain}/api/telegram/webhook/'
+        api_domain = get_api_domain()
+        protocol = get_protocol()
+        webhook_url = f'{protocol}://{api_domain}{TELEGRAM_WEBHOOK_PATH}'
         
         buttons = []
         

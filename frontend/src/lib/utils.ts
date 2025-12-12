@@ -1,3 +1,5 @@
+import { getApiHost, MEDIA_PATH } from '@/config/constants';
+
 /**
  * Нормализует URL изображений, заменяя HTTP на HTTPS и localhost на правильный домен
  */
@@ -9,20 +11,8 @@ export function normalizeImageUrl(url: string | null | undefined): string {
     return url;
   }
   
-  // Определяем правильный API домен в зависимости от окружения
-  let apiHost = 'api.dev.logoped-spb.pro';
-  
-  // Проверяем текущий домен страницы
-  if (typeof window !== 'undefined') {
-    const hostname = window.location.hostname;
-    if (hostname.includes('dev.logoped-spb.pro')) {
-      apiHost = 'api.dev.logoped-spb.pro';
-    } else if (hostname.includes('logoped-spb.pro')) {
-      apiHost = 'api.logoped-spb.pro';
-    } else if (hostname.includes('rainbow-say.estenomada.es')) {
-      apiHost = 'api.rainbow-say.estenomada.es';
-    }
-  }
+  // Получаем правильный API домен из конфигурации
+  const apiHost = getApiHost();
   
   // Заменяем localhost на правильный API домен
   url = url.replace(/https?:\/\/localhost:\d+/g, `https://${apiHost}`);
@@ -36,9 +26,16 @@ export function normalizeImageUrl(url: string | null | undefined): string {
   
   // Заменяем неправильные домены на правильный
   // Заменяем dev.logoped-spb.pro на api.dev.logoped-spb.pro
-  url = url.replace(/https?:\/\/dev\.logoped-spb\.pro(\/media\/.*)/g, `https://${apiHost}$1`);
+  const mediaPathEscaped = MEDIA_PATH.replace(/\//g, '\\/');
+  url = url.replace(
+    new RegExp(`https?://dev\\.logoped-spb\\.pro(${mediaPathEscaped}/.*)`, 'g'),
+    `https://${apiHost}$1`
+  );
   // Заменяем любые другие домены с /media/ на правильный API домен
-  url = url.replace(/https?:\/\/[^/]+(\/media\/.*)/g, `https://${apiHost}$1`);
+  url = url.replace(
+    new RegExp(`https?://[^/]+(${mediaPathEscaped}/.*)`, 'g'),
+    `https://${apiHost}$1`
+  );
   
   // Если URL начинается с http://, заменяем на https://
   if (url.startsWith('http://')) {
