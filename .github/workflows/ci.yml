@@ -105,18 +105,33 @@ jobs:
         mkdir -p "${DEPLOY_DIR}/frontend" "${DEPLOY_DIR}/backend"
         
         # Frontend - копируем все необходимые файлы
-        # Копируем всю директорию frontend, исключая node_modules и .next (пересоберем на сервере)
-        rsync -av --exclude='node_modules' --exclude='.next' --exclude='.git' frontend/ "${DEPLOY_DIR}/frontend/" || {
-          # Fallback на cp если rsync недоступен
-          cp -r frontend/.next "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
-          cp -r frontend/public "${DEPLOY_DIR}/frontend/" || true
-          cp -r frontend/src "${DEPLOY_DIR}/frontend/" || true
-          cp frontend/package*.json "${DEPLOY_DIR}/frontend/" || true
-          cp frontend/next.config.js "${DEPLOY_DIR}/frontend/" || true
-          cp frontend/tsconfig.json "${DEPLOY_DIR}/frontend/" || true
-          cp frontend/next-env.d.ts "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
-          cp frontend/.eslintrc.json "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
-        }
+        # Используем cp для гарантированного копирования всех файлов
+        echo "📦 Копирую файлы фронтенда..."
+        cp -r frontend/public "${DEPLOY_DIR}/frontend/" || true
+        cp -r frontend/src "${DEPLOY_DIR}/frontend/" || true
+        cp frontend/package*.json "${DEPLOY_DIR}/frontend/" || true
+        cp frontend/next.config.js "${DEPLOY_DIR}/frontend/" || true
+        cp frontend/tsconfig.json "${DEPLOY_DIR}/frontend/" || true
+        cp frontend/next-env.d.ts "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
+        cp frontend/.eslintrc.json "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
+        cp frontend/.env.production "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
+        cp frontend/.gitignore "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
+        
+        # Проверяем, что все важные директории скопированы
+        echo "✅ Проверяю скопированные файлы..."
+        if [ ! -d "${DEPLOY_DIR}/frontend/src/lib" ]; then
+          echo "❌ ОШИБКА: src/lib не скопирован!"
+          exit 1
+        fi
+        if [ ! -d "${DEPLOY_DIR}/frontend/src/components" ]; then
+          echo "❌ ОШИБКА: src/components не скопирован!"
+          exit 1
+        fi
+        if [ ! -d "${DEPLOY_DIR}/frontend/src/types" ]; then
+          echo "❌ ОШИБКА: src/types не скопирован!"
+          exit 1
+        fi
+        echo "✅ Все необходимые директории скопированы"
         
         # Backend - копируем все приложения
         cp -r backend/* "${DEPLOY_DIR}/backend/" || true
