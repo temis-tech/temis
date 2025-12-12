@@ -4,6 +4,7 @@ Django settings for rainbow_say project.
 import os
 from pathlib import Path
 from decouple import config
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -60,12 +61,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Настройка базы данных
+DATABASE_URL = config('DATABASE_URL', default='')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -117,7 +125,7 @@ CKEDITOR_CONFIGS = {
 }
 
 # Домен API для замены localhost в URL изображений
-API_DOMAIN = config('API_DOMAIN', default='api.rainbow-say.estenomada.es')
+API_DOMAIN = config('API_DOMAIN', default='api.logoped-spb.pro')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -134,6 +142,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "https://rainbow-say.estenomada.es",
     "http://rainbow-say.estenomada.es",
+    "https://logoped-spb.pro",
+    "http://logoped-spb.pro",
+    "https://logoped-spb.fvds.ru",
+    "http://logoped-spb.fvds.ru",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -142,6 +154,9 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "https://api.rainbow-say.estenomada.es",
     "https://rainbow-say.estenomada.es",
+    "https://api.logoped-spb.pro",
+    "https://logoped-spb.pro",
+    "https://logoped-spb.fvds.ru",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
 ]
