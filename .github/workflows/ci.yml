@@ -74,6 +74,9 @@ jobs:
     needs: [backend-tests, frontend-tests]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
     
     steps:
     - uses: actions/checkout@v3
@@ -131,6 +134,39 @@ jobs:
           
           SITE_PATH="/var/www/rainbow-say"
           SITE_NAME="rainbow-say"
+          LOCK_FILE="/tmp/deploy-${SITE_NAME}.lock"
+          MAX_WAIT=300  # Максимальное время ожидания в секундах (5 минут)
+          WAIT_INTERVAL=10  # Интервал проверки в секундах
+          
+          # Функция для ожидания освобождения блокировки
+          wait_for_lock() {
+            local waited=0
+            while [ -f "${LOCK_FILE}" ] && [ ${waited} -lt ${MAX_WAIT} ]; do
+              if [ -f "${LOCK_FILE}" ]; then
+                local pid=$(cat "${LOCK_FILE}" 2>/dev/null || echo "")
+                if [ -n "${pid}" ] && kill -0 "${pid}" 2>/dev/null; then
+                  echo "⏳ Деплой уже выполняется (PID: ${pid}), жду освобождения блокировки..."
+                  sleep ${WAIT_INTERVAL}
+                  waited=$((waited + WAIT_INTERVAL))
+                else
+                  echo "⚠️  Найден устаревший файл блокировки, удаляю..."
+                  rm -f "${LOCK_FILE}"
+                  break
+                fi
+              fi
+            done
+            
+            if [ ${waited} -ge ${MAX_WAIT} ]; then
+              echo "❌ Превышено время ожидания освобождения блокировки (${MAX_WAIT} секунд)"
+              exit 1
+            fi
+          }
+          
+          # Создаем блокировку
+          wait_for_lock
+          echo "🔒 Создаю блокировку деплоя..."
+          echo $$ > "${LOCK_FILE}"
+          trap "rm -f ${LOCK_FILE}; echo '🔓 Блокировка снята'" EXIT
           
           echo "📦 Распаковываю архив..."
           cd /tmp
