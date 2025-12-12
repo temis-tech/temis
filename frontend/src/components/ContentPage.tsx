@@ -138,12 +138,7 @@ export default function ContentPage({ page }: ContentPageProps) {
                 </div>
               )}
               <h3 className={styles.itemTitle}>{item.title}</h3>
-              {item.description && (
-                <div
-                  className={styles.itemDescription}
-                  dangerouslySetInnerHTML={{ __html: item.description }}
-                />
-              )}
+              {/* Description не показывается в превью карточки - только на странице элемента */}
               {item.button_type !== 'none' && (
                 <button
                   type="button"
