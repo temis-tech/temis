@@ -28,12 +28,12 @@ class CustomAdminSite(admin.AdminSite):
             other_models = []
             
             header_footer_model_names = [
-                'headersettings',
                 'menu',
                 'menuitem',
-                'contact',
+                'headersettings',
                 'footersettings',
                 'socialnetwork',
+                'contact',
                 'privacypolicy'
             ]
             
