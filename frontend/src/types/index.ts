@@ -82,6 +82,8 @@ export interface CatalogItem {
   title: string;
   description: string;
   image?: string;
+  image_align?: 'left' | 'right' | 'center' | 'full';
+  image_size?: 'small' | 'medium' | 'large' | 'full';
   has_own_page?: boolean;
   slug?: string;
   url?: string | null;
@@ -123,6 +125,9 @@ export interface ContentPage {
   slug: string;
   page_type: 'catalog' | 'gallery' | 'home' | 'text';
   description: string;
+  image?: string;
+  image_align?: 'left' | 'right' | 'center' | 'full';
+  image_size?: 'small' | 'medium' | 'large' | 'full';
   show_title?: boolean;
   is_active: boolean;
   catalog_items?: CatalogItem[];

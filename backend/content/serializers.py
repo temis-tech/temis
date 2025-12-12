@@ -69,7 +69,7 @@ class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = ['id', 'title', 'slug', 'description', 'short_description', 'price', 
-                 'price_with_abonement', 'duration', 'image', 'has_own_page', 'url', 'order', 
+                 'price_with_abonement', 'duration', 'image', 'image_align', 'image_size', 'has_own_page', 'url', 'order', 
                  'show_booking_button', 'booking_form_id', 'booking_form_title']
     
     def get_image(self, obj):
@@ -275,7 +275,7 @@ class CatalogItemSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CatalogItem
-        fields = ['id', 'title', 'description', 'image', 'has_own_page', 'slug', 'url', 'width',
+        fields = ['id', 'title', 'description', 'image', 'image_align', 'image_size', 'has_own_page', 'slug', 'url', 'width',
                  'button_type', 'button_text', 'button_booking_form_id', 'button_quiz_slug', 
                  'button_url', 'order']
     
@@ -386,10 +386,15 @@ class ContentPageSerializer(serializers.ModelSerializer):
     gallery_images = serializers.SerializerMethodField()
     home_blocks = serializers.SerializerMethodField()
     
+    image = serializers.SerializerMethodField()
+    
     class Meta:
         model = ContentPage
-        fields = ['id', 'title', 'slug', 'page_type', 'description', 'show_title', 'is_active', 'catalog_items',
+        fields = ['id', 'title', 'slug', 'page_type', 'description', 'image', 'image_align', 'image_size', 'show_title', 'is_active', 'catalog_items',
                  'gallery_images', 'home_blocks']
+    
+    def get_image(self, obj):
+        return get_image_url(obj.image, self.context.get('request'))
     
     def get_catalog_items(self, obj):
         if obj.page_type == 'catalog':

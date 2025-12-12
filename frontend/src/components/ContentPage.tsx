@@ -93,16 +93,44 @@ export default function ContentPage({ page }: ContentPageProps) {
           const hasPage = item.has_own_page && item.url
           const widthClass = getWidthClass(item.width || 'medium')
           
+          const getImageSize = (size?: string) => {
+            switch (size) {
+              case 'small': return { width: 200, height: 150 }
+              case 'medium': return { width: 400, height: 300 }
+              case 'large': return { width: 600, height: 450 }
+              case 'full': return { width: 800, height: 600 }
+              default: return { width: 400, height: 300 }
+            }
+          }
+
+          const getImageAlignClass = (align?: string) => {
+            switch (align) {
+              case 'left': return styles.imageLeft
+              case 'right': return styles.imageRight
+              case 'center': return styles.imageCenter
+              case 'full': return styles.imageFull
+              default: return styles.imageCenter
+            }
+          }
+
+          const imageSize = getImageSize(item.image_size)
+          const imageAlignClass = getImageAlignClass(item.image_align)
+          
           const cardContent = (
             <div className={`${styles.catalogItem} ${widthClass}`}>
               {item.image && (
-                <div className={styles.imageWrapper}>
+                <div className={`${styles.imageWrapper} ${imageAlignClass}`}>
                   <Image
                     src={normalizeImageUrl(item.image)}
                     alt={item.title}
-                    width={400}
-                    height={300}
+                    width={imageSize.width}
+                    height={imageSize.height}
                     className={styles.image}
+                    style={{
+                      maxWidth: item.image_size === 'full' ? '100%' : `${imageSize.width}px`,
+                      width: item.image_size === 'full' ? '100%' : 'auto',
+                      height: 'auto'
+                    }}
                   />
                 </div>
               )}
@@ -272,8 +300,47 @@ export default function ContentPage({ page }: ContentPageProps) {
   }
 
   if (page.page_type === 'text') {
+    const getImageSize = (size?: string) => {
+      switch (size) {
+        case 'small': return { width: 200, height: 150 }
+        case 'medium': return { width: 400, height: 300 }
+        case 'large': return { width: 600, height: 450 }
+        case 'full': return { width: 1200, height: 600 }
+        default: return { width: 400, height: 300 }
+      }
+    }
+
+    const getImageAlignClass = (align?: string) => {
+      switch (align) {
+        case 'left': return styles.imageLeft
+        case 'right': return styles.imageRight
+        case 'center': return styles.imageCenter
+        case 'full': return styles.imageFull
+        default: return styles.imageCenter
+      }
+    }
+
+    const imageSize = getImageSize(page.image_size)
+    const imageAlignClass = page.image ? getImageAlignClass(page.image_align) : ''
+
     return (
       <div className={styles.container}>
+        {page.image && (
+          <div className={`${styles.textImageWrapper} ${imageAlignClass}`}>
+            <Image
+              src={normalizeImageUrl(page.image)}
+              alt={page.title}
+              width={imageSize.width}
+              height={imageSize.height}
+              className={styles.textImage}
+              style={{
+                maxWidth: page.image_size === 'full' ? '100%' : `${imageSize.width}px`,
+                width: page.image_size === 'full' ? '100%' : 'auto',
+                height: 'auto'
+              }}
+            />
+          </div>
+        )}
         {page.description && (
           <div
             className={styles.textContent}

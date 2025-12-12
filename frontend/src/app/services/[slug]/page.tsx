@@ -16,6 +16,8 @@ interface Service {
   price_with_abonement?: number;
   duration: string;
   image?: string;
+  image_align?: 'left' | 'right' | 'center' | 'full';
+  image_size?: 'small' | 'medium' | 'large' | 'full';
   has_own_page?: boolean;
   url?: string | null;
   show_booking_button?: boolean;
@@ -57,23 +59,75 @@ export default async function ServicePage({ params }: { params: { slug: string }
             {service.title}
           </h1>
           
-          {service.image && (
-            <div style={{ 
-              width: '100%', 
-              maxWidth: '800px', 
-              margin: '0 auto 2rem',
-              borderRadius: '12px',
-              overflow: 'hidden'
-            }}>
-              <Image
-                src={normalizeImageUrl(service.image)}
-                alt={service.title}
-                width={800}
-                height={600}
-                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
-              />
-            </div>
-          )}
+          {service.image && (() => {
+            const getImageSize = (size?: string) => {
+              switch (size) {
+                case 'small': return { width: 200, height: 150 }
+                case 'medium': return { width: 400, height: 300 }
+                case 'large': return { width: 600, height: 450 }
+                case 'full': return { width: 1200, height: 600 }
+                default: return { width: 400, height: 300 }
+              }
+            }
+
+            const getImageStyle = (align?: string, size?: string) => {
+              const imageSize = getImageSize(size)
+              const baseStyle: React.CSSProperties = {
+                borderRadius: '12px',
+                overflow: 'hidden',
+                marginBottom: '2rem'
+              }
+
+              if (size === 'full') {
+                return {
+                  ...baseStyle,
+                  width: '100%',
+                  margin: '0 auto 2rem'
+                }
+              }
+
+              switch (align) {
+                case 'left':
+                  return {
+                    ...baseStyle,
+                    maxWidth: `${imageSize.width}px`,
+                    float: 'left',
+                    marginRight: '2rem',
+                    marginBottom: '1rem'
+                  }
+                case 'right':
+                  return {
+                    ...baseStyle,
+                    maxWidth: `${imageSize.width}px`,
+                    float: 'right',
+                    marginLeft: '2rem',
+                    marginBottom: '1rem'
+                  }
+                case 'center':
+                default:
+                  return {
+                    ...baseStyle,
+                    maxWidth: `${imageSize.width}px`,
+                    margin: '0 auto 2rem'
+                  }
+              }
+            }
+
+            const imageSize = getImageSize(service.image_size)
+            const imageStyle = getImageStyle(service.image_align, service.image_size)
+
+            return (
+              <div style={imageStyle}>
+                <Image
+                  src={normalizeImageUrl(service.image)}
+                  alt={service.title}
+                  width={imageSize.width}
+                  height={imageSize.height}
+                  style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+                />
+              </div>
+            )
+          })()}
           
           <div style={{ 
             display: 'grid',

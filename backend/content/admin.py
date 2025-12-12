@@ -48,9 +48,15 @@ class ContentPageAdmin(admin.ModelAdmin):
     list_filter = ['page_type', 'is_active', 'created_at']
     search_fields = ['title', 'slug', 'description']
     prepopulated_fields = {'slug': ('title',)}
+    readonly_fields = ['image_preview']
+    
     fieldsets = (
         ('Основная информация', {
             'fields': ('title', 'slug', 'page_type', 'description')
+        }),
+        ('Изображение (для типа "Описание")', {
+            'fields': ('image', 'image_preview', 'image_align', 'image_size'),
+            'description': 'Настройки изображения для страниц типа "Описание". Изображение будет отображаться вместе с описанием.'
         }),
         ('Отображение', {
             'fields': ('show_title',),
@@ -60,6 +66,15 @@ class ContentPageAdmin(admin.ModelAdmin):
             'fields': ('is_active', 'order')
         }),
     )
+    
+    def image_preview(self, obj):
+        if obj and obj.image:
+            return format_html(
+                '<img src="{}" style="max-width: 200px; max-height: 200px; object-fit: contain;" />',
+                obj.image.url
+            )
+        return "Нет изображения"
+    image_preview.short_description = 'Превью изображения'
     
     def get_inlines(self, request, obj):
         """Показываем разные inline в зависимости от типа страницы"""
@@ -85,6 +100,10 @@ class CatalogItemAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Основная информация', {
             'fields': ('page', 'title', 'description', 'image', 'image_preview')
+        }),
+        ('Настройки изображения', {
+            'fields': ('image_align', 'image_size'),
+            'description': 'Настройте выравнивание и размер изображения для красивого размещения контента.'
         }),
         ('Размер и расположение', {
             'fields': ('width',),

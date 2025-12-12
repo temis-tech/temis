@@ -180,17 +180,72 @@
 
 .imageWrapper {
   width: 100%;
-  height: 200px;
   overflow: hidden;
   border-radius: 8px;
   margin-bottom: 1rem;
   position: relative;
 }
 
+.imageWrapper.imageCenter {
+  margin: 0 auto 1rem;
+  text-align: center;
+}
+
+.imageWrapper.imageLeft {
+  float: left;
+  margin-right: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.imageWrapper.imageRight {
+  float: right;
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.imageWrapper.imageFull {
+  width: 100%;
+  margin: 0 auto 1rem;
+}
+
 .image {
   width: 100%;
-  height: 100%;
+  height: auto;
   object-fit: cover;
+  border-radius: 8px;
+}
+
+.textImageWrapper {
+  margin-bottom: 2rem;
+}
+
+.textImageWrapper.imageCenter {
+  text-align: center;
+  margin: 0 auto 2rem;
+}
+
+.textImageWrapper.imageLeft {
+  float: left;
+  margin-right: 2rem;
+  margin-bottom: 1rem;
+}
+
+.textImageWrapper.imageRight {
+  float: right;
+  margin-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+.textImageWrapper.imageFull {
+  width: 100%;
+  margin: 0 auto 2rem;
+}
+
+.textImage {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 12px;
 }
 
 .itemTitle {

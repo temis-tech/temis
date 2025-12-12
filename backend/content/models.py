@@ -70,6 +70,27 @@ class Service(models.Model):
                                                 validators=[MinValueValidator(0)], blank=True, null=True)
     duration = models.CharField('Длительность', max_length=50, default='45 минут')
     image = models.ImageField('Изображение', upload_to='services/', blank=True, null=True)
+    
+    # Настройки изображения
+    IMAGE_ALIGN_CHOICES = [
+        ('left', 'Слева'),
+        ('right', 'Справа'),
+        ('center', 'По центру'),
+        ('full', 'На всю ширину'),
+    ]
+    
+    IMAGE_SIZE_CHOICES = [
+        ('small', 'Маленькое (200px)'),
+        ('medium', 'Среднее (400px)'),
+        ('large', 'Большое (600px)'),
+        ('full', 'На всю ширину'),
+    ]
+    
+    image_align = models.CharField('Выравнивание изображения', max_length=10, choices=IMAGE_ALIGN_CHOICES, default='center',
+                                   help_text='Как изображение выравнивается относительно текста')
+    image_size = models.CharField('Размер изображения', max_length=10, choices=IMAGE_SIZE_CHOICES, default='medium',
+                                 help_text='Размер изображения')
+    
     has_own_page = models.BooleanField('Может быть открыта как страница', default=False,
                                       help_text='Если включено, услуга будет иметь свой URL и может быть открыта как отдельная страница')
     show_booking_button = models.BooleanField('Показывать кнопку "Записаться"', default=True,
@@ -283,6 +304,29 @@ class ContentPage(models.Model):
     page_type = models.CharField('Тип страницы', max_length=20, choices=PAGE_TYPES, default='catalog')
     description = RichTextField('Описание', blank=True, 
                                   help_text='Описание страницы с поддержкой форматирования')
+    image = models.ImageField('Изображение', upload_to='content/', blank=True, null=True,
+                             help_text='Главное изображение страницы (используется для типа "Описание")')
+    
+    # Настройки изображения (для типа "Описание")
+    IMAGE_ALIGN_CHOICES = [
+        ('left', 'Слева'),
+        ('right', 'Справа'),
+        ('center', 'По центру'),
+        ('full', 'На всю ширину'),
+    ]
+    
+    IMAGE_SIZE_CHOICES = [
+        ('small', 'Маленькое (200px)'),
+        ('medium', 'Среднее (400px)'),
+        ('large', 'Большое (600px)'),
+        ('full', 'На всю ширину'),
+    ]
+    
+    image_align = models.CharField('Выравнивание изображения', max_length=10, choices=IMAGE_ALIGN_CHOICES, default='center',
+                                   help_text='Как изображение выравнивается относительно текста (для типа "Описание")')
+    image_size = models.CharField('Размер изображения', max_length=10, choices=IMAGE_SIZE_CHOICES, default='medium',
+                                 help_text='Размер изображения (для типа "Описание")')
+    
     show_title = models.BooleanField('Показывать заголовок на странице', default=True,
                                      help_text='Если отключено, заголовок страницы не будет отображаться на сайте')
     is_active = models.BooleanField('Активна', default=True)
@@ -330,6 +374,27 @@ class CatalogItem(models.Model):
                            help_text='Автоматически генерируется из названия, если не указан. Используется для создания страницы элемента.')
     description = RichTextField('Описание', blank=True)
     image = models.ImageField('Изображение', upload_to='catalog/', blank=True, null=True)
+    
+    # Настройки изображения
+    IMAGE_ALIGN_CHOICES = [
+        ('left', 'Слева'),
+        ('right', 'Справа'),
+        ('center', 'По центру'),
+        ('full', 'На всю ширину'),
+    ]
+    
+    IMAGE_SIZE_CHOICES = [
+        ('small', 'Маленькое (200px)'),
+        ('medium', 'Среднее (400px)'),
+        ('large', 'Большое (600px)'),
+        ('full', 'На всю ширину'),
+    ]
+    
+    image_align = models.CharField('Выравнивание изображения', max_length=10, choices=IMAGE_ALIGN_CHOICES, default='center',
+                                   help_text='Как изображение выравнивается относительно текста')
+    image_size = models.CharField('Размер изображения', max_length=10, choices=IMAGE_SIZE_CHOICES, default='medium',
+                                 help_text='Размер изображения')
+    
     has_own_page = models.BooleanField('Может быть открыт как страница', default=False,
                                       help_text='Если включено, карточка будет иметь свой URL и может быть открыта как отдельная страница')
     width = models.CharField('Ширина элемента', max_length=10, choices=WIDTH_CHOICES, default='medium',
