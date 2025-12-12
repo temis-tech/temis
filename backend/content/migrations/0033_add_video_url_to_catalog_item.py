@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('content', '0031_add_card_image_to_catalog_item'),
+        ('content', '0032_add_card_image_to_catalog_item'),
     ]
 
     operations = [

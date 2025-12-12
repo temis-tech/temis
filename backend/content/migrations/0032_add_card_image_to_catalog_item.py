@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('content', '0030_update_privacy_policy_to_policies'),
+        ('content', '0031_alter_herosettings_button_quiz_and_more'),
     ]
 
     operations = [
