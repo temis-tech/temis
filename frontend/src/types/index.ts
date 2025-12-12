@@ -134,6 +134,8 @@ export interface ContentPage {
   image?: string;
   image_align?: 'left' | 'right' | 'center' | 'full';
   image_size?: 'small' | 'medium' | 'large' | 'full';
+  gallery_display_type?: 'grid' | 'carousel' | 'masonry';  // Вид отображения галереи
+  gallery_enable_fullscreen?: boolean;  // Открывать изображения на весь экран
   show_title?: boolean;
   is_active: boolean;
   catalog_items?: CatalogItem[];

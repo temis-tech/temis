@@ -60,6 +60,10 @@ class ContentPageAdmin(admin.ModelAdmin):
             'fields': ('image', 'image_preview', 'image_align', 'image_size'),
             'description': 'Настройки изображения для страниц типа "Описание". Изображение будет отображаться вместе с описанием.'
         }),
+        ('Настройки галереи (для типа "Галерея")', {
+            'fields': ('gallery_display_type', 'gallery_enable_fullscreen'),
+            'description': 'Настройки отображения галереи. Выберите вид отображения (плитка, карусель, кирпичная кладка) и возможность открытия изображений на весь экран.'
+        }),
         ('Отображение', {
             'fields': ('show_title',),
             'description': 'Настройки отображения страницы на сайте'

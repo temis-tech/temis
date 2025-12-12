@@ -327,6 +327,18 @@ class ContentPage(models.Model):
     image_size = models.CharField('Размер изображения', max_length=10, choices=IMAGE_SIZE_CHOICES, default='medium',
                                  help_text='Размер изображения (для типа "Описание")')
     
+    # Настройки галереи (для типа "Галерея")
+    GALLERY_DISPLAY_CHOICES = [
+        ('grid', 'Плитка (сетка)'),
+        ('carousel', 'Карусель'),
+        ('masonry', 'Кирпичная кладка'),
+    ]
+    
+    gallery_display_type = models.CharField('Вид отображения галереи', max_length=20, choices=GALLERY_DISPLAY_CHOICES, default='grid',
+                                           help_text='Выберите способ отображения изображений галереи (только для типа "Галерея")')
+    gallery_enable_fullscreen = models.BooleanField('Открывать изображения на весь экран', default=True,
+                                                    help_text='Если включено, при клике на изображение оно откроется в полноэкранном режиме с возможностью перелистывания (только для типа "Галерея")')
+    
     show_title = models.BooleanField('Показывать заголовок на странице', default=True,
                                      help_text='Если отключено, заголовок страницы не будет отображаться на сайте')
     is_active = models.BooleanField('Активна', default=True)

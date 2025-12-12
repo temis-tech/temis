@@ -481,7 +481,8 @@ class ContentPageSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ContentPage
-        fields = ['id', 'title', 'slug', 'page_type', 'description', 'image', 'image_align', 'image_size', 'show_title', 'is_active', 'catalog_items',
+        fields = ['id', 'title', 'slug', 'page_type', 'description', 'image', 'image_align', 'image_size', 
+                 'gallery_display_type', 'gallery_enable_fullscreen', 'show_title', 'is_active', 'catalog_items',
                  'gallery_images', 'home_blocks']
     
     def get_image(self, obj):

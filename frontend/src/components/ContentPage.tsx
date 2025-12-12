@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import BookingForm from './BookingForm'
+import Gallery from './Gallery'
 import styles from './ContentPage.module.css'
 
 interface ContentPageProps {
@@ -238,11 +239,17 @@ export default function ContentPage({ page }: ContentPageProps) {
         {page.description && (
           <div
             className={styles.description}
-            dangerouslySetInnerHTML={{ __html: page.description }}
+            dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(page.description) }}
           />
         )}
         {renderCatalog()}
-        {renderGallery()}
+        {page.gallery_images && page.gallery_images.length > 0 && (
+          <Gallery
+            images={page.gallery_images}
+            displayType={page.gallery_display_type || 'grid'}
+            enableFullscreen={page.gallery_enable_fullscreen !== false}
+          />
+        )}
         {renderBookingForm()}
       </div>
     )
