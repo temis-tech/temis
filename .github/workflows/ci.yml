@@ -139,6 +139,8 @@ jobs:
           
           echo "📦 Устанавливаю зависимости фронтенда..."
           cd "${SITE_PATH}/frontend"
+          # Удаляем старый node_modules чтобы избежать конфликтов
+          sudo rm -rf node_modules package-lock.json
           sudo -u www-data npm install --omit=dev || sudo -u www-data npm install
           
           echo "📦 Устанавливаю зависимости бэкенда..."
