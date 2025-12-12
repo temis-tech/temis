@@ -27,6 +27,7 @@ class CustomAdminSite(admin.AdminSite):
                 'headersettings',
                 'menu',
                 'menuitem',
+                'contact',
                 'footersettings',
                 'socialnetwork'
             ]
