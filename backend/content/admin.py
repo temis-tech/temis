@@ -90,46 +90,54 @@ class ContentPageAdmin(admin.ModelAdmin):
 
 @admin.register(CatalogItem)
 class CatalogItemAdmin(admin.ModelAdmin):
-    list_display = ['title', 'page', 'width', 'has_own_page', 'slug', 'button_type', 'order', 'is_active', 'image_preview']
+    list_display = ['title', 'page', 'width', 'has_own_page', 'slug', 'button_type', 'order', 'is_active', 'card_image_preview']
     list_editable = ['order', 'is_active', 'has_own_page', 'width']
     list_filter = ['page', 'has_own_page', 'button_type', 'is_active', 'width']
     search_fields = ['title', 'description', 'slug']
-    readonly_fields = ['image_preview']
+    readonly_fields = ['card_image_preview', 'page_image_preview']
     prepopulated_fields = {'slug': ('title',)}
     
     fieldsets = (
         ('Основная информация', {
-            'fields': ('page', 'title', 'description', 'image', 'image_preview')
+            'fields': ('page', 'title')
         }),
-        ('Настройки изображения', {
-            'fields': ('image_align', 'image_size'),
-            'description': 'Настройте выравнивание и размер изображения для красивого размещения контента.'
-        }),
-        ('Размер и расположение', {
-            'fields': ('width',),
-            'description': 'Ширина элемента в сетке каталога. Узкая - 1/3 ширины, Средняя - 1/2, Широкая - 2/3, На всю ширину - 100%.'
+        ('Карточка (превью в списке)', {
+            'fields': ('card_image', 'card_image_preview', 'width', 'button_type', 'button_text', 'button_booking_form', 'button_quiz', 'button_url'),
+            'description': 'Настройки отображения карточки элемента в списке каталога. Изображение, ширина карточки и настройки кнопки.'
         }),
         ('Страница элемента', {
-            'fields': ('has_own_page', 'slug'),
-            'description': 'Включите "Может быть открыт как страница", чтобы карточка имела свой URL и могла быть открыта как отдельная страница. URL будет автоматически сгенерирован из названия.'
-        }),
-        ('Кнопка', {
-            'fields': ('button_type', 'button_text', 'button_booking_form', 'button_quiz', 'button_url'),
-            'description': 'Настройте тип кнопки и соответствующие параметры. Для типа "Форма записи" выберите форму из списка. Для типа "Анкета" выберите анкету. Для типа "Внешняя ссылка" укажите URL.'
+            'fields': ('has_own_page', 'slug', 'description', 'image', 'page_image_preview', 'image_align', 'image_size'),
+            'description': 'Настройки страницы элемента (отображается при открытии карточки, если включен режим "Может быть открыт как страница"). Здесь можно задать полное описание, изображение и его параметры отображения.'
         }),
         ('Настройки', {
             'fields': ('order', 'is_active')
         }),
     )
     
-    def image_preview(self, obj):
-        if obj and obj.image:
+    def card_image_preview(self, obj):
+        """Превью изображения карточки"""
+        if obj and obj.card_image:
             return format_html(
                 '<img src="{}" style="max-width: 100px; max-height: 100px; object-fit: contain;" />',
+                obj.card_image.url
+            )
+        elif obj and obj.image:
+            return format_html(
+                '<img src="{}" style="max-width: 100px; max-height: 100px; object-fit: contain; opacity: 0.5;" title="Используется изображение страницы" />',
                 obj.image.url
             )
         return "Нет изображения"
-    image_preview.short_description = 'Превью'
+    card_image_preview.short_description = 'Превью карточки'
+    
+    def page_image_preview(self, obj):
+        """Превью изображения страницы"""
+        if obj and obj.image:
+            return format_html(
+                '<img src="{}" style="max-width: 200px; max-height: 200px; object-fit: contain;" />',
+                obj.image.url
+            )
+        return "Нет изображения"
+    page_image_preview.short_description = 'Превью страницы'
 
 
 @admin.register(GalleryImage)

@@ -341,6 +341,7 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
 
 
 class CatalogItemSerializer(serializers.ModelSerializer):
+    card_image = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
     button_booking_form_id = serializers.SerializerMethodField()
     button_quiz_slug = serializers.SerializerMethodField()
@@ -348,11 +349,18 @@ class CatalogItemSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = CatalogItem
-        fields = ['id', 'title', 'description', 'image', 'image_align', 'image_size', 'has_own_page', 'slug', 'url', 'width',
+        fields = ['id', 'title', 'description', 'card_image', 'image', 'image_align', 'image_size', 'has_own_page', 'slug', 'url', 'width',
                  'button_type', 'button_text', 'button_booking_form_id', 'button_quiz_slug', 
                  'button_url', 'order']
     
+    def get_card_image(self, obj):
+        """Возвращает изображение для карточки (превью)"""
+        # Если есть card_image, используем его, иначе используем image
+        image_field = obj.card_image if obj.card_image else obj.image
+        return get_image_url(image_field, self.context.get('request'))
+    
     def get_image(self, obj):
+        """Возвращает изображение для страницы"""
         return get_image_url(obj.image, self.context.get('request'))
     
     def get_button_booking_form_id(self, obj):

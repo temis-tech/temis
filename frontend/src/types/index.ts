@@ -81,7 +81,8 @@ export interface CatalogItem {
   id: number;
   title: string;
   description: string;
-  image?: string;
+  card_image?: string;  // Изображение для карточки (превью)
+  image?: string;  // Изображение для страницы
   image_align?: 'left' | 'right' | 'center' | 'full';
   image_size?: 'small' | 'medium' | 'large' | 'full';
   has_own_page?: boolean;

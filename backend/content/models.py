@@ -373,7 +373,14 @@ class CatalogItem(models.Model):
     slug = models.SlugField('URL', unique=True, blank=True,
                            help_text='Автоматически генерируется из названия, если не указан. Используется для создания страницы элемента.')
     description = RichTextField('Описание', blank=True)
-    image = models.ImageField('Изображение', upload_to='catalog/', blank=True, null=True)
+    
+    # Изображение для карточки (превью в списке)
+    card_image = models.ImageField('Изображение для карточки', upload_to='catalog/cards/', blank=True, null=True,
+                                   help_text='Изображение, которое будет отображаться в карточке элемента в списке каталога')
+    
+    # Изображение для страницы
+    image = models.ImageField('Изображение для страницы', upload_to='catalog/', blank=True, null=True,
+                             help_text='Изображение, которое будет отображаться на странице элемента (если включен режим "Может быть открыт как страница")')
     
     # Настройки изображения
     IMAGE_ALIGN_CHOICES = [

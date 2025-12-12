@@ -116,12 +116,15 @@ export default function ContentPage({ page }: ContentPageProps) {
           const imageSize = getImageSize(item.image_size)
           const imageAlignClass = getImageAlignClass(item.image_align)
           
+          // Используем card_image для карточки, если есть, иначе image
+          const cardImage = item.card_image || item.image;
+          
           const cardContent = (
             <div className={`${styles.catalogItem} ${widthClass}`}>
-              {item.image && (
+              {cardImage && (
                 <div className={`${styles.imageWrapper} ${imageAlignClass}`}>
                   <Image
-                    src={normalizeImageUrl(item.image)}
+                    src={normalizeImageUrl(cardImage)}
                     alt={item.title}
                     width={imageSize.width}
                     height={imageSize.height}
