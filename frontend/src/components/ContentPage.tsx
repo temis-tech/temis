@@ -313,7 +313,7 @@ export default function ContentPage({ page }: ContentPageProps) {
               )}
 
               {contentPage.page_type === 'text' && contentPage.description && (
-                <div className={styles.textContent} dangerouslySetInnerHTML={{ __html: contentPage.description }} />
+                <div className={styles.textContent} dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(contentPage.description) }} />
               )}
             </div>
           )
@@ -368,7 +368,7 @@ export default function ContentPage({ page }: ContentPageProps) {
         {page.description && (
           <div
             className={styles.textContent}
-            dangerouslySetInnerHTML={{ __html: page.description }}
+            dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(page.description) }}
           />
         )}
         {renderCatalog()}

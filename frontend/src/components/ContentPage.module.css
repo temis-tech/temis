@@ -74,6 +74,26 @@
   margin: 1rem 0;
 }
 
+/* Стили для видео контейнеров (iframe) - гарантируем правильное встраивание в поток */
+.description :global(div[style*="position: relative"][style*="padding-bottom"]) {
+  display: block !important;
+  clear: both !important;
+  position: relative !important;
+  margin: 1rem 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.description :global(div[style*="position: relative"][style*="padding-bottom"] iframe) {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  z-index: 1 !important;
+}
+
 .description :global(table) {
   width: 100%;
   border-collapse: collapse;
@@ -117,6 +137,26 @@
 
 .itemDescription :global(a:hover) {
   color: #ff9500;
+}
+
+/* Стили для видео контейнеров в карточках каталога */
+.itemDescription :global(div[style*="position: relative"][style*="padding-bottom"]) {
+  display: block !important;
+  clear: both !important;
+  position: relative !important;
+  margin: 1rem 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.itemDescription :global(div[style*="position: relative"][style*="padding-bottom"] iframe) {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  z-index: 1 !important;
 }
 
 /* Catalog Styles */
@@ -353,6 +393,26 @@
 
 .imageDescription :global(a:hover) {
   color: #ff9500;
+}
+
+/* Стили для видео контейнеров в описаниях галереи */
+.imageDescription :global(div[style*="position: relative"][style*="padding-bottom"]) {
+  display: block !important;
+  clear: both !important;
+  position: relative !important;
+  margin: 1rem 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.imageDescription :global(div[style*="position: relative"][style*="padding-bottom"] iframe) {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  z-index: 1 !important;
 }
 
 /* Home Page Blocks */
