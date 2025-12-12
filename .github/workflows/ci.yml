@@ -134,6 +134,9 @@ jobs:
           sudo chown -R www-data:www-data "${SITE_PATH}"
           sudo chmod -R 755 "${SITE_PATH}"
           
+          echo "🔧 Исправляю npm кэш..."
+          sudo chown -R www-data:www-data /var/www/.npm 2>/dev/null || sudo rm -rf /var/www/.npm
+          
           echo "📦 Устанавливаю зависимости фронтенда..."
           cd "${SITE_PATH}/frontend"
           sudo -u www-data npm install --omit=dev || sudo -u www-data npm install
