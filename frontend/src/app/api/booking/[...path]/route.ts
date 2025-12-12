@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // API routes работают на сервере и проксируют запросы к Django API
 // В продакшене должен быть установлен NEXT_PUBLIC_API_URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL 
+  || process.env.INTERNAL_API_URL 
+  || 'http://127.0.0.1:8001/api';
 
 export async function GET(
   request: NextRequest,

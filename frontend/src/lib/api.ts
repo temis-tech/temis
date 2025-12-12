@@ -7,8 +7,10 @@ const getApiBaseUrl = () => {
   // На сервере (SSR) всегда используем переменную окружения
   // Это предотвратит запросы к localhost
   if (typeof window === 'undefined') {
-    // На сервере обязательно нужна переменная окружения
-    return process.env.NEXT_PUBLIC_API_URL || '';
+    // Основной публичный адрес API, fallback на внутренний адрес (systemd backend слушает 127.0.0.1:8001)
+    return process.env.NEXT_PUBLIC_API_URL 
+      || process.env.INTERNAL_API_URL 
+      || 'http://127.0.0.1:8001/api';
   }
   
   // На клиенте используем относительный путь через API routes
