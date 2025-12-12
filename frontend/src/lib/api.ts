@@ -34,7 +34,8 @@ export const contentApi = {
   getHeaderSettings: () => api.get('/content/settings/header/'),
   getHeroSettings: () => api.get('/content/settings/hero/'),
   getFooterSettings: () => api.get('/content/settings/footer/'),
-  getPrivacyPolicy: () => api.get('/content/privacy-policy/'),
+  getPrivacyPolicies: () => api.get('/content/policies/'),
+  getPrivacyPolicyBySlug: (slug: string) => api.get(`/content/policies/by-slug/${slug}/`),
   getWelcomeBanners: () => api.get('/content/banners/'),
   // Бронирование
   getBookingForm: (id: number) => api.get(`/booking/forms/${id}/`),

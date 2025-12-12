@@ -322,9 +322,15 @@ class FooterSettingsSerializer(serializers.ModelSerializer):
 
 
 class PrivacyPolicySerializer(serializers.ModelSerializer):
+    url = serializers.SerializerMethodField()
+    
     class Meta:
         model = PrivacyPolicy
-        fields = ['title', 'content', 'is_published', 'updated_at']
+        fields = ['id', 'title', 'slug', 'content', 'order', 'is_published', 'is_active', 'url', 'created_at', 'updated_at']
+    
+    def get_url(self, obj):
+        """Возвращает URL страницы политики"""
+        return obj.get_absolute_url()
 
 
 class SiteSettingsSerializer(serializers.ModelSerializer):

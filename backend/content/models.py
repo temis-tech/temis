@@ -902,23 +902,32 @@ class FooterSettings(models.Model):
 
 
 class PrivacyPolicy(models.Model):
-    """Политика конфиденциальности"""
-    title = models.CharField('Заголовок', max_length=200, default='Политика конфиденциальности')
+    """Политика (конфиденциальности, авторских прав и т.д.)"""
+    title = models.CharField('Заголовок', max_length=200, 
+                            help_text='Например: Политика конфиденциальности, Защита авторских прав')
+    slug = models.SlugField('URL-адрес', max_length=200, unique=True,
+                           help_text='Используется в URL страницы (например: privacy, copyright)')
     content = models.TextField('Содержание')
+    order = models.IntegerField('Порядок', default=0,
+                               help_text='Порядок отображения в списке')
     is_published = models.BooleanField('Опубликована', default=True)
+    is_active = models.BooleanField('Активна', default=True)
+    created_at = models.DateTimeField('Создана', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлена', auto_now=True)
     
     class Meta:
-        verbose_name = 'Политика конфиденциальности'
-        verbose_name_plural = 'Политика конфиденциальности'
+        verbose_name = 'Политика'
+        verbose_name_plural = 'Политики'
+        ordering = ['order', 'title']
+        app_label = 'content'
 
     def __str__(self):
         return self.title
     
-    def save(self, *args, **kwargs):
-        # Разрешаем только одну запись
-        self.pk = 1
-        super().save(*args, **kwargs)
+    def get_absolute_url(self):
+        """Возвращает URL страницы политики"""
+        from django.urls import reverse
+        return reverse('content:policy-detail', kwargs={'slug': self.slug})
 
 
 class SiteSettings(models.Model):

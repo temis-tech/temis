@@ -514,19 +514,22 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 
 @admin.register(PrivacyPolicy)
 class PrivacyPolicyAdmin(admin.ModelAdmin):
-    list_display = ['title', 'is_published', 'updated_at']
-    list_editable = ['is_published']
+    list_display = ['title', 'slug', 'order', 'is_published', 'is_active', 'updated_at']
+    list_editable = ['order', 'is_published', 'is_active']
+    list_filter = ['is_published', 'is_active', 'created_at']
+    search_fields = ['title', 'slug', 'content']
+    prepopulated_fields = {'slug': ('title',)}
     fieldsets = (
+        ('Основная информация', {
+            'fields': ('title', 'slug', 'order')
+        }),
         ('Контент', {
-            'fields': ('title', 'content', 'is_published')
+            'fields': ('content',)
+        }),
+        ('Настройки', {
+            'fields': ('is_published', 'is_active')
         }),
     )
-    
-    def has_add_permission(self, request):
-        return not PrivacyPolicy.objects.exists()
-    
-    def has_delete_permission(self, request, obj=None):
-        return False
 
 
 # Группировка в админке
@@ -556,8 +559,10 @@ def custom_get_app_list(self, request):
                 category = 'Контент'
             elif model in [HeaderSettings, Menu, MenuItem, FooterSettings, SocialNetwork]:
                 category = 'Шапка и Подвал'
-            elif model in [HeroSettings, SiteSettings, PrivacyPolicy]:
+            elif model in [HeroSettings, SiteSettings]:
                 category = 'Настройки сайта'
+            elif model == PrivacyPolicy:
+                category = 'Политики'
             else:
                 category = 'Контент'
             

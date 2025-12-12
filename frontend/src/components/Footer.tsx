@@ -74,7 +74,7 @@ export default async function Footer() {
         </div>
         <div className={styles.copyright}>
           <p>{footerSettings?.copyright_text || '© 2024. Все права защищены'}</p>
-          <Link href="/privacy">Политика конфиденциальности</Link>
+          <Link href="/policies">Политики</Link>
         </div>
         {footerSettings?.additional_text && (
           <div className={styles.additionalText}>

@@ -59,13 +59,21 @@ class FooterSettingsView(APIView):
         return Response(serializer.data)
 
 
-class PrivacyPolicyView(APIView):
-    def get(self, request):
-        policy = PrivacyPolicy.objects.first()
-        if not policy:
-            policy = PrivacyPolicy.objects.create()
-        serializer = PrivacyPolicySerializer(policy)
-        return Response(serializer.data)
+class PrivacyPolicyViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet для политик (конфиденциальности, авторских прав и т.д.)"""
+    queryset = PrivacyPolicy.objects.filter(is_active=True, is_published=True).order_by('order', 'title')
+    serializer_class = PrivacyPolicySerializer
+    lookup_field = 'slug'
+    
+    @action(detail=False, methods=['get'], url_path='by-slug/(?P<slug>[^/.]+)')
+    def by_slug(self, request, slug=None):
+        """Получить политику по slug"""
+        try:
+            policy = self.queryset.get(slug=slug)
+            serializer = self.get_serializer(policy)
+            return Response(serializer.data)
+        except PrivacyPolicy.DoesNotExist:
+            return Response({'error': 'Политика не найдена'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class SiteSettingsView(APIView):
