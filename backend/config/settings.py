@@ -115,12 +115,17 @@ CKEDITOR_CONFIGS = {
             ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
             ['Link', 'Unlink'],
             ['RemoveFormat', 'Source'],
-            ['Image', 'Table', 'HorizontalRule'],
+            ['Image', 'Table', 'HorizontalRule', 'VideoEmbed'],
             ['Styles', 'Format', 'Font', 'FontSize'],
             ['TextColor', 'BGColor'],
         ],
         'toolbar': 'Custom',
         'language': 'ru',
+        # Разрешаем iframe и div для вставки видео
+        'allowedContent': True,
+        'extraPlugins': 'videoembed',
+        # Настройки для iframe
+        'extraAllowedContent': 'div[style];iframe[src,style,allowfullscreen,allow,frameborder]',
     },
 }
 
