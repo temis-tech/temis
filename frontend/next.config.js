@@ -3,7 +3,7 @@ const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
   images: {
-    domains: ['api.rainbow-say.estenomada.es', 'api.logoped-spb.pro'],
+    domains: ['api.rainbow-say.estenomada.es', 'api.dev.logoped-spb.pro'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -12,7 +12,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'api.logoped-spb.pro',
+        hostname: 'api.dev.logoped-spb.pro',
         pathname: '/media/**',
       },
     ],

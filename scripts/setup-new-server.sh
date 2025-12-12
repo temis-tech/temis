@@ -12,9 +12,8 @@ SERVER_PASS="c4icpNV7KDbAZPXi"
 
 # Конфигурация
 SITE_NAME="rainbow-say"
-SITE_DOMAIN="logoped-spb.pro"
-SITE_DOMAIN_ALT="logoped-spb.fvds.ru"
-API_DOMAIN="api.logoped-spb.pro"
+SITE_DOMAIN="dev.logoped-spb.pro"
+API_DOMAIN="api.dev.logoped-spb.pro"
 SITE_PATH="/var/www/rainbow-say"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
@@ -62,9 +61,8 @@ REMOTE_SCRIPT=$(cat << 'REMOTE_SCRIPT_EOF'
 set -e
 
 SITE_NAME="rainbow-say"
-SITE_DOMAIN="logoped-spb.pro"
-SITE_DOMAIN_ALT="logoped-spb.fvds.ru"
-API_DOMAIN="api.logoped-spb.pro"
+SITE_DOMAIN="dev.logoped-spb.pro"
+API_DOMAIN="api.dev.logoped-spb.pro"
 SITE_PATH="/var/www/rainbow-say"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
@@ -116,7 +114,7 @@ if [ ! -f "${SITE_PATH}/backend/.env" ]; then
     cat > "${SITE_PATH}/backend/.env" << EOF
 SECRET_KEY=${SECRET_KEY}
 DEBUG=False
-ALLOWED_HOSTS=${SITE_DOMAIN},${SITE_DOMAIN_ALT},${API_DOMAIN},www.${SITE_DOMAIN}
+ALLOWED_HOSTS=${SITE_DOMAIN},${API_DOMAIN}
 DATABASE_URL=postgresql://${DB_USER}:${DB_PASS}@localhost/${DB_NAME}
 EOF
     chown www-data:www-data "${SITE_PATH}/backend/.env"
@@ -187,7 +185,7 @@ cat > /etc/nginx/sites-available/${SITE_NAME} << NGINX_EOF
 server {
     listen 80;
     listen [::]:80;
-    server_name ${SITE_DOMAIN} www.${SITE_DOMAIN} ${SITE_DOMAIN_ALT};
+    server_name ${SITE_DOMAIN};
     return 301 https://\$host\$request_uri;
 }
 
@@ -203,7 +201,7 @@ server {
 server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
-    server_name ${SITE_DOMAIN} www.${SITE_DOMAIN} ${SITE_DOMAIN_ALT};
+    server_name ${SITE_DOMAIN};
 
     # SSL сертификаты (будут настроены через certbot)
     ssl_certificate /etc/letsencrypt/live/${SITE_DOMAIN}/fullchain.pem;
@@ -285,7 +283,7 @@ cat > /tmp/nginx-temp.conf << TEMP_NGINX_EOF
 server {
     listen 80;
     listen [::]:80;
-    server_name ${SITE_DOMAIN} www.${SITE_DOMAIN} ${SITE_DOMAIN_ALT};
+    server_name ${SITE_DOMAIN};
 
     location / {
         proxy_pass http://localhost:${FRONTEND_PORT};
@@ -330,7 +328,7 @@ echo -e "${GREEN}🔒 Получение SSL сертификатов...${NC}"
 echo -e "${YELLOW}⚠️  Убедись, что DNS записи настроены!${NC}"
 
 # Получаем SSL для основного домена
-certbot --nginx -d ${SITE_DOMAIN} -d www.${SITE_DOMAIN} -d ${SITE_DOMAIN_ALT} --non-interactive --agree-tos --email admin@${SITE_DOMAIN} --redirect || {
+certbot --nginx -d ${SITE_DOMAIN} --non-interactive --agree-tos --email admin@${SITE_DOMAIN} --redirect || {
     echo -e "${YELLOW}⚠️  SSL для ${SITE_DOMAIN} не получен. Выполни вручную после настройки DNS${NC}"
 }
 
@@ -347,7 +345,7 @@ if [ -f /etc/letsencrypt/live/${SITE_DOMAIN}/fullchain.pem ]; then
 server {
     listen 80;
     listen [::]:80;
-    server_name ${SITE_DOMAIN} www.${SITE_DOMAIN} ${SITE_DOMAIN_ALT};
+    server_name ${SITE_DOMAIN};
     return 301 https://\$host\$request_uri;
 }
 
@@ -362,7 +360,7 @@ server {
 server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
-    server_name ${SITE_DOMAIN} www.${SITE_DOMAIN} ${SITE_DOMAIN_ALT};
+    server_name ${SITE_DOMAIN};
 
     ssl_certificate /etc/letsencrypt/live/${SITE_DOMAIN}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/${SITE_DOMAIN}/privkey.pem;
@@ -451,7 +449,6 @@ systemctl status postgresql --no-pager -l | head -3 || echo "PostgreSQL не з�
 echo ""
 echo -e "${GREEN}🌐 Сайт будет доступен:${NC}"
 echo "  https://${SITE_DOMAIN}"
-echo "  https://${SITE_DOMAIN_ALT}"
 echo "  https://${API_DOMAIN}/api/"
 echo "  https://${API_DOMAIN}/admin/"
 REMOTE_SCRIPT_EOF

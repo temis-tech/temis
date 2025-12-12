@@ -15,7 +15,7 @@
 - Добавлен `dj-database-url` в requirements.txt
 - Обновлен `settings.py` для поддержки `DATABASE_URL`
 - Обновлены CORS и CSRF настройки для новых доменов
-- Обновлен `API_DOMAIN` на `api.logoped-spb.pro`
+- Обновлен `API_DOMAIN` на `api.dev.logoped-spb.pro`
 
 ### 3. ✅ CI/CD готов
 - Создан SSH ключ для деплоя (`~/.ssh/logoped_spb_deploy`)
@@ -36,10 +36,8 @@
 
 Настрой DNS записи для доменов:
 
-- `logoped-spb.pro` → `91.107.120.219`
-- `www.logoped-spb.pro` → `91.107.120.219`
-- `logoped-spb.fvds.ru` → `91.107.120.219`
-- `api.logoped-spb.pro` → `91.107.120.219`
+- `dev.logoped-spb.pro` → `91.107.120.219`
+- `api.dev.logoped-spb.pro` → `91.107.120.219`
 
 ### 3. 🔒 Получить SSL сертификаты
 
@@ -49,10 +47,10 @@
 ssh root@91.107.120.219
 
 # Для основного домена
-certbot --nginx -d logoped-spb.pro -d www.logoped-spb.pro -d logoped-spb.fvds.ru
+certbot --nginx -d dev.logoped-spb.pro
 
 # Для API
-certbot --nginx -d api.logoped-spb.pro
+certbot --nginx -d api.dev.logoped-spb.pro
 ```
 
 ### 4. 🚀 Первый деплой
@@ -89,9 +87,9 @@ systemctl status rainbow-say-backend
 
 После настройки DNS и получения SSL:
 
-- 🌐 Frontend: `https://logoped-spb.pro` или `https://logoped-spb.fvds.ru`
-- 🔧 API: `https://api.logoped-spb.pro/api/`
-- 👨‍💼 Admin: `https://api.logoped-spb.pro/admin/`
+- 🌐 Frontend: `https://dev.logoped-spb.pro`
+- 🔧 API: `https://api.dev.logoped-spb.pro/api/`
+- 👨‍💼 Admin: `https://api.dev.logoped-spb.pro/admin/`
 
 ## Полезные команды
 

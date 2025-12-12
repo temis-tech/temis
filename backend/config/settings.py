@@ -125,7 +125,7 @@ CKEDITOR_CONFIGS = {
 }
 
 # Домен API для замены localhost в URL изображений
-API_DOMAIN = config('API_DOMAIN', default='api.logoped-spb.pro')
+API_DOMAIN = config('API_DOMAIN', default='api.dev.logoped-spb.pro')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -142,10 +142,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "https://rainbow-say.estenomada.es",
     "http://rainbow-say.estenomada.es",
-    "https://logoped-spb.pro",
-    "http://logoped-spb.pro",
-    "https://logoped-spb.fvds.ru",
-    "http://logoped-spb.fvds.ru",
+    "https://dev.logoped-spb.pro",
+    "http://dev.logoped-spb.pro",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -154,9 +152,8 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "https://api.rainbow-say.estenomada.es",
     "https://rainbow-say.estenomada.es",
-    "https://api.logoped-spb.pro",
-    "https://logoped-spb.pro",
-    "https://logoped-spb.fvds.ru",
+    "https://api.dev.logoped-spb.pro",
+    "https://dev.logoped-spb.pro",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
 ]
