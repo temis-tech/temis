@@ -234,6 +234,15 @@ export default function ContentPage({ page }: ContentPageProps) {
   }
 
   if (page.page_type === 'gallery') {
+    // Отладочная информация (можно убрать после проверки)
+    console.log('Gallery page data:', {
+      page_type: page.page_type,
+      gallery_images: page.gallery_images,
+      gallery_images_length: page.gallery_images?.length,
+      gallery_display_type: page.gallery_display_type,
+      gallery_enable_fullscreen: page.gallery_enable_fullscreen
+    })
+
     return (
       <div className={styles.container}>
         {page.description && (
@@ -252,7 +261,9 @@ export default function ContentPage({ page }: ContentPageProps) {
           />
         ) : (
           <div style={{ padding: '2rem', textAlign: 'center', color: '#999' }}>
-            Нет изображений в галерее. Добавьте изображения в админке.
+            {page.gallery_images ? 
+              'Нет изображений в галерее. Добавьте изображения в админке.' :
+              'Галерея не загружена. Проверьте настройки страницы.'}
           </div>
         )}
         {renderBookingForm()}
