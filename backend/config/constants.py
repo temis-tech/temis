@@ -19,7 +19,15 @@ def get_api_domain():
 # Получить протокол (https/http) в зависимости от DEBUG
 def get_protocol():
     """Возвращает протокол (https или http) в зависимости от DEBUG"""
-    return 'https' if not getattr(settings, 'DEBUG', False) else 'http'
+    # Для продакшена всегда используем HTTPS
+    # Для локальной разработки можно использовать HTTP
+    if getattr(settings, 'DEBUG', False):
+        # Проверяем, не продакшен ли это (по домену)
+        api_domain = get_api_domain()
+        if 'dev.logoped-spb.pro' in api_domain or 'logoped-spb.pro' in api_domain:
+            return 'https'  # Даже на dev используем HTTPS
+        return 'http'  # Только для localhost
+    return 'https'  # Продакшен всегда HTTPS
 
 # Получить базовый URL API
 def get_api_base_url():

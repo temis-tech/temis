@@ -80,15 +80,8 @@ class ContentPageAdmin(admin.ModelAdmin):
     
     def get_inlines(self, request, obj):
         """Показываем inline формы в зависимости от типа страницы"""
-        inlines = []
-        
-        # Каталог можно добавить на любую страницу (показываем для существующих объектов)
-        if obj and obj.pk:
-            inlines.append(CatalogItemInline)
-        
-        # Галерею можно добавить на любую страницу (показываем для существующих объектов)
-        if obj and obj.pk:
-            inlines.append(GalleryImageInline)
+        # Базовые inline формы (каталог и галерея доступны на всех страницах)
+        inlines = list(self.inlines) if hasattr(self, 'inlines') else []
         
         # Блоки главной страницы только для типа 'home'
         if obj and obj.pk and obj.page_type == 'home':

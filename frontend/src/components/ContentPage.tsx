@@ -2,6 +2,7 @@
 
 import { ContentPage as ContentPageType } from '@/types'
 import { normalizeImageUrl } from '@/lib/utils'
+import { normalizeHtmlContent } from '@/lib/htmlUtils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -219,7 +220,7 @@ export default function ContentPage({ page }: ContentPageProps) {
           {page.description && (
             <div
               className={styles.description}
-              dangerouslySetInnerHTML={{ __html: page.description }}
+              dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(page.description) }}
             />
           )}
           {renderCatalog()}

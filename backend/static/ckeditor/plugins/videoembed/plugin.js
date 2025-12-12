@@ -22,12 +22,18 @@
                             
                             var aspectRatio = (parseInt(height) / parseInt(width)) * 100;
                             
+                            // Убеждаемся, что embedUrl использует HTTPS
+                            if (embedUrl.startsWith('http://')) {
+                                embedUrl = embedUrl.replace('http://', 'https://');
+                            }
+                            
                             var html = '<div style="position: relative; padding-bottom: ' + aspectRatio + '%; height: 0; overflow: hidden; max-width: 100%; margin: 1rem 0;">' +
                                       '<iframe src="' + embedUrl + '" ' +
                                       'style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" ' +
                                       'allowfullscreen ' +
                                       'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ' +
-                                      'frameborder="0"></iframe>' +
+                                      'frameborder="0" ' +
+                                      'loading="lazy"></iframe>' +
                                       '</div>';
                             
                             editor.insertHtml(html);

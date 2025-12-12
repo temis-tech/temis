@@ -1,5 +1,6 @@
 import { contentApi } from '@/lib/api';
 import { normalizeImageUrl } from '@/lib/utils';
+import { normalizeHtmlContent } from '@/lib/htmlUtils';
 import BookingForm from '@/components/BookingForm';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -68,7 +69,7 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
                 color: '#666',
                 marginBottom: '2rem'
               }}
-              dangerouslySetInnerHTML={{ __html: item.description }}
+              dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(item.description) }}
             />
           )}
           

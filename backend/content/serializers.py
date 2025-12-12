@@ -69,6 +69,10 @@ def get_image_url(image_field, request=None):
         
         # Если image_url уже абсолютный, исправляем домен
         if image_url.startswith('http://') or image_url.startswith('https://'):
+            # Всегда используем HTTPS для продакшена (исправляем HTTP на HTTPS)
+            if image_url.startswith('http://'):
+                image_url = image_url.replace('http://', 'https://', 1)
+            
             import re
             # Если URL уже содержит правильный API домен, возвращаем как есть
             if api_domain in image_url:
