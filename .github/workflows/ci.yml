@@ -130,9 +130,13 @@ jobs:
           cd /tmp
           sudo tar -xzf deploy.tar.gz -C "${SITE_PATH}"
           
+          echo "🔐 Устанавливаю права доступа..."
+          sudo chown -R www-data:www-data "${SITE_PATH}"
+          sudo chmod -R 755 "${SITE_PATH}"
+          
           echo "📦 Устанавливаю зависимости фронтенда..."
           cd "${SITE_PATH}/frontend"
-          sudo -u www-data npm install --production || sudo -u www-data npm install
+          sudo -u www-data npm install --omit=dev || sudo -u www-data npm install
           
           echo "📦 Устанавливаю зависимости бэкенда..."
           cd "${SITE_PATH}/backend"
@@ -144,6 +148,9 @@ jobs:
           
           sudo -u www-data ./venv/bin/pip install --upgrade pip
           sudo -u www-data ./venv/bin/pip install -r requirements.txt
+          
+          echo "🔐 Устанавливаю права для venv..."
+          sudo chown -R www-data:www-data "${SITE_PATH}/backend/venv"
           
           echo "🗄️  Выполняю миграции..."
           if [ -f "${SITE_PATH}/backend/.env" ]; then
