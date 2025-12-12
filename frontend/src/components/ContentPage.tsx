@@ -225,7 +225,14 @@ export default function ContentPage({ page }: ContentPageProps) {
             />
           )}
           {renderCatalog()}
-          {renderGallery()}
+          {/* Галерея для страницы типа 'catalog' */}
+          {page.gallery_images && page.gallery_images.length > 0 ? (
+            <Gallery
+              images={page.gallery_images}
+              displayType={page.gallery_display_type || 'grid'}
+              enableFullscreen={page.gallery_enable_fullscreen !== false}
+            />
+          ) : null}
         </div>
 
         {renderBookingForm()}
@@ -395,7 +402,14 @@ export default function ContentPage({ page }: ContentPageProps) {
           />
         )}
         {renderCatalog()}
-        {renderGallery()}
+        {/* Галерея для страницы типа 'text' */}
+        {page.gallery_images && page.gallery_images.length > 0 ? (
+          <Gallery
+            images={page.gallery_images}
+            displayType={page.gallery_display_type || 'grid'}
+            enableFullscreen={page.gallery_enable_fullscreen !== false}
+          />
+        ) : null}
         {renderBookingForm()}
       </div>
     )
