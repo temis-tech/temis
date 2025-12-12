@@ -77,15 +77,21 @@ class ContentPageAdmin(admin.ModelAdmin):
     image_preview.short_description = 'Превью изображения'
     
     def get_inlines(self, request, obj):
-        """Показываем разные inline в зависимости от типа страницы"""
+        """Показываем inline формы в зависимости от типа страницы"""
+        inlines = []
+        
         if obj and obj.pk:
-            if obj.page_type == 'catalog':
-                return [CatalogItemInline]
-            elif obj.page_type == 'gallery':
-                return [GalleryImageInline]
-            elif obj.page_type == 'home':
-                return [HomePageBlockInline]
-        return []
+            # Каталог можно добавить на любую страницу
+            inlines.append(CatalogItemInline)
+            
+            # Галерею можно добавить на любую страницу
+            inlines.append(GalleryImageInline)
+            
+            # Блоки главной страницы только для типа 'home'
+            if obj.page_type == 'home':
+                inlines.append(HomePageBlockInline)
+        
+        return inlines
 
 
 @admin.register(CatalogItem)
