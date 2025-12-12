@@ -351,7 +351,7 @@ class CatalogItemSerializer(serializers.ModelSerializer):
         model = CatalogItem
         fields = ['id', 'title', 'description', 'card_image', 'image', 'image_align', 'image_size', 'has_own_page', 'slug', 'url', 'width',
                  'button_type', 'button_text', 'button_booking_form_id', 'button_quiz_slug', 
-                 'button_url', 'order']
+                 'button_url', 'video_url', 'order']
     
     def get_card_image(self, obj):
         """Возвращает изображение для карточки (превью)"""

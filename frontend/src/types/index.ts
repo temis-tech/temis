@@ -88,6 +88,7 @@ export interface CatalogItem {
   has_own_page?: boolean;
   slug?: string;
   url?: string | null;
+  video_url?: string;  // URL видео (YouTube, Rutube и т.д.)
   button_type: 'booking' | 'quiz' | 'external' | 'none';
   button_text: string;
   button_booking_form_id?: number;
