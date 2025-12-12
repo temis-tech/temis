@@ -1,67 +1,38 @@
 /**
- * Утилиты для работы с видео с внешних видеохостингов
+ * Утилиты для работы с видео
  */
-
-export interface VideoEmbedInfo {
-  embedUrl: string;
-  provider: 'youtube' | 'rutube' | 'vimeo' | 'unknown';
-}
 
 /**
- * Конвертирует URL видео в embed URL для iframe
+ * Конвертирует URL видео в embed URL для YouTube, Rutube, Vimeo
  */
-export function getVideoEmbedUrl(videoUrl: string): VideoEmbedInfo | null {
-  if (!videoUrl) return null;
+export function convertVideoUrlToEmbed(url: string | null | undefined): string | null {
+  if (!url) return null
 
   // YouTube
-  // Поддерживаемые форматы:
-  // - https://www.youtube.com/watch?v=VIDEO_ID
-  // - https://youtu.be/VIDEO_ID
-  // - https://www.youtube.com/embed/VIDEO_ID
-  const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-  const youtubeMatch = videoUrl.match(youtubeRegex);
+  const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+  const youtubeMatch = url.match(youtubeRegex)
   if (youtubeMatch) {
-    return {
-      embedUrl: `https://www.youtube.com/embed/${youtubeMatch[1]}`,
-      provider: 'youtube',
-    };
+    return `https://www.youtube.com/embed/${youtubeMatch[1]}`
   }
 
   // Rutube
-  // Поддерживаемые форматы:
-  // - https://rutube.ru/video/VIDEO_ID/
-  // - https://rutube.ru/play/embed/VIDEO_ID
-  const rutubeRegex = /rutube\.ru\/(?:video|play\/embed)\/([a-zA-Z0-9_-]+)/;
-  const rutubeMatch = videoUrl.match(rutubeRegex);
+  const rutubeRegex = /rutube\.ru\/(?:video|play\/embed)\/([a-zA-Z0-9_-]+)/
+  const rutubeMatch = url.match(rutubeRegex)
   if (rutubeMatch) {
-    return {
-      embedUrl: `https://rutube.ru/play/embed/${rutubeMatch[1]}`,
-      provider: 'rutube',
-    };
+    return `https://rutube.ru/play/embed/${rutubeMatch[1]}`
   }
 
   // Vimeo
-  // Поддерживаемые форматы:
-  // - https://vimeo.com/VIDEO_ID
-  // - https://player.vimeo.com/video/VIDEO_ID
-  const vimeoRegex = /(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/;
-  const vimeoMatch = videoUrl.match(vimeoRegex);
+  const vimeoRegex = /(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/
+  const vimeoMatch = url.match(vimeoRegex)
   if (vimeoMatch) {
-    return {
-      embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}`,
-      provider: 'vimeo',
-    };
+    return `https://player.vimeo.com/video/${vimeoMatch[1]}`
   }
 
   // Если URL уже является embed URL, возвращаем как есть
-  if (videoUrl.includes('/embed/') || videoUrl.includes('/play/embed/')) {
-    return {
-      embedUrl: videoUrl,
-      provider: videoUrl.includes('youtube') ? 'youtube' : 
-                videoUrl.includes('rutube') ? 'rutube' : 
-                videoUrl.includes('vimeo') ? 'vimeo' : 'unknown',
-    };
+  if (url.includes('/embed/') || url.includes('/play/embed/')) {
+    return url
   }
 
-  return null;
+  return null
 }

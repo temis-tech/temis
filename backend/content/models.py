@@ -487,22 +487,35 @@ class CatalogItem(models.Model):
 
 
 class GalleryImage(models.Model):
-    """Изображение в галерее"""
+    """Изображение или видео в галерее"""
+    CONTENT_TYPE_CHOICES = [
+        ('image', 'Изображение'),
+        ('video', 'Видео'),
+    ]
+    
     page = models.ForeignKey(ContentPage, on_delete=models.CASCADE, related_name='gallery_images',
                             verbose_name='Страница', help_text='Галерею можно добавить на страницу любого типа')
-    image = models.ImageField('Изображение', upload_to='gallery/')
+    content_type = models.CharField('Тип контента', max_length=10, choices=CONTENT_TYPE_CHOICES, default='image',
+                                   help_text='Выберите тип контента: изображение или видео')
+    image = models.ImageField('Изображение', upload_to='gallery/', blank=True, null=True,
+                             help_text='Загрузите изображение (если тип контента - "Изображение")')
+    video_file = models.FileField('Видео файл', upload_to='gallery/videos/', blank=True, null=True,
+                                 help_text='Загрузите видео файл (если тип контента - "Видео" и хотите загрузить локально)')
+    video_url = models.URLField('URL видео', blank=True, null=True,
+                               help_text='Ссылка на видео с YouTube, Rutube, Vimeo или другого видеохостинга (если тип контента - "Видео")')
     description = RichTextField('Описание', blank=True)
     order = models.IntegerField('Порядок', default=0)
     is_active = models.BooleanField('Активна', default=True)
     created_at = models.DateTimeField('Создана', auto_now_add=True)
     
     class Meta:
-        verbose_name = 'Изображение галереи'
-        verbose_name_plural = 'Изображения галереи'
+        verbose_name = 'Элемент галереи'
+        verbose_name_plural = 'Элементы галереи'
         ordering = ['order', 'created_at']
     
     def __str__(self):
-        return f'Изображение #{self.id} - {self.page.title}'
+        content_type_display = self.get_content_type_display()
+        return f'{content_type_display} #{self.id} - {self.page.title}'
     
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)

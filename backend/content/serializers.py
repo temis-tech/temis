@@ -392,13 +392,52 @@ class CatalogItemSerializer(serializers.ModelSerializer):
 
 class GalleryImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    video_file = serializers.SerializerMethodField()
+    video_embed_url = serializers.SerializerMethodField()
     
     class Meta:
         model = GalleryImage
-        fields = ['id', 'image', 'description', 'order']
+        fields = ['id', 'content_type', 'image', 'video_file', 'video_url', 'video_embed_url', 'description', 'order']
     
     def get_image(self, obj):
-        return get_image_url(obj.image, self.context.get('request'))
+        if obj.content_type == 'image':
+            return get_image_url(obj.image, self.context.get('request'))
+        return None
+    
+    def get_video_file(self, obj):
+        if obj.content_type == 'video' and obj.video_file:
+            return get_image_url(obj.video_file, self.context.get('request'))
+        return None
+    
+    def get_video_embed_url(self, obj):
+        """Конвертирует URL видео в embed URL для YouTube, Rutube, Vimeo"""
+        if obj.content_type == 'video' and obj.video_url:
+            import re
+            url = obj.video_url
+            
+            # YouTube
+            youtube_regex = r'(?:youtube\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/\s]{11})'
+            youtube_match = re.search(youtube_regex, url)
+            if youtube_match:
+                return f'https://www.youtube.com/embed/{youtube_match.group(1)}'
+            
+            # Rutube
+            rutube_regex = r'rutube\.ru/(?:video|play/embed)/([a-zA-Z0-9_-]+)'
+            rutube_match = re.search(rutube_regex, url)
+            if rutube_match:
+                return f'https://rutube.ru/play/embed/{rutube_match.group(1)}'
+            
+            # Vimeo
+            vimeo_regex = r'(?:vimeo\.com/|player\.vimeo\.com/video/)(\d+)'
+            vimeo_match = re.search(vimeo_regex, url)
+            if vimeo_match:
+                return f'https://player.vimeo.com/video/{vimeo_match.group(1)}'
+            
+            # Если URL уже является embed URL, возвращаем как есть
+            if '/embed/' in url or '/play/embed/' in url:
+                return url
+            
+        return None
 
 
 class HomePageBlockSerializer(serializers.ModelSerializer):

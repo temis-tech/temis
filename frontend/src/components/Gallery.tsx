@@ -7,6 +7,91 @@ import { normalizeHtmlContent } from '@/lib/htmlUtils'
 import { GalleryImage } from '@/types'
 import styles from './Gallery.module.css'
 
+// Компонент для полноэкранного просмотра
+function FullscreenView({
+  items,
+  currentIndex,
+  onClose,
+  onPrevious,
+  onNext
+}: {
+  items: GalleryImage[]
+  currentIndex: number
+  onClose: () => void
+  onPrevious: (e: React.MouseEvent) => void
+  onNext: (e: React.MouseEvent) => void
+}) {
+  const item = items[currentIndex]
+  const isVideo = item.content_type === 'video'
+  const videoEmbedUrl = item.video_embed_url || (item.video_url ? null : null)
+  const videoFile = item.video_file
+
+  return (
+    <div className={styles.fullscreenOverlay} onClick={onClose}>
+      <button 
+        className={styles.fullscreenClose}
+        onClick={onClose}
+        aria-label="Закрыть"
+      >
+        ×
+      </button>
+      <button 
+        className={styles.fullscreenNav} 
+        onClick={onPrevious}
+        aria-label="Предыдущее"
+      >
+        ‹
+      </button>
+      <div className={styles.fullscreenContent} onClick={(e) => e.stopPropagation()}>
+        {isVideo ? (
+          videoEmbedUrl ? (
+            <div style={{ width: '100%', maxWidth: '90vw', aspectRatio: '16/9' }}>
+              <iframe
+                src={videoEmbedUrl}
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                allowFullScreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                frameBorder="0"
+              />
+            </div>
+          ) : videoFile ? (
+            <video
+              src={normalizeImageUrl(videoFile)}
+              controls
+              autoPlay
+              style={{ width: '100%', maxHeight: '90vh' }}
+            />
+          ) : null
+        ) : item.image ? (
+          <Image
+            src={normalizeImageUrl(item.image)}
+            alt={item.description || 'Изображение галереи'}
+            fill
+            style={{ objectFit: 'contain' }}
+            priority
+          />
+        ) : null}
+        {item.description && (
+          <div 
+            className={styles.fullscreenDescription}
+            dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(item.description) }}
+          />
+        )}
+      </div>
+      <button 
+        className={`${styles.fullscreenNav} ${styles.fullscreenNavRight}`}
+        onClick={onNext}
+        aria-label="Следующее"
+      >
+        ›
+      </button>
+      <div className={styles.fullscreenCounter}>
+        {currentIndex + 1} / {items.length}
+      </div>
+    </div>
+  )
+}
+
 interface GalleryProps {
   images: GalleryImage[]
   displayType?: 'grid' | 'carousel' | 'masonry'
@@ -96,12 +181,32 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                   onClick={() => handleImageClick(index)}
                   style={{ cursor: enableFullscreen ? 'pointer' : 'default' }}
                 >
-                  <Image
-                    src={normalizeImageUrl(image.image)}
-                    alt={image.description || 'Изображение галереи'}
-                    fill
-                    style={{ objectFit: 'contain' }}
-                  />
+                  {image.content_type === 'video' ? (
+                    image.video_embed_url ? (
+                      <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', width: '100%' }}>
+                        <iframe
+                          src={image.video_embed_url}
+                          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                          allowFullScreen
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          frameBorder="0"
+                        />
+                      </div>
+                    ) : image.video_file ? (
+                      <video
+                        src={normalizeImageUrl(image.video_file)}
+                        controls
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                      />
+                    ) : null
+                  ) : image.image ? (
+                    <Image
+                      src={normalizeImageUrl(image.image)}
+                      alt={image.description || 'Изображение галереи'}
+                      fill
+                      style={{ objectFit: 'contain' }}
+                    />
+                  ) : null}
                 </div>
                 {image.description && (
                   <div 
@@ -144,47 +249,13 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
 
         {/* Полноэкранный просмотр */}
         {currentImageIndex !== null && enableFullscreen && (
-          <div className={styles.fullscreenOverlay} onClick={handleCloseFullscreen}>
-            <button 
-              className={styles.fullscreenClose}
-              onClick={handleCloseFullscreen}
-              aria-label="Закрыть"
-            >
-              ×
-            </button>
-            <button 
-              className={styles.fullscreenNav} 
-              onClick={handlePrevious}
-              aria-label="Предыдущее изображение"
-            >
-              ‹
-            </button>
-            <div className={styles.fullscreenContent} onClick={(e) => e.stopPropagation()}>
-              <Image
-                src={normalizeImageUrl(images[currentImageIndex].image)}
-                alt={images[currentImageIndex].description || 'Изображение галереи'}
-                fill
-                style={{ objectFit: 'contain' }}
-                priority
-              />
-              {images[currentImageIndex].description && (
-                <div 
-                  className={styles.fullscreenDescription}
-                  dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(images[currentImageIndex].description) }}
-                />
-              )}
-            </div>
-            <button 
-              className={`${styles.fullscreenNav} ${styles.fullscreenNavRight}`}
-              onClick={handleNext}
-              aria-label="Следующее изображение"
-            >
-              ›
-            </button>
-            <div className={styles.fullscreenCounter}>
-              {currentImageIndex + 1} / {images.length}
-            </div>
-          </div>
+          <FullscreenView
+            items={images}
+            currentIndex={currentImageIndex}
+            onClose={handleCloseFullscreen}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+          />
         )}
       </>
     )
@@ -201,15 +272,35 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
               onClick={() => handleImageClick(index)}
               style={{ cursor: enableFullscreen ? 'pointer' : 'default' }}
             >
-              <div className={styles.masonryImageWrapper}>
-                <Image
-                  src={normalizeImageUrl(image.image)}
-                  alt={image.description || 'Изображение галереи'}
-                  width={400}
-                  height={300}
-                  style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
-                />
-              </div>
+              {image.content_type === 'video' ? (
+                image.video_embed_url ? (
+                  <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', width: '100%' }}>
+                    <iframe
+                      src={image.video_embed_url}
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                      allowFullScreen
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      frameBorder="0"
+                    />
+                  </div>
+                ) : image.video_file ? (
+                  <video
+                    src={normalizeImageUrl(image.video_file)}
+                    controls
+                    style={{ width: '100%', height: 'auto', maxHeight: '400px' }}
+                  />
+                ) : null
+              ) : image.image ? (
+                <div className={styles.masonryImageWrapper}>
+                  <Image
+                    src={normalizeImageUrl(image.image)}
+                    alt={image.description || 'Изображение галереи'}
+                    width={400}
+                    height={300}
+                    style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+                  />
+                </div>
+              ) : null}
               {image.description && (
                 <div 
                   className={styles.masonryDescription}
@@ -222,47 +313,13 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
 
         {/* Полноэкранный просмотр */}
         {currentImageIndex !== null && enableFullscreen && (
-          <div className={styles.fullscreenOverlay} onClick={handleCloseFullscreen}>
-            <button 
-              className={styles.fullscreenClose}
-              onClick={handleCloseFullscreen}
-              aria-label="Закрыть"
-            >
-              ×
-            </button>
-            <button 
-              className={styles.fullscreenNav} 
-              onClick={handlePrevious}
-              aria-label="Предыдущее изображение"
-            >
-              ‹
-            </button>
-            <div className={styles.fullscreenContent} onClick={(e) => e.stopPropagation()}>
-              <Image
-                src={normalizeImageUrl(images[currentImageIndex].image)}
-                alt={images[currentImageIndex].description || 'Изображение галереи'}
-                fill
-                style={{ objectFit: 'contain' }}
-                priority
-              />
-              {images[currentImageIndex].description && (
-                <div 
-                  className={styles.fullscreenDescription}
-                  dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(images[currentImageIndex].description) }}
-                />
-              )}
-            </div>
-            <button 
-              className={`${styles.fullscreenNav} ${styles.fullscreenNavRight}`}
-              onClick={handleNext}
-              aria-label="Следующее изображение"
-            >
-              ›
-            </button>
-            <div className={styles.fullscreenCounter}>
-              {currentImageIndex + 1} / {images.length}
-            </div>
-          </div>
+          <FullscreenView
+            items={images}
+            currentIndex={currentImageIndex}
+            onClose={handleCloseFullscreen}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+          />
         )}
       </>
     )
@@ -279,21 +336,65 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
             onClick={() => handleImageClick(index)}
             style={{ cursor: enableFullscreen ? 'pointer' : 'default' }}
           >
-            <div className={styles.gridImageWrapper}>
-              <Image
-                src={normalizeImageUrl(image.image)}
-                alt={image.description || 'Изображение галереи'}
-                width={600}
-                height={400}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </div>
-            {image.description && (
-              <div 
-                className={styles.gridDescription}
-                dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(image.description) }}
-              />
-            )}
+            {image.content_type === 'video' ? (
+              image.video_embed_url ? (
+                <div className={styles.videoWrapper}>
+                  <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', width: '100%' }}>
+                    <iframe
+                      src={image.video_embed_url}
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                      allowFullScreen
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      frameBorder="0"
+                    />
+                  </div>
+                  {image.description && (
+                    <div 
+                      className={styles.gridDescription}
+                      dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(image.description) }}
+                    />
+                  )}
+                </div>
+              ) : image.video_file ? (
+                <div className={styles.videoWrapper}>
+                  <video
+                    src={normalizeImageUrl(image.video_file)}
+                    controls
+                    style={{ width: '100%', height: 'auto', maxHeight: '400px' }}
+                    onClick={(e) => {
+                      if (enableFullscreen) {
+                        e.stopPropagation()
+                        handleImageClick(index)
+                      }
+                    }}
+                  />
+                  {image.description && (
+                    <div 
+                      className={styles.gridDescription}
+                      dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(image.description) }}
+                    />
+                  )}
+                </div>
+              ) : null
+            ) : image.image ? (
+              <>
+                <div className={styles.gridImageWrapper}>
+                  <Image
+                    src={normalizeImageUrl(image.image)}
+                    alt={image.description || 'Изображение галереи'}
+                    width={600}
+                    height={400}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+                {image.description && (
+                  <div 
+                    className={styles.gridDescription}
+                    dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(image.description) }}
+                  />
+                )}
+              </>
+            ) : null}
           </div>
         ))}
       </div>

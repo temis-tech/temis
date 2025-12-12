@@ -32,6 +32,14 @@
   font-size: 0.95rem;
 }
 
+/* Видео в галерее */
+.videoWrapper {
+  width: 100%;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
 /* Карусель */
 .carousel {
   position: relative;

@@ -103,7 +103,11 @@ export interface CatalogItem {
 
 export interface GalleryImage {
   id: number;
-  image: string;
+  content_type: 'image' | 'video';
+  image?: string | null;
+  video_file?: string | null;
+  video_url?: string | null;
+  video_embed_url?: string | null;
   description: string;
   order: number;
 }

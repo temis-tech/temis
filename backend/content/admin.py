@@ -28,7 +28,7 @@ class CatalogItemInline(admin.TabularInline):
 class GalleryImageInline(admin.TabularInline):
     model = GalleryImage
     extra = 1
-    fields = ['image', 'description', 'order', 'is_active']
+    fields = ['content_type', 'image', 'video_file', 'video_url', 'description', 'order', 'is_active']
     show_change_link = True
     fk_name = 'page'
 
@@ -148,28 +148,50 @@ class CatalogItemAdmin(admin.ModelAdmin):
 
 @admin.register(GalleryImage)
 class GalleryImageAdmin(admin.ModelAdmin):
-    list_display = ['page', 'order', 'is_active', 'image_preview', 'created_at']
+    list_display = ['page', 'content_type', 'order', 'is_active', 'content_preview', 'created_at']
     list_editable = ['order', 'is_active']
-    list_filter = ['page', 'is_active', 'created_at']
-    readonly_fields = ['image_preview']
+    list_filter = ['page', 'content_type', 'is_active', 'created_at']
+    readonly_fields = ['content_preview']
     
     fieldsets = (
         ('Основная информация', {
-            'fields': ('page', 'image', 'image_preview', 'description')
+            'fields': ('page', 'content_type', 'description')
+        }),
+        ('Изображение', {
+            'fields': ('image', 'content_preview'),
+            'description': 'Загрузите изображение, если тип контента - "Изображение"'
+        }),
+        ('Видео', {
+            'fields': ('video_file', 'video_url'),
+            'description': 'Загрузите видео файл или укажите URL видео с хостинга (YouTube, Rutube, Vimeo), если тип контента - "Видео"'
         }),
         ('Настройки', {
             'fields': ('order', 'is_active')
         }),
     )
     
-    def image_preview(self, obj):
-        if obj and obj.image:
+    def content_preview(self, obj):
+        if obj and obj.content_type == 'image' and obj.image:
             return format_html(
                 '<img src="{}" style="max-width: 200px; max-height: 200px; object-fit: contain;" />',
                 obj.image.url
             )
-        return "Нет изображения"
-    image_preview.short_description = 'Превью'
+        elif obj and obj.content_type == 'video':
+            if obj.video_file:
+                return format_html(
+                    '<video src="{}" style="max-width: 200px; max-height: 200px;" controls></video>',
+                    obj.video_file.url
+                )
+            elif obj.video_url:
+                return format_html(
+                    '<div style="max-width: 200px; padding: 10px; background: #f0f0f0; border-radius: 4px;">'
+                    '<strong>Видео URL:</strong><br/>'
+                    '<a href="{}" target="_blank">{}</a>'
+                    '</div>',
+                    obj.video_url, obj.video_url[:50] + '...' if len(obj.video_url) > 50 else obj.video_url
+                )
+        return "Нет контента"
+    content_preview.short_description = 'Превью'
 
 
 @admin.register(HomePageBlock)
