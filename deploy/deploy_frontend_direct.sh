@@ -6,11 +6,22 @@ set -e
 # Настройки
 SERVER_USER="${SERVER_USER:-root}"
 SERVER_HOST="${SERVER_HOST:-91.107.120.219}"
+SSH_KEY="${SSH_KEY:-$HOME/.ssh/logoped_spb_deploy}"
 SITE_PATH="/var/www/rainbow-say"
 SITE_NAME="rainbow-say"
 LOCK_FILE="/tmp/deploy-${SITE_NAME}.lock"
 MAX_WAIT=300
 WAIT_INTERVAL=10
+
+# Проверяем наличие SSH ключа
+if [ ! -f "${SSH_KEY}" ]; then
+  echo -e "${RED}❌ SSH ключ не найден: ${SSH_KEY}${NC}"
+  echo -e "${YELLOW}💡 Укажите путь к ключу через переменную SSH_KEY${NC}"
+  exit 1
+fi
+
+# Настройки SSH
+SSH_OPTS="-o StrictHostKeyChecking=no -i ${SSH_KEY}"
 
 # Цвета для вывода
 RED='\033[0;31m'
@@ -29,15 +40,15 @@ fi
 # Функция для ожидания освобождения блокировки
 wait_for_lock() {
   local waited=0
-  while ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "[ -f ${LOCK_FILE} ]" 2>/dev/null && [ ${waited} -lt ${MAX_WAIT} ]; do
-    local pid=$(ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "cat ${LOCK_FILE} 2>/dev/null || echo ''" 2>/dev/null)
-    if [ -n "${pid}" ] && ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "kill -0 ${pid} 2>/dev/null" 2>/dev/null; then
+  while ssh ${SSH_OPTS} ${SERVER_USER}@${SERVER_HOST} "[ -f ${LOCK_FILE} ]" 2>/dev/null && [ ${waited} -lt ${MAX_WAIT} ]; do
+    local pid=$(ssh ${SSH_OPTS} ${SERVER_USER}@${SERVER_HOST} "cat ${LOCK_FILE} 2>/dev/null || echo ''" 2>/dev/null)
+    if [ -n "${pid}" ] && ssh ${SSH_OPTS} ${SERVER_USER}@${SERVER_HOST} "kill -0 ${pid} 2>/dev/null" 2>/dev/null; then
       echo -e "${YELLOW}⏳ Деплой уже выполняется (PID: ${pid}), жду освобождения блокировки...${NC}"
       sleep ${WAIT_INTERVAL}
       waited=$((waited + WAIT_INTERVAL))
     else
       echo -e "${YELLOW}⚠️  Найден устаревший файл блокировки, удаляю...${NC}"
-      ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "rm -f ${LOCK_FILE}" 2>/dev/null || true
+      ssh ${SSH_OPTS} ${SERVER_USER}@${SERVER_HOST} "rm -f ${LOCK_FILE}" 2>/dev/null || true
       break
     fi
   done
@@ -51,11 +62,11 @@ wait_for_lock() {
 # Создаем блокировку
 wait_for_lock
 echo -e "${GREEN}🔒 Создаю блокировку деплоя...${NC}"
-ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "echo \$\$ > ${LOCK_FILE}"
+ssh ${SSH_OPTS} ${SERVER_USER}@${SERVER_HOST} "echo \$\$ > ${LOCK_FILE}"
 
 # Создаем временную директорию
 TEMP_DIR=$(mktemp -d)
-trap "rm -rf ${TEMP_DIR}; ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} 'rm -f ${LOCK_FILE}' 2>/dev/null || true" EXIT
+trap "rm -rf ${TEMP_DIR}; ssh ${SSH_OPTS} ${SERVER_USER}@${SERVER_HOST} 'rm -f ${LOCK_FILE}' 2>/dev/null || true" EXIT
 
 echo -e "${GREEN}📦 Копирую файлы фронтенда...${NC}"
 
@@ -94,11 +105,11 @@ tar -czf /tmp/deploy-frontend.tar.gz frontend/
 
 # Загружаем на сервер
 echo -e "${GREEN}📤 Загружаю файлы на сервер...${NC}"
-scp -o StrictHostKeyChecking=no /tmp/deploy-frontend.tar.gz ${SERVER_USER}@${SERVER_HOST}:/tmp/
+scp ${SSH_OPTS} /tmp/deploy-frontend.tar.gz ${SERVER_USER}@${SERVER_HOST}:/tmp/
 
 # Выполняем деплой на сервере
 echo -e "${GREEN}🔧 Выполняю деплой на сервере...${NC}"
-ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} << 'ENDSSH'
+ssh ${SSH_OPTS} ${SERVER_USER}@${SERVER_HOST} << 'ENDSSH'
   set -e
   
   SITE_PATH="/var/www/rainbow-say"

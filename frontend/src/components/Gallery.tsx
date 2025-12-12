@@ -103,6 +103,23 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
   const [currentImageIndex, setCurrentImageIndex] = useState<number | null>(null)
   const [carouselIndex, setCarouselIndex] = useState(0)
 
+  // Отладочная информация
+  useEffect(() => {
+    console.log('🖼️ Gallery component props:', {
+      imagesCount: images?.length || 0,
+      displayType,
+      enableFullscreen,
+      images: images?.map(img => ({
+        id: img.id,
+        content_type: img.content_type,
+        has_image: !!img.image,
+        has_video_url: !!img.video_url,
+        has_video_file: !!img.video_file,
+        has_video_embed_url: !!img.video_embed_url
+      }))
+    });
+  }, [images, displayType, enableFullscreen]);
+
   // Обработка открытия изображения на весь экран
   const handleImageClick = (index: number) => {
     if (enableFullscreen) {
@@ -192,6 +209,11 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                       <>
                         {(() => {
                           const thumbnail = getVideoThumbnail(image.video_url || null, image.video_embed_url)
+                          console.log('🎥 Video thumbnail check:', {
+                            video_url: image.video_url,
+                            video_embed_url: image.video_embed_url,
+                            thumbnail
+                          });
                           if (thumbnail) {
                             return (
                               <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -199,7 +221,18 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                                   src={thumbnail}
                                   alt={image.description || 'Превью видео'}
                                   fill
-                                  style={{ objectFit: 'contain' }}
+                                  style={{ objectFit: 'cover' }}
+                                  onError={(e) => {
+                                    console.error('❌ Failed to load video thumbnail:', thumbnail);
+                                    // Fallback на iframe если превью не загрузилось
+                                    const target = e.currentTarget;
+                                    const parent = target.parentElement;
+                                    if (parent) {
+                                      parent.innerHTML = `<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; width: 100%;">
+                                        <iframe src="${image.video_embed_url}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
+                                      </div>`;
+                                    }
+                                  }}
                                 />
                                 <div style={{
                                   position: 'absolute',
@@ -223,6 +256,7 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                               </div>
                             )
                           }
+                          // Если нет превью, показываем iframe
                           return (
                             <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', width: '100%' }}>
                               <iframe
