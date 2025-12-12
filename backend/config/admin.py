@@ -5,11 +5,15 @@ from django.contrib.admin.apps import AdminConfig
 class CustomAdminSite(admin.AdminSite):
     """Кастомный AdminSite для группировки моделей"""
     
-    def get_app_list(self, request):
+    def get_app_list(self, request, app_label=None):
         """
         Переопределяем порядок и группировку приложений в админке
+        
+        Args:
+            request: HTTP request
+            app_label: Optional app label when viewing a specific app
         """
-        app_list = super().get_app_list(request)
+        app_list = super().get_app_list(request, app_label)
         
         # Находим приложение content
         content_app = None
