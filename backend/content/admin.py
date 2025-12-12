@@ -514,7 +514,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 
 @admin.register(PrivacyPolicy)
 class PrivacyPolicyAdmin(admin.ModelAdmin):
-    list_display = ['title', 'slug', 'order', 'is_published', 'is_active', 'updated_at']
+    list_display = ['title', 'slug', 'order', 'is_published', 'is_active', 'created_at', 'updated_at']
     list_editable = ['order', 'is_published', 'is_active']
     list_filter = ['is_published', 'is_active', 'created_at']
     search_fields = ['title', 'slug', 'content']

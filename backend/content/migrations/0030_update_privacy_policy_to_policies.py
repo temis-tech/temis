@@ -42,6 +42,11 @@ class Migration(migrations.Migration):
             name='is_active',
             field=models.BooleanField(default=True, verbose_name='Активна'),
         ),
+        migrations.AddField(
+            model_name='privacypolicy',
+            name='created_at',
+            field=models.DateTimeField(auto_now_add=True, null=True, verbose_name='Создана'),
+        ),
         # Заполняем slug для существующих записей
         migrations.RunPython(populate_slugs, migrations.RunPython.noop),
         # Обновляем verbose_name
