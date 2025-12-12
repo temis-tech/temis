@@ -2,6 +2,7 @@ import { contentApi } from '@/lib/api';
 import { normalizeImageUrl } from '@/lib/utils';
 import { normalizeHtmlContent } from '@/lib/htmlUtils';
 import BookingForm from '@/components/BookingForm';
+import Gallery from '@/components/Gallery';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CatalogItem, ContentPage } from '@/types';
@@ -85,42 +86,11 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
               }}>
                 {item.gallery_page.title || 'Галерея'}
               </h2>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                gap: '2rem'
-              }}>
-                {item.gallery_page.gallery_images.map((galleryImage) => (
-                  <div key={galleryImage.id} style={{
-                    background: 'white',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                    transition: 'transform 0.3s, box-shadow 0.3s'
-                  }}>
-                    <div style={{ width: '100%', height: '300px', position: 'relative', overflow: 'hidden' }}>
-                      <Image
-                        src={normalizeImageUrl(galleryImage.image)}
-                        alt={galleryImage.description || 'Изображение галереи'}
-                        fill
-                        style={{ objectFit: 'cover' }}
-                      />
-                    </div>
-                    {galleryImage.description && (
-                      <div style={{ padding: '1rem' }}>
-                        <div
-                          style={{
-                            fontSize: '0.95rem',
-                            lineHeight: '1.6',
-                            color: '#666'
-                          }}
-                          dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(galleryImage.description) }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <Gallery
+                images={item.gallery_page.gallery_images}
+                displayType={item.gallery_page.gallery_display_type || 'grid'}
+                enableFullscreen={item.gallery_page.gallery_enable_fullscreen !== false}
+              />
             </div>
           )}
           
