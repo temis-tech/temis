@@ -110,23 +110,31 @@
 
   .backgroundImage {
     /* На мобильных устройствах показываем важную часть изображения */
+    /* Используем contain для предотвращения обрезки, или cover с правильным позиционированием */
     background-size: cover !important;
-    transform-origin: right center !important;
+    /* Показываем верхнюю часть изображения, чтобы голова не обрезалась */
+    background-position: 70% 30% !important;
+    transform-origin: right top !important;
+    /* Уменьшаем масштаб, чтобы показать больше изображения */
+    transform: scale(0.9) !important;
   }
   
-  /* Для изображений, позиционированных справа, показываем правую часть (где обычно лицо) */
+  /* Для изображений, позиционированных справа, показываем правую верхнюю часть (где лицо) */
   .backgroundImage[data-image-position="right"] {
-    background-position: 70% center !important;
+    background-position: 70% 25% !important;
+    transform-origin: right top !important;
   }
   
-  /* Для изображений, позиционированных слева, показываем левую часть */
+  /* Для изображений, позиционированных слева, показываем левую верхнюю часть */
   .backgroundImage[data-image-position="left"] {
-    background-position: 30% center !important;
+    background-position: 30% 25% !important;
+    transform-origin: left top !important;
   }
   
-  /* Для центральных изображений используем центр */
+  /* Для центральных изображений используем верхний центр */
   .backgroundImage[data-image-position="center"] {
-    background-position: center center !important;
+    background-position: center 25% !important;
+    transform-origin: center top !important;
   }
 
   .title {
