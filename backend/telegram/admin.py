@@ -28,7 +28,8 @@ class TelegramBotSettingsAdmin(admin.ModelAdmin):
             obj = self.get_object(request, object_id)
             if obj:
                 api_domain = get_api_domain()
-                protocol = get_protocol()
+                # Telegram требует HTTPS для webhook
+                protocol = 'https'
                 webhook_url = f'{protocol}://{api_domain}{TELEGRAM_WEBHOOK_PATH}'
                 
                 if not obj.token:
@@ -83,7 +84,8 @@ class TelegramBotSettingsAdmin(admin.ModelAdmin):
             return ''
         
         api_domain = get_api_domain()
-        protocol = get_protocol()
+        # Telegram требует HTTPS для webhook
+        protocol = 'https'
         webhook_url = f'{protocol}://{api_domain}{TELEGRAM_WEBHOOK_PATH}'
         
         buttons = []

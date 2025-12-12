@@ -33,7 +33,8 @@ class Command(BaseCommand):
             webhook_url = options['url']
         else:
             api_domain = get_api_domain()
-            protocol = get_protocol()
+            # Telegram требует HTTPS для webhook
+            protocol = 'https'
             webhook_url = f'{protocol}://{api_domain}{TELEGRAM_WEBHOOK_PATH}'
         
         self.stdout.write(f'Устанавливаю webhook: {webhook_url}')
