@@ -29,13 +29,16 @@ export function normalizeImageUrl(url: string | null | undefined): string {
   url = url.replace(/https?:\/\/127\.0\.0\.1:\d+/g, `https://${apiHost}`);
   url = url.replace(/https?:\/\/0\.0\.0\.0:\d+/g, `https://${apiHost}`);
   
+  // Если URL уже содержит правильный API домен, возвращаем как есть
+  if (url.includes(apiHost)) {
+    return url;
+  }
+  
   // Заменяем неправильные домены на правильный
   // Заменяем dev.logoped-spb.pro на api.dev.logoped-spb.pro
   url = url.replace(/https?:\/\/dev\.logoped-spb\.pro(\/media\/.*)/g, `https://${apiHost}$1`);
-  // Заменяем любые другие домены с /media/ на правильный API домен (но не трогаем уже правильные)
-  if (!url.includes(apiHost)) {
-    url = url.replace(/https?:\/\/[^/]+(\/media\/.*)/g, `https://${apiHost}$1`);
-  }
+  // Заменяем любые другие домены с /media/ на правильный API домен
+  url = url.replace(/https?:\/\/[^/]+(\/media\/.*)/g, `https://${apiHost}$1`);
   
   // Если URL начинается с http://, заменяем на https://
   if (url.startsWith('http://')) {

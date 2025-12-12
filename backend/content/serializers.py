@@ -43,6 +43,10 @@ def get_image_url(image_field, request=None):
         api_domain = getattr(settings, 'API_DOMAIN', 'api.dev.logoped-spb.pro')
         protocol = 'https' if not settings.DEBUG else 'http'
         
+        # Если URL уже содержит правильный API домен, возвращаем как есть
+        if api_domain in image_url:
+            return image_url
+        
         # Заменяем неправильные домены на правильный API домен
         import re
         # Заменяем dev.logoped-spb.pro на api.dev.logoped-spb.pro
@@ -66,9 +70,20 @@ def get_image_url(image_field, request=None):
         api_domain = getattr(settings, 'API_DOMAIN', 'api.dev.logoped-spb.pro')
         protocol = 'https' if not settings.DEBUG else 'http'
         import re
+        
+        # Если URL уже содержит правильный API домен, возвращаем как есть
+        if api_domain in absolute_url:
+            return absolute_url
+        
         # Заменяем dev.logoped-spb.pro на api.dev.logoped-spb.pro
         absolute_url = re.sub(
             r'https?://dev\.logoped-spb\.pro(/media/.*)',
+            f'{protocol}://{api_domain}\\1',
+            absolute_url
+        )
+        # Заменяем любые другие домены с /media/ на правильный API домен
+        absolute_url = re.sub(
+            r'https?://[^/]+(/media/.*)',
             f'{protocol}://{api_domain}\\1',
             absolute_url
         )
