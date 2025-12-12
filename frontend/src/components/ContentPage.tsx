@@ -178,35 +178,19 @@ export default function ContentPage({ page }: ContentPageProps) {
     )
   }
 
-  if (page.page_type === 'catalog') {
-    return (
-      <>
-        <div className={styles.container}>
-          {page.description && (
-            <div
-              className={styles.description}
-              dangerouslySetInnerHTML={{ __html: page.description }}
-            />
-          )}
-          {page.catalog_items && renderCatalogItems(page.catalog_items)}
-        </div>
-
-        {renderBookingForm()}
-      </>
-    )
+  // Рендерим каталог и галерею для всех типов страниц
+  const renderCatalog = () => {
+    if (page.catalog_items && page.catalog_items.length > 0) {
+      return renderCatalogItems(page.catalog_items)
+    }
+    return null
   }
 
-  if (page.page_type === 'gallery') {
-    return (
-      <div className={styles.container}>
-        {page.description && (
-          <div
-            className={styles.description}
-            dangerouslySetInnerHTML={{ __html: page.description }}
-          />
-        )}
+  const renderGallery = () => {
+    if (page.gallery_images && page.gallery_images.length > 0) {
+      return (
         <div className={styles.galleryGrid}>
-          {page.gallery_images?.map((image) => (
+          {page.gallery_images.map((image) => (
             <div key={image.id} className={styles.galleryItem}>
               <div className={styles.imageWrapper}>
                 <Image
@@ -223,6 +207,41 @@ export default function ContentPage({ page }: ContentPageProps) {
             </div>
           ))}
         </div>
+      )
+    }
+    return null
+  }
+
+  if (page.page_type === 'catalog') {
+    return (
+      <>
+        <div className={styles.container}>
+          {page.description && (
+            <div
+              className={styles.description}
+              dangerouslySetInnerHTML={{ __html: page.description }}
+            />
+          )}
+          {renderCatalog()}
+          {renderGallery()}
+        </div>
+
+        {renderBookingForm()}
+      </>
+    )
+  }
+
+  if (page.page_type === 'gallery') {
+    return (
+      <div className={styles.container}>
+        {page.description && (
+          <div
+            className={styles.description}
+            dangerouslySetInnerHTML={{ __html: page.description }}
+          />
+        )}
+        {renderCatalog()}
+        {renderGallery()}
         {renderBookingForm()}
       </div>
     )
@@ -263,11 +282,12 @@ export default function ContentPage({ page }: ContentPageProps) {
                 </TitleTag>
               )}
 
-              {contentPage.page_type === 'catalog' && contentPage.catalog_items && (
+              {/* Каталог и галерея могут быть на любой странице */}
+              {contentPage.catalog_items && contentPage.catalog_items.length > 0 && (
                 renderCatalogItems(contentPage.catalog_items)
               )}
 
-              {contentPage.page_type === 'gallery' && contentPage.gallery_images && (
+              {contentPage.gallery_images && contentPage.gallery_images.length > 0 && (
                 <div className={styles.galleryGrid}>
                   {contentPage.gallery_images.map((image) => (
                     <div key={image.id} className={styles.galleryItem}>
@@ -350,6 +370,8 @@ export default function ContentPage({ page }: ContentPageProps) {
             dangerouslySetInnerHTML={{ __html: page.description }}
           />
         )}
+        {renderCatalog()}
+        {renderGallery()}
         {renderBookingForm()}
       </div>
     )

@@ -64,15 +64,19 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
           {item.video_url && (() => {
             const videoEmbed = getVideoEmbedUrl(item.video_url);
             if (videoEmbed) {
+              const videoWidth = item.video_width || 800;
+              const videoHeight = item.video_height || 450;
+              const aspectRatio = (videoHeight / videoWidth) * 100;
+              
               return (
                 <div style={{ 
                   width: '100%', 
-                  maxWidth: '800px', 
+                  maxWidth: `${videoWidth}px`, 
                   margin: '0 auto 2rem',
                   borderRadius: '12px',
                   overflow: 'hidden',
                   position: 'relative',
-                  paddingBottom: '56.25%', // 16:9 aspect ratio
+                  paddingBottom: `${aspectRatio}%`,
                   height: 0
                 }}>
                   <iframe

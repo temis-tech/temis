@@ -351,7 +351,7 @@ class CatalogItemSerializer(serializers.ModelSerializer):
         model = CatalogItem
         fields = ['id', 'title', 'card_description', 'description', 'card_image', 'image', 'image_align', 'image_size', 'has_own_page', 'slug', 'url', 'width',
                  'button_type', 'button_text', 'button_booking_form_id', 'button_quiz_slug', 
-                 'button_url', 'video_url', 'order']
+                 'button_url', 'video_url', 'video_width', 'video_height', 'order']
     
     def get_card_image(self, obj):
         """Возвращает изображение для карточки (превью)"""
@@ -478,16 +478,14 @@ class ContentPageSerializer(serializers.ModelSerializer):
         return get_image_url(obj.image, self.context.get('request'))
     
     def get_catalog_items(self, obj):
-        if obj.page_type == 'catalog':
-            items = obj.catalog_items.filter(is_active=True).order_by('order')
-            return CatalogItemSerializer(items, many=True, context=self.context).data
-        return []
+        # Каталог можно добавить на страницу любого типа
+        items = obj.catalog_items.filter(is_active=True).order_by('order')
+        return CatalogItemSerializer(items, many=True, context=self.context).data
     
     def get_gallery_images(self, obj):
-        if obj.page_type == 'gallery':
-            images = obj.gallery_images.filter(is_active=True).order_by('order')
-            return GalleryImageSerializer(images, many=True, context=self.context).data
-        return []
+        # Галерею можно добавить на страницу любого типа
+        images = obj.gallery_images.filter(is_active=True).order_by('order')
+        return GalleryImageSerializer(images, many=True, context=self.context).data
     
     def get_home_blocks(self, obj):
         if obj.page_type == 'home':

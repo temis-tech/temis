@@ -368,7 +368,7 @@ class CatalogItem(models.Model):
     ]
     
     page = models.ForeignKey(ContentPage, on_delete=models.CASCADE, related_name='catalog_items',
-                            verbose_name='Страница', limit_choices_to={'page_type': 'catalog'})
+                            verbose_name='Страница', help_text='Каталог можно добавить на страницу любого типа')
     title = models.CharField('Название', max_length=200)
     slug = models.SlugField('URL', unique=True, blank=True,
                            help_text='Автоматически генерируется из названия, если не указан. Используется для создания страницы элемента.')
@@ -392,6 +392,10 @@ class CatalogItem(models.Model):
     # Видео для страницы
     video_url = models.URLField('URL видео', blank=True, null=True,
                                help_text='Ссылка на видео с YouTube, Rutube или другого видеохостинга. Видео будет отображаться на странице элемента с кнопками управления.')
+    video_width = models.IntegerField('Ширина видео (px)', blank=True, null=True, default=800,
+                                      help_text='Ширина видео-фрейма в пикселях. По умолчанию: 800px')
+    video_height = models.IntegerField('Высота видео (px)', blank=True, null=True, default=450,
+                                     help_text='Высота видео-фрейма в пикселях. По умолчанию: 450px (соответствует соотношению 16:9 для ширины 800px)')
     
     # Настройки изображения
     IMAGE_ALIGN_CHOICES = [
@@ -466,7 +470,7 @@ class CatalogItem(models.Model):
 class GalleryImage(models.Model):
     """Изображение в галерее"""
     page = models.ForeignKey(ContentPage, on_delete=models.CASCADE, related_name='gallery_images',
-                            verbose_name='Страница', limit_choices_to={'page_type': 'gallery'})
+                            verbose_name='Страница', help_text='Галерею можно добавить на страницу любого типа')
     image = models.ImageField('Изображение', upload_to='gallery/')
     description = RichTextField('Описание', blank=True)
     order = models.IntegerField('Порядок', default=0)

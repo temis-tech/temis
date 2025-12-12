@@ -90,6 +90,8 @@ export interface CatalogItem {
   slug?: string;
   url?: string | null;
   video_url?: string;  // URL видео (YouTube, Rutube и т.д.)
+  video_width?: number;  // Ширина видео-фрейма в пикселях
+  video_height?: number;  // Высота видео-фрейма в пикселях
   button_type: 'booking' | 'quiz' | 'external' | 'none';
   button_text: string;
   button_booking_form_id?: number;
