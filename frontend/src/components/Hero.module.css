@@ -108,6 +108,27 @@
     margin-top: calc(-1 * var(--header-height, 120px)) !important;
   }
 
+  .backgroundImage {
+    /* На мобильных устройствах показываем важную часть изображения */
+    background-size: cover !important;
+    transform-origin: right center !important;
+  }
+  
+  /* Для изображений, позиционированных справа, показываем правую часть (где обычно лицо) */
+  .backgroundImage[data-image-position="right"] {
+    background-position: 70% center !important;
+  }
+  
+  /* Для изображений, позиционированных слева, показываем левую часть */
+  .backgroundImage[data-image-position="left"] {
+    background-position: 30% center !important;
+  }
+  
+  /* Для центральных изображений используем центр */
+  .backgroundImage[data-image-position="center"] {
+    background-position: center center !important;
+  }
+
   .title {
     font-size: 2rem;
   }

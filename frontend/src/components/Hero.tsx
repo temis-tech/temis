@@ -84,6 +84,7 @@ export default function Hero() {
   };
   
   // Масштабирование применяется через transform: scale() к элементу с background-image
+  // На мобильных позиционирование будет переопределено через CSS
   const backgroundImageStyle = heroSettings.background_image ? {
     backgroundImage: `url(${normalizeImageUrl(heroSettings.background_image)})`,
     backgroundPosition: backgroundPosition,
@@ -129,6 +130,7 @@ export default function Hero() {
           <div 
             className={styles.backgroundImage}
             style={backgroundImageStyle}
+            data-image-position={imagePosition}
           />
         )}
         {showOverlay && (
