@@ -63,31 +63,36 @@ def get_image_url(image_field, request=None):
         )
         return image_url
     
-    # Если есть request, используем build_absolute_uri, но затем исправляем домен
+    # Если есть request, формируем абсолютный URL используя правильный API домен
     if request:
-        absolute_url = request.build_absolute_uri(image_url)
-        # Исправляем домен если он неправильный
         api_domain = getattr(settings, 'API_DOMAIN', 'api.dev.logoped-spb.pro')
         protocol = 'https' if not settings.DEBUG else 'http'
-        import re
         
-        # Если URL уже содержит правильный API домен, возвращаем как есть
-        if api_domain in absolute_url:
-            return absolute_url
+        # Если image_url уже абсолютный, исправляем домен
+        if image_url.startswith('http://') or image_url.startswith('https://'):
+            import re
+            # Если URL уже содержит правильный API домен, возвращаем как есть
+            if api_domain in image_url:
+                return image_url
+            
+            # Заменяем dev.logoped-spb.pro на api.dev.logoped-spb.pro
+            image_url = re.sub(
+                r'https?://dev\.logoped-spb\.pro(/media/.*)',
+                f'{protocol}://{api_domain}\\1',
+                image_url
+            )
+            # Заменяем любые другие домены с /media/ на правильный API домен
+            image_url = re.sub(
+                r'https?://[^/]+(/media/.*)',
+                f'{protocol}://{api_domain}\\1',
+                image_url
+            )
+            return image_url
         
-        # Заменяем dev.logoped-spb.pro на api.dev.logoped-spb.pro
-        absolute_url = re.sub(
-            r'https?://dev\.logoped-spb\.pro(/media/.*)',
-            f'{protocol}://{api_domain}\\1',
-            absolute_url
-        )
-        # Заменяем любые другие домены с /media/ на правильный API домен
-        absolute_url = re.sub(
-            r'https?://[^/]+(/media/.*)',
-            f'{protocol}://{api_domain}\\1',
-            absolute_url
-        )
-        return absolute_url
+        # Если image_url относительный, формируем абсолютный URL с правильным доменом
+        # Убираем ведущий слэш если есть
+        path = image_url.lstrip('/')
+        return f'{protocol}://{api_domain}/{path}'
     
     # Иначе возвращаем относительный путь (будет обработан на фронтенде)
     return image_url

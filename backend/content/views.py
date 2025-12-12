@@ -55,7 +55,7 @@ class FooterSettingsView(APIView):
         settings = FooterSettings.objects.first()
         if not settings:
             settings = FooterSettings.objects.create()
-        serializer = FooterSettingsSerializer(settings)
+        serializer = FooterSettingsSerializer(settings, context={'request': request})
         return Response(serializer.data)
 
 
