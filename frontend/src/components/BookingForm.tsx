@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { contentApi, quizzesApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { normalizePhone, validatePhone, filterPhoneInput } from '@/lib/utils';
@@ -59,7 +59,7 @@ export default function BookingForm({ formId, serviceId, serviceTitle, onClose }
   const [showQuiz, setShowQuiz] = useState<{ slug: string; title: string } | null>(null);
   const router = useRouter();
 
-  const loadForm = async () => {
+  const loadForm = useCallback(async () => {
     try {
       const response = await contentApi.getBookingForm(formId);
       const formData = response.data;
@@ -114,7 +114,11 @@ export default function BookingForm({ formId, serviceId, serviceTitle, onClose }
     } finally {
       setLoading(false);
     }
-  };
+  }, [formId, onClose, router, serviceId]);
+
+  useEffect(() => {
+    loadForm();
+  }, [loadForm]);
 
   const handleChange = (name: string, value: any) => {
     // Для полей телефона применяем маску и валидацию
