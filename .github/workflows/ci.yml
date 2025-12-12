@@ -134,14 +134,14 @@ jobs:
           sudo chown -R www-data:www-data "${SITE_PATH}"
           sudo chmod -R 755 "${SITE_PATH}"
           
-          echo "🔧 Исправляю npm кэш..."
-          sudo chown -R www-data:www-data /var/www/.npm 2>/dev/null || sudo rm -rf /var/www/.npm
+          echo "🔧 Очищаю npm кэш и старые файлы..."
+          sudo rm -rf /var/www/.npm
+          cd "${SITE_PATH}/frontend"
+          sudo rm -rf node_modules package-lock.json
           
           echo "📦 Устанавливаю зависимости фронтенда..."
-          cd "${SITE_PATH}/frontend"
-          # Удаляем старый node_modules чтобы избежать конфликтов
-          sudo rm -rf node_modules package-lock.json
-          sudo -u www-data npm install --omit=dev || sudo -u www-data npm install
+          # Используем переменную окружения для npm кэша в домашней директории www-data
+          sudo -u www-data env NPM_CONFIG_CACHE=/home/www-data/.npm npm install --omit=dev || sudo -u www-data env NPM_CONFIG_CACHE=/home/www-data/.npm npm install
           
           echo "📦 Устанавливаю зависимости бэкенда..."
           cd "${SITE_PATH}/backend"
