@@ -9,13 +9,29 @@ export function normalizeImageUrl(url: string | null | undefined): string {
     return url;
   }
   
-  // Дефолтный домен для продакшена
-  const apiHost = 'api.rainbow-say.estenomada.es';
+  // Определяем правильный API домен в зависимости от окружения
+  let apiHost = 'api.dev.logoped-spb.pro';
+  
+  // Проверяем текущий домен страницы
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    if (hostname.includes('dev.logoped-spb.pro')) {
+      apiHost = 'api.dev.logoped-spb.pro';
+    } else if (hostname.includes('logoped-spb.pro')) {
+      apiHost = 'api.logoped-spb.pro';
+    } else if (hostname.includes('rainbow-say.estenomada.es')) {
+      apiHost = 'api.rainbow-say.estenomada.es';
+    }
+  }
   
   // Заменяем localhost на правильный API домен
   url = url.replace(/https?:\/\/localhost:\d+/g, `https://${apiHost}`);
   url = url.replace(/https?:\/\/127\.0\.0\.1:\d+/g, `https://${apiHost}`);
   url = url.replace(/https?:\/\/0\.0\.0\.0:\d+/g, `https://${apiHost}`);
+  
+  // Заменяем неправильные домены на правильный
+  url = url.replace(/https?:\/\/dev\.logoped-spb\.pro\/media\//g, `https://${apiHost}/media/`);
+  url = url.replace(/https?:\/\/[^/]+\/media\//g, `https://${apiHost}/media/`);
   
   // Если URL начинается с http://, заменяем на https://
   if (url.startsWith('http://')) {
