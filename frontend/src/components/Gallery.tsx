@@ -180,8 +180,12 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
               <div key={image.id} className={styles.carouselSlide}>
                 <div 
                   className={styles.carouselImageWrapper}
-                  onClick={() => handleImageClick(index)}
-                  style={{ cursor: enableFullscreen ? 'pointer' : 'default' }}
+                  onClick={() => {
+                    if (image.content_type === 'video' || enableFullscreen) {
+                      handleImageClick(index)
+                    }
+                  }}
+                  style={{ cursor: (image.content_type === 'video' || enableFullscreen) ? 'pointer' : 'default' }}
                 >
                   {image.content_type === 'video' ? (
                     image.video_embed_url ? (
