@@ -33,7 +33,8 @@ class CustomAdminSite(admin.AdminSite):
                 'menuitem',
                 'contact',
                 'footersettings',
-                'socialnetwork'
+                'socialnetwork',
+                'privacypolicy'
             ]
             
             # Разделяем модели на группы
