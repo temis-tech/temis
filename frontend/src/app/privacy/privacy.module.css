@@ -1,5 +1,8 @@
 .main {
-  padding: 4rem 2rem;
+  padding-top: var(--header-height, 140px);
+  padding-left: 2rem;
+  padding-right: 2rem;
+  padding-bottom: 4rem;
   min-height: 80vh;
   background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
 }
@@ -74,7 +77,10 @@
 
 @media (max-width: 768px) {
   .main {
-    padding: 2rem 1rem;
+    padding-top: var(--header-height, 140px);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-bottom: 2rem;
   }
 
   .container {

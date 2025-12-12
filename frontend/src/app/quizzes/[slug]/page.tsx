@@ -19,8 +19,11 @@ export default async function QuizPage({
       <>
         <Header />
         <main style={{ 
-          minHeight: '80vh', 
-          padding: '2rem'
+          minHeight: '80vh',
+          paddingTop: 'var(--header-height, 140px)',
+          paddingLeft: '2rem',
+          paddingRight: '2rem',
+          paddingBottom: '2rem'
         }}>
           <div style={{ textAlign: 'center', padding: '2rem' }}>
             <h1>Анкета не найдена</h1>
@@ -36,8 +39,11 @@ export default async function QuizPage({
     <>
       <Header />
       <main style={{ 
-        minHeight: '80vh', 
-        padding: '2rem'
+        minHeight: '80vh',
+        paddingTop: 'var(--header-height, 140px)',
+        paddingLeft: '2rem',
+        paddingRight: '2rem',
+        paddingBottom: '2rem'
       }}>
         <Quiz 
           quiz={quiz} 

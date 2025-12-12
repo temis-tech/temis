@@ -45,7 +45,13 @@ export default async function ServicePage({ params }: { params: { slug: string }
   return (
     <>
       <Header />
-      <main style={{ minHeight: '80vh', padding: '2rem' }}>
+      <main style={{ 
+        minHeight: '80vh', 
+        paddingTop: 'var(--header-height, 140px)',
+        paddingLeft: '2rem',
+        paddingRight: '2rem',
+        paddingBottom: '2rem'
+      }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <h1 style={{ 
             textAlign: 'center', 
