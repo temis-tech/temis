@@ -126,18 +126,21 @@ export default function Hero() {
         className={styles.hero}
         style={{ backgroundColor }}
       >
+        {/* На десктопе показываем как background */}
         {heroSettings.background_image && (
-          <div 
-            className={styles.backgroundImage}
-            style={backgroundImageStyle}
-            data-image-position={imagePosition}
-          />
-        )}
-        {showOverlay && (
-          <div 
-            className={styles.overlay}
-            style={{ opacity: overlayOpacity }}
-          />
+          <>
+            <div 
+              className={styles.backgroundImage}
+              style={backgroundImageStyle}
+              data-image-position={imagePosition}
+            />
+            {showOverlay && (
+              <div 
+                className={styles.overlay}
+                style={{ opacity: overlayOpacity }}
+              />
+            )}
+          </>
         )}
         <div className={styles.container} style={containerStyle}>
           <h1 
@@ -155,6 +158,17 @@ export default function Hero() {
           >
             {heroSettings.button_text}
           </button>
+          
+          {/* На мобильных показываем изображение под текстом и кнопкой */}
+          {heroSettings.background_image && (
+            <div className={styles.mobileImage}>
+              <img 
+                src={normalizeImageUrl(heroSettings.background_image)}
+                alt=""
+                className={styles.mobileImageImg}
+              />
+            </div>
+          )}
         </div>
       </section>
       

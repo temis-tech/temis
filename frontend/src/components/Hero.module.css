@@ -108,33 +108,14 @@
     margin-top: calc(-1 * var(--header-height, 120px)) !important;
   }
 
+  /* На мобильных скрываем background изображение */
   .backgroundImage {
-    /* На мобильных устройствах показываем важную часть изображения */
-    /* Используем contain для предотвращения обрезки, или cover с правильным позиционированием */
-    background-size: cover !important;
-    /* Показываем верхнюю часть изображения, чтобы голова не обрезалась */
-    background-position: 70% 30% !important;
-    transform-origin: right top !important;
-    /* Уменьшаем масштаб, чтобы показать больше изображения */
-    transform: scale(0.9) !important;
+    display: none !important;
   }
   
-  /* Для изображений, позиционированных справа, показываем правую верхнюю часть (где лицо) */
-  .backgroundImage[data-image-position="right"] {
-    background-position: 70% 25% !important;
-    transform-origin: right top !important;
-  }
-  
-  /* Для изображений, позиционированных слева, показываем левую верхнюю часть */
-  .backgroundImage[data-image-position="left"] {
-    background-position: 30% 25% !important;
-    transform-origin: left top !important;
-  }
-  
-  /* Для центральных изображений используем верхний центр */
-  .backgroundImage[data-image-position="center"] {
-    background-position: center 25% !important;
-    transform-origin: center top !important;
+  /* Скрываем overlay на мобильных */
+  .overlay {
+    display: none !important;
   }
 
   .title {
@@ -149,5 +130,34 @@
   .button {
     padding: 1rem 2rem;
     font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  /* Изображение под текстом и кнопкой на мобильных */
+  .mobileImage {
+    margin-top: 2rem;
+    width: 100%;
+    display: block;
+  }
+  
+  .mobileImageImg {
+    width: 100%;
+    height: auto;
+    max-width: 400px;
+    margin: 0 auto;
+    display: block;
+    border-radius: 12px;
+    object-fit: contain;
+  }
+}
+
+/* На десктопе скрываем мобильное изображение */
+.mobileImage {
+  display: none;
+}
+
+@media (min-width: 769px) {
+  .mobileImage {
+    display: none !important;
   }
 }
