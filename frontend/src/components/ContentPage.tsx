@@ -319,27 +319,11 @@ export default function ContentPage({ page }: ContentPageProps) {
               )}
 
               {contentPage.gallery_images && contentPage.gallery_images.length > 0 && (
-                <div className={styles.galleryGrid}>
-                  {contentPage.gallery_images.map((image) => (
-                    <div key={image.id} className={styles.galleryItem}>
-                      <div className={styles.imageWrapper}>
-                        <Image
-                          src={normalizeImageUrl(image.image)}
-                          alt={image.description || 'Изображение'}
-                          width={600}
-                          height={400}
-                          className={styles.image}
-                        />
-                      </div>
-                      {image.description && (
-                        <div
-                          className={styles.imageDescription}
-                          dangerouslySetInnerHTML={{ __html: image.description }}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <Gallery
+                  images={contentPage.gallery_images}
+                  displayType={contentPage.gallery_display_type || 'grid'}
+                  enableFullscreen={contentPage.gallery_enable_fullscreen !== false}
+                />
               )}
 
               {contentPage.page_type === 'text' && contentPage.description && (
