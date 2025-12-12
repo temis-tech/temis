@@ -236,6 +236,7 @@ jobs:
           echo "✅ Деплой завершен!"
           
           rm -f /tmp/deploy.tar.gz
+          rm -f "${LOCK_FILE}"
         ENDSSH
         
         # Очистка
