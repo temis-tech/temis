@@ -382,6 +382,10 @@ class CatalogItem(models.Model):
     image = models.ImageField('Изображение для страницы', upload_to='catalog/', blank=True, null=True,
                              help_text='Изображение, которое будет отображаться на странице элемента (если включен режим "Может быть открыт как страница")')
     
+    # Видео для страницы
+    video_url = models.URLField('URL видео', blank=True, null=True,
+                               help_text='Ссылка на видео с YouTube, Rutube или другого видеохостинга. Видео будет отображаться на странице элемента с кнопками управления.')
+    
     # Настройки изображения
     IMAGE_ALIGN_CHOICES = [
         ('left', 'Слева'),
