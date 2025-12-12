@@ -70,7 +70,7 @@ export default async function ServicePage({ params }: { params: { slug: string }
               }
             }
 
-            const getImageStyle = (align?: string, size?: string) => {
+            const getImageStyle = (align?: string, size?: string): React.CSSProperties => {
               const imageSize = getImageSize(size)
               const baseStyle: React.CSSProperties = {
                 borderRadius: '12px',
@@ -91,7 +91,7 @@ export default async function ServicePage({ params }: { params: { slug: string }
                   return {
                     ...baseStyle,
                     maxWidth: `${imageSize.width}px`,
-                    float: 'left',
+                    float: 'left' as const,
                     marginRight: '2rem',
                     marginBottom: '1rem'
                   }
@@ -99,7 +99,7 @@ export default async function ServicePage({ params }: { params: { slug: string }
                   return {
                     ...baseStyle,
                     maxWidth: `${imageSize.width}px`,
-                    float: 'right',
+                    float: 'right' as const,
                     marginLeft: '2rem',
                     marginBottom: '1rem'
                   }

@@ -27,6 +27,7 @@ class Migration(migrations.Migration):
                 'verbose_name': 'Социальная сеть',
                 'verbose_name_plural': 'Социальные сети',
                 'ordering': ['order', 'name'],
+                'app_label': 'content',
             },
         ),
     ]
