@@ -49,6 +49,8 @@ class ContentPageAdmin(admin.ModelAdmin):
     search_fields = ['title', 'slug', 'description']
     prepopulated_fields = {'slug': ('title',)}
     readonly_fields = ['image_preview']
+    # Inline формы для каталога и галереи доступны на всех страницах
+    inlines = [CatalogItemInline, GalleryImageInline]
     
     fieldsets = (
         ('Основная информация', {
