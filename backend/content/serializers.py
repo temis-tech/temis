@@ -382,6 +382,12 @@ class CatalogItemSerializer(serializers.ModelSerializer):
     def get_url(self, obj):
         """Возвращает URL страницы элемента каталога, если он может быть открыт как страница"""
         return obj.get_absolute_url()
+    
+    def get_gallery_page(self, obj):
+        """Возвращает данные страницы галереи, если она выбрана"""
+        if obj.gallery_page and obj.gallery_page.is_active:
+            return ContentPageSerializer(obj.gallery_page, context=self.context).data
+        return None
 
 
 class GalleryImageSerializer(serializers.ModelSerializer):

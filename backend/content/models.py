@@ -389,6 +389,13 @@ class CatalogItem(models.Model):
     image = models.ImageField('Изображение для страницы', upload_to='catalog/', blank=True, null=True,
                              help_text='Изображение, которое будет отображаться на странице элемента (если включен режим "Может быть открыт как страница")')
     
+    # Галерея для страницы
+    gallery_page = models.ForeignKey(ContentPage, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='catalog_items_with_gallery',
+                                    verbose_name='Страница галереи',
+                                    help_text='Выберите страницу с типом "Галерея", которая будет отображаться на странице элемента каталога',
+                                    limit_choices_to={'page_type': 'gallery'})
+    
     # Видео для страницы
     video_url = models.URLField('URL видео', blank=True, null=True,
                                help_text='Ссылка на видео с YouTube, Rutube или другого видеохостинга. Видео будет отображаться на странице элемента с кнопками управления.')
