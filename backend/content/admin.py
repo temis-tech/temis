@@ -540,9 +540,13 @@ admin.site.index_title = 'Панель управления'
 # Кастомная группировка моделей через переопределение get_app_list
 import types
 
-def custom_get_app_list(self, request):
+def custom_get_app_list(self, request, app_label=None):
     """
     Возвращает список приложений с кастомной группировкой моделей content
+    
+    Args:
+        request: HTTP request
+        app_label: Optional app label when viewing a specific app
     """
     app_dict = {}
     
