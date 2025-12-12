@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { contentApi } from '@/lib/api'
 
 export const metadata: Metadata = {
   title: 'Логопедический центр "Радуга слов" - СПб',
@@ -9,16 +10,33 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Получаем настройки шапки для установки CSS переменной глобально
+  const headerSettings = await contentApi.getHeaderSettings().then(res => res.data).catch(() => null);
+  const headerHeight = headerSettings?.header_height || 140;
+  const mobileHeaderHeight = Math.min(headerHeight * 0.85, 120);
+
   return (
     <html lang="ru" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://static.tildacdn.com" crossOrigin="anonymous" />
         <meta httpEquiv="Permissions-Policy" content="local-network-access=()" />
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            :root {
+              --header-height: ${headerHeight}px;
+            }
+            @media (max-width: 768px) {
+              :root {
+                --header-height: ${mobileHeaderHeight}px;
+              }
+            }
+          `
+        }} />
       </head>
       <body suppressHydrationWarning>{children}</body>
     </html>

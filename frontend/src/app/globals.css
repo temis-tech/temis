@@ -89,7 +89,7 @@ button {
 
 /* Отступ для контента, чтобы не перекрывался фиксированным Header */
 main {
-  padding-top: var(--header-height, 140px);
+  padding-top: var(--header-height, 140px) !important;
 }
 
 /* Утилиты */

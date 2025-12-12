@@ -1,12 +1,39 @@
 # Generated manually - исправление миграции 0024
+# Безопасная миграция, которая работает даже если поле slug еще не создано
 
 from django.db import migrations, models
+from django.db import connection
+
+
+def check_field_exists(table_name, field_name):
+    """Проверяет, существует ли поле в таблице"""
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name=%s AND column_name=%s
+        """, [table_name, field_name])
+        return cursor.fetchone() is not None
+
+
+def add_slug_field_if_missing(apps, schema_editor):
+    """Добавляет поле slug, если его нет (на случай если миграция 0024 не была применена)"""
+    if not check_field_exists('content_catalogitem', 'slug'):
+        # Добавляем поле slug через SQL
+        with connection.cursor() as cursor:
+            try:
+                cursor.execute("""
+                    ALTER TABLE content_catalogitem 
+                    ADD COLUMN slug VARCHAR(50) NULL
+                """)
+            except Exception as e:
+                # Игнорируем ошибку, если поле уже существует
+                pass
 
 
 def generate_slugs_for_catalog_items(apps, schema_editor):
     """Генерирует slug для существующих элементов каталога"""
     CatalogItem = apps.get_model('content', 'CatalogItem')
-    from django.utils.text import slugify
     import re
     
     def transliterate_slug(text):
@@ -23,6 +50,11 @@ def generate_slugs_for_catalog_items(apps, schema_editor):
         slug = re.sub(r'[^\w\s-]', '', slug)
         slug = re.sub(r'[-\s]+', '-', slug)
         return slug.strip('-')[:50]
+    
+    # Проверяем, существует ли поле slug
+    if not check_field_exists('content_catalogitem', 'slug'):
+        # Если поля нет, пропускаем генерацию slug
+        return
     
     for item in CatalogItem.objects.all():
         if not item.slug or item.slug == '':
@@ -44,19 +76,15 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Временно убираем unique constraint
-        migrations.AlterField(
-            model_name='catalogitem',
-            name='slug',
-            field=models.SlugField(blank=True, help_text='Автоматически генерируется из названия, если не указан. Используется для создания страницы элемента.', null=True, verbose_name='URL'),
+        # Сначала добавляем поле slug, если его нет
+        migrations.RunPython(
+            add_slug_field_if_missing,
+            migrations.RunPython.noop,
         ),
-        # Генерируем slug для существующих записей
-        migrations.RunPython(generate_slugs_for_catalog_items, migrations.RunPython.noop),
-        # Возвращаем unique constraint
-        migrations.AlterField(
-            model_name='catalogitem',
-            name='slug',
-            field=models.SlugField(blank=True, help_text='Автоматически генерируется из названия, если не указан. Используется для создания страницы элемента.', unique=True, verbose_name='URL'),
+        # Генерируем slug для существующих записей (только если поле существует)
+        migrations.RunPython(
+            generate_slugs_for_catalog_items,
+            migrations.RunPython.noop,
         ),
     ]
 
