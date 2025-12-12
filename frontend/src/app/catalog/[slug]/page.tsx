@@ -28,12 +28,16 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
   }
 
   // Отладочная информация
-  if (item.gallery_page) {
-    console.log('🔍 Catalog item gallery data:', {
-      title: item.title,
-      gallery_page_title: item.gallery_page?.title,
-      gallery_images_count: item.gallery_page?.gallery_images?.length || 0,
-      gallery_images: item.gallery_page?.gallery_images?.map(img => ({
+  console.log('🔍 Catalog item full data:', {
+    title: item.title,
+    has_own_page: item.has_own_page,
+    has_gallery_page: !!item.gallery_page,
+    gallery_page: item.gallery_page ? {
+      id: item.gallery_page.id,
+      title: item.gallery_page.title,
+      is_active: item.gallery_page.is_active,
+      gallery_images_count: item.gallery_page.gallery_images?.length || 0,
+      gallery_images: item.gallery_page.gallery_images?.map(img => ({
         id: img.id,
         content_type: img.content_type,
         has_image: !!img.image,
@@ -41,10 +45,10 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
         has_video_file: !!img.video_file,
         has_video_embed_url: !!img.video_embed_url
       })),
-      gallery_display_type: item.gallery_page?.gallery_display_type,
-      gallery_enable_fullscreen: item.gallery_page?.gallery_enable_fullscreen
-    });
-  }
+      gallery_display_type: item.gallery_page.gallery_display_type,
+      gallery_enable_fullscreen: item.gallery_page.gallery_enable_fullscreen
+    } : null
+  });
 
   return (
     <main style={{ 

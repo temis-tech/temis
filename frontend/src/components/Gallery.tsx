@@ -168,16 +168,7 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [currentImageIndex, images.length])
 
-  // Карусель: автоматическая прокрутка
-  useEffect(() => {
-    if (displayType === 'carousel' && images.length > 0) {
-      const interval = setInterval(() => {
-        setCarouselIndex((prev) => (prev + 1) % images.length)
-      }, 5000) // Меняем изображение каждые 5 секунд
-
-      return () => clearInterval(interval)
-    }
-  }, [displayType, images.length])
+  // Автоматическая прокрутка карусели отключена - пользователь управляет вручную
 
   // Проверка на пустой массив (после всех хуков)
   if (!images || images.length === 0) {
