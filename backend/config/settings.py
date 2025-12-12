@@ -126,6 +126,8 @@ CKEDITOR_CONFIGS = {
         'extraPlugins': 'videoembed',
         # Настройки для iframe
         'extraAllowedContent': 'div[style];iframe[src,style,allowfullscreen,allow,frameborder]',
+        # Указываем путь к локальным плагинам (для videoembed)
+        'customConfig': '',  # Используем стандартный config.js
     },
 }
 
