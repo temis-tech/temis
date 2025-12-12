@@ -157,11 +157,12 @@ class TelegramUserAdmin(admin.ModelAdmin):
     list_display = ('telegram_id', 'get_full_name', 'username', 'is_admin', 'is_active', 'created_at')
     list_filter = ('is_admin', 'is_active', 'created_at')
     search_fields = ('telegram_id', 'username', 'first_name', 'last_name')
-    readonly_fields = ('telegram_id', 'username', 'first_name', 'last_name', 'created_at', 'updated_at')
+    list_editable = ('is_admin', 'is_active')
     
     fieldsets = (
         ('Информация о пользователе', {
-            'fields': ('telegram_id', 'username', 'first_name', 'last_name')
+            'fields': ('telegram_id', 'username', 'first_name', 'last_name'),
+            'description': 'При создании пользователя вручную заполните все поля. При редактировании существующего пользователя эти поля только для чтения.'
         }),
         ('Настройки', {
             'fields': ('is_admin', 'is_active')
@@ -171,6 +172,15 @@ class TelegramUserAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    
+    def get_readonly_fields(self, request, obj=None):
+        """Делаем поля только для чтения при редактировании, но редактируемыми при создании"""
+        readonly = ['created_at', 'updated_at']
+        # При редактировании существующего пользователя делаем информационные поля readonly
+        if obj:  # obj существует - значит редактируем
+            readonly.extend(['telegram_id', 'username', 'first_name', 'last_name'])
+        # При создании нового пользователя (obj=None) все поля редактируемые
+        return readonly
     
     def get_full_name(self, obj):
         return obj.get_full_name()
