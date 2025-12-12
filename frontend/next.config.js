@@ -1,7 +1,16 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname, 'src'),
+    };
+    return config;
+  },
   images: {
     domains: ['api.rainbow-say.estenomada.es', 'api.dev.logoped-spb.pro'],
     remotePatterns: [
