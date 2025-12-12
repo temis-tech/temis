@@ -59,10 +59,6 @@ export default function BookingForm({ formId, serviceId, serviceTitle, onClose }
   const [showQuiz, setShowQuiz] = useState<{ slug: string; title: string } | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    loadForm();
-  }, [formId]);
-
   const loadForm = async () => {
     try {
       const response = await contentApi.getBookingForm(formId);

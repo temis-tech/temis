@@ -102,11 +102,6 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
   const [currentImageIndex, setCurrentImageIndex] = useState<number | null>(null)
   const [carouselIndex, setCarouselIndex] = useState(0)
 
-  // Проверка на пустой массив
-  if (!images || images.length === 0) {
-    return null
-  }
-
   // Обработка открытия изображения на весь экран
   const handleImageClick = (index: number) => {
     if (enableFullscreen) {
@@ -142,11 +137,12 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        handleCloseFullscreen()
+        setCurrentImageIndex(null)
+        document.body.style.overflow = 'unset'
       } else if (e.key === 'ArrowLeft') {
-        handlePrevious(e as any)
+        setCurrentImageIndex((prev) => prev !== null ? (prev - 1 + images.length) % images.length : null)
       } else if (e.key === 'ArrowRight') {
-        handleNext(e as any)
+        setCurrentImageIndex((prev) => prev !== null ? (prev + 1) % images.length : null)
       }
     }
 
@@ -164,6 +160,11 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
       return () => clearInterval(interval)
     }
   }, [displayType, images.length])
+
+  // Проверка на пустой массив (после всех хуков)
+  if (!images || images.length === 0) {
+    return null
+  }
 
   // Рендеринг в зависимости от типа отображения
   if (displayType === 'carousel') {
