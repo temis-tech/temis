@@ -385,8 +385,16 @@ class CatalogItemSerializer(serializers.ModelSerializer):
     
     def get_gallery_page(self, obj):
         """Возвращает данные страницы галереи, если она выбрана"""
-        if obj.gallery_page and obj.gallery_page.is_active:
-            return ContentPageSerializer(obj.gallery_page, context=self.context).data
+        if obj.gallery_page:
+            # Проверяем, что страница активна
+            if not obj.gallery_page.is_active:
+                return None
+            # Сериализуем страницу галереи со всеми данными
+            gallery_data = ContentPageSerializer(obj.gallery_page, context=self.context).data
+            # Убеждаемся, что gallery_images присутствует
+            if not gallery_data.get('gallery_images'):
+                gallery_data['gallery_images'] = []
+            return gallery_data
         return None
 
 

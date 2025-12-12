@@ -27,6 +27,18 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
     notFound();
   }
 
+  // Отладочная информация (можно убрать после проверки)
+  console.log('Catalog item data:', {
+    title: item.title,
+    has_own_page: item.has_own_page,
+    gallery_page: item.gallery_page,
+    gallery_page_title: item.gallery_page?.title,
+    gallery_images: item.gallery_page?.gallery_images,
+    gallery_images_length: item.gallery_page?.gallery_images?.length,
+    gallery_display_type: item.gallery_page?.gallery_display_type,
+    gallery_enable_fullscreen: item.gallery_page?.gallery_enable_fullscreen
+  });
+
   return (
     <main style={{ 
       paddingLeft: '2rem',
@@ -75,24 +87,30 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
           )}
           
           {/* Галерея, если выбрана страница галереи */}
-          {item.gallery_page && item.gallery_page.gallery_images && item.gallery_page.gallery_images.length > 0 && (
-            <div style={{ marginBottom: '2rem' }}>
-              <h2 style={{ 
-                fontSize: '2rem', 
-                marginBottom: '1.5rem',
-                color: '#FF820E',
-                fontWeight: 600,
-                textAlign: 'center'
-              }}>
-                {item.gallery_page.title || 'Галерея'}
-              </h2>
-              <Gallery
-                images={item.gallery_page.gallery_images}
-                displayType={item.gallery_page.gallery_display_type || 'grid'}
-                enableFullscreen={item.gallery_page.gallery_enable_fullscreen !== false}
-              />
-            </div>
-          )}
+          {item.gallery_page ? (
+            item.gallery_page.gallery_images && item.gallery_page.gallery_images.length > 0 ? (
+              <div style={{ marginBottom: '2rem' }}>
+                <h2 style={{ 
+                  fontSize: '2rem', 
+                  marginBottom: '1.5rem',
+                  color: '#FF820E',
+                  fontWeight: 600,
+                  textAlign: 'center'
+                }}>
+                  {item.gallery_page.title || 'Галерея'}
+                </h2>
+                <Gallery
+                  images={item.gallery_page.gallery_images}
+                  displayType={item.gallery_page.gallery_display_type || 'grid'}
+                  enableFullscreen={item.gallery_page.gallery_enable_fullscreen !== false}
+                />
+              </div>
+            ) : (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#999', marginBottom: '2rem' }}>
+                Галерея "{item.gallery_page.title || 'Галерея'}" не содержит активных элементов. Добавьте изображения или видео в админке.
+              </div>
+            )
+          ) : null}
           
           {item.button_type === 'booking' && item.button_booking_form_id && (
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
