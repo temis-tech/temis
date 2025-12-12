@@ -388,7 +388,7 @@ class ContentPageSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ContentPage
-        fields = ['id', 'title', 'slug', 'page_type', 'description', 'is_active', 'catalog_items',
+        fields = ['id', 'title', 'slug', 'page_type', 'description', 'show_title', 'is_active', 'catalog_items',
                  'gallery_images', 'home_blocks']
     
     def get_catalog_items(self, obj):

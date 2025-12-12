@@ -52,6 +52,10 @@ class ContentPageAdmin(admin.ModelAdmin):
         ('Основная информация', {
             'fields': ('title', 'slug', 'page_type', 'description')
         }),
+        ('Отображение', {
+            'fields': ('show_title',),
+            'description': 'Настройки отображения страницы на сайте'
+        }),
         ('Настройки', {
             'fields': ('is_active', 'order')
         }),
