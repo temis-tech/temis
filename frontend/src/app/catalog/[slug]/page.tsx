@@ -39,8 +39,7 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
         has_image: !!img.image,
         has_video_url: !!img.video_url,
         has_video_file: !!img.video_file,
-        has_video_embed_url: !!img.video_embed_url,
-        is_active: img.is_active
+        has_video_embed_url: !!img.video_embed_url
       })),
       gallery_display_type: item.gallery_page?.gallery_display_type,
       gallery_enable_fullscreen: item.gallery_page?.gallery_enable_fullscreen
