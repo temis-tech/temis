@@ -108,6 +108,8 @@ jobs:
         cp frontend/package*.json "${DEPLOY_DIR}/frontend/" || true
         cp frontend/next.config.js "${DEPLOY_DIR}/frontend/" || true
         cp frontend/tsconfig.json "${DEPLOY_DIR}/frontend/" || true
+        cp frontend/next-env.d.ts "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
+        cp frontend/.eslintrc.json "${DEPLOY_DIR}/frontend/" 2>/dev/null || true
         
         # Backend - копируем все приложения
         cp -r backend/* "${DEPLOY_DIR}/backend/" || true
