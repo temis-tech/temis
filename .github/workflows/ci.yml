@@ -91,7 +91,7 @@ jobs:
       run: |
         cd frontend
         npm ci
-        npm run build
+        NEXT_PUBLIC_API_URL=https://api.dev.logoped-spb.pro/api npm run build
     
     - name: Deploy to server
       run: |
