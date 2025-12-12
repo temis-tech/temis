@@ -153,15 +153,26 @@ jobs:
             sudo -u www-data python3 -m venv venv
           fi
           
-          sudo -u www-data ./venv/bin/pip install --upgrade pip
-          sudo -u www-data ./venv/bin/pip install -r requirements.txt
+          # Используем домашнюю директорию для pip кэша
+          sudo -u www-data env PIP_CACHE_DIR=/home/www-data/.cache/pip ./venv/bin/pip install --upgrade pip
+          sudo -u www-data env PIP_CACHE_DIR=/home/www-data/.cache/pip ./venv/bin/pip install -r requirements.txt
           
           echo "🔐 Устанавливаю права для venv..."
           sudo chown -R www-data:www-data "${SITE_PATH}/backend/venv"
           
           echo "🗄️  Выполняю миграции..."
           if [ -f "${SITE_PATH}/backend/.env" ]; then
-            sudo -u www-data ./venv/bin/python manage.py migrate --noinput || true
+            # Выполняем миграции, игнорируем ошибки о существующих индексах/ограничениях
+            sudo -u www-data ./venv/bin/python manage.py migrate --noinput 2>&1 | tee /tmp/migrate.log || {
+              # Если миграция упала, проверяем не из-за уже существующих объектов
+              if grep -q "already exists" /tmp/migrate.log; then
+                echo "⚠️  Некоторые объекты уже существуют, пытаюсь пометить миграцию как выполненную..."
+                # Пытаемся пометить проблемную миграцию как выполненную
+                sudo -u www-data ./venv/bin/python manage.py migrate --fake content 0024 2>/dev/null || true
+                # Повторяем миграции
+                sudo -u www-data ./venv/bin/python manage.py migrate --noinput || true
+              fi
+            }
             sudo -u www-data ./venv/bin/python manage.py collectstatic --noinput || true
           fi
           
