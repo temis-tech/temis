@@ -19,6 +19,16 @@ def populate_slugs(apps, schema_editor):
             policy.save()
 
 
+def populate_created_at(apps, schema_editor):
+    """Заполняет created_at для существующих записей значением updated_at"""
+    PrivacyPolicy = apps.get_model('content', 'PrivacyPolicy')
+    from django.utils import timezone
+    for policy in PrivacyPolicy.objects.filter(created_at__isnull=True):
+        # Используем updated_at или текущее время
+        policy.created_at = policy.updated_at if policy.updated_at else timezone.now()
+        policy.save(update_fields=['created_at'])
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -47,6 +57,8 @@ class Migration(migrations.Migration):
             name='created_at',
             field=models.DateTimeField(auto_now_add=True, null=True, verbose_name='Создана'),
         ),
+        # Заполняем created_at для существующих записей
+        migrations.RunPython(populate_created_at, migrations.RunPython.noop),
         # Заполняем slug для существующих записей
         migrations.RunPython(populate_slugs, migrations.RunPython.noop),
         # Обновляем verbose_name
@@ -59,5 +71,11 @@ class Migration(migrations.Migration):
             model_name='privacypolicy',
             name='slug',
             field=models.SlugField(max_length=200, unique=True, verbose_name='URL-адрес'),
+        ),
+        # Делаем created_at обязательным после заполнения
+        migrations.AlterField(
+            model_name='privacypolicy',
+            name='created_at',
+            field=models.DateTimeField(auto_now_add=True, verbose_name='Создана'),
         ),
     ]
