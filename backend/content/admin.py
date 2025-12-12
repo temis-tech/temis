@@ -559,7 +559,7 @@ def custom_get_app_list(self, request, app_label=None):
             # Определяем категорию модели
             if model == Contact:
                 category = 'Контакты'
-            elif model in [ContentPage, CatalogItem, GalleryImage, HomePageBlock]:
+            elif model in [ContentPage, CatalogItem, GalleryImage, HomePageBlock, WelcomeBanner]:
                 category = 'Контент'
             elif model in [HeaderSettings, Menu, MenuItem, FooterSettings, SocialNetwork]:
                 category = 'Шапка и Подвал'
@@ -631,7 +631,19 @@ def custom_get_app_list(self, request, app_label=None):
     
     # Сортируем модели внутри каждого приложения
     for app in app_list:
-        app['models'].sort(key=lambda x: x['name'])
+        if app['name'] == 'Контент':
+            # Кастомный порядок для раздела "Контент"
+            content_order = {
+                'Блоки главной страницы': 1,
+                'Страницы контента': 2,
+                'Изображения галереи': 3,
+                'Элементы каталога': 4,
+                'Приветственные баннеры': 5,
+            }
+            app['models'].sort(key=lambda x: content_order.get(x['name'], 999))
+        else:
+            # Для остальных разделов сортируем по имени
+            app['models'].sort(key=lambda x: x['name'])
     
     return app_list
 
