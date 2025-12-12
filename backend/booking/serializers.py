@@ -21,13 +21,13 @@ class FormRuleSerializer(serializers.ModelSerializer):
         fields = ['id', 'field', 'field_name', 'field_value', 'quiz', 'quiz_slug', 'quiz_title', 'is_active', 'order']
     
     def get_quiz_slug(self, obj):
-        """Возвращает slug анкетаа только если анкета активен и имеет slug"""
+        """Возвращает slug анкеты только если анкета активна и имеет slug"""
         if obj.quiz and obj.quiz.is_active and obj.quiz.slug:
             return obj.quiz.slug
         return None
     
     def get_quiz_title(self, obj):
-        """Возвращает название анкетаа только если анкета активен"""
+        """Возвращает название анкеты только если анкета активна"""
         if obj.quiz and obj.quiz.is_active:
             return obj.quiz.title
         return None
@@ -50,13 +50,13 @@ class BookingFormSerializer(serializers.ModelSerializer):
         return FormRuleSerializer(active_rules, many=True).data
     
     def get_default_quiz_slug(self, obj):
-        """Возвращает slug анкетаа по умолчанию только если анкета активен и имеет slug"""
+        """Возвращает slug анкеты по умолчанию только если анкета активна и имеет slug"""
         if obj.default_quiz and obj.default_quiz.is_active and obj.default_quiz.slug:
             return obj.default_quiz.slug
         return None
     
     def get_default_quiz_title(self, obj):
-        """Возвращает название анкетаа по умолчанию только если анкета активен"""
+        """Возвращает название анкеты по умолчанию только если анкета активна"""
         if obj.default_quiz and obj.default_quiz.is_active:
             return obj.default_quiz.title
         return None

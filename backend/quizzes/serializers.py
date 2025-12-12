@@ -45,7 +45,7 @@ class SubmissionAnswerCreateSerializer(serializers.Serializer):
 
 
 class QuizSubmissionCreateSerializer(serializers.Serializer):
-    """Сериализатор для создания отправки анкетаа"""
+    """Сериализатор для создания отправки анкеты"""
     answers = SubmissionAnswerCreateSerializer(many=True)
     user_name = serializers.CharField(required=False, allow_blank=True, default='')
     user_phone = serializers.CharField(required=False, allow_blank=True, default='')

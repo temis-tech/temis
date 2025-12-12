@@ -217,7 +217,7 @@ class HeroSettingsSerializer(serializers.ModelSerializer):
         return get_image_url(obj.background_image, self.context.get('request'))
     
     def get_button_quiz_slug(self, obj):
-        """Возвращает slug анкетаа для кнопки, если он активен"""
+        """Возвращает slug анкеты для кнопки, если она активна"""
         if obj.button_quiz and obj.button_quiz.is_active and obj.button_quiz.slug:
             return obj.button_quiz.slug
         return None
@@ -289,7 +289,7 @@ class CatalogItemSerializer(serializers.ModelSerializer):
         return None
     
     def get_button_quiz_slug(self, obj):
-        """Возвращает slug анкетаа, если он активен"""
+        """Возвращает slug анкеты, если она активна"""
         if obj.button_quiz and obj.button_quiz.is_active and obj.button_quiz.slug:
             return obj.button_quiz.slug
         return None

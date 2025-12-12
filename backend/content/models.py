@@ -559,6 +559,7 @@ class Menu(models.Model):
         verbose_name = 'Меню'
         verbose_name_plural = 'Меню'
         ordering = ['name']
+        app_label = 'content'
     
     def __str__(self):
         return self.name
@@ -590,6 +591,7 @@ class MenuItem(models.Model):
         verbose_name = 'Пункт меню'
         verbose_name_plural = 'Пункты меню'
         ordering = ['order', 'title']
+        app_label = 'content'
 
     def __str__(self):
         display_name = self.title if self.title else (f'Изображение #{self.id}' if self.image else 'Без названия')
@@ -630,6 +632,7 @@ class HeaderSettings(models.Model):
     class Meta:
         verbose_name = 'Настройки шапки'
         verbose_name_plural = 'Настройки шапки'
+        app_label = 'content'
 
     def __str__(self):
         return 'Настройки шапки'
@@ -667,7 +670,7 @@ class HeroSettings(models.Model):
                                    help_text='Что произойдет при нажатии на кнопку')
     button_quiz = models.ForeignKey('quizzes.Quiz', on_delete=models.SET_NULL, null=True, blank=True,
                                     verbose_name='Анкета для кнопки',
-                                    help_text='Выберите анкета, который откроется при нажатии (если тип = "Опрос")')
+                                    help_text='Выберите анкету, которая откроется при нажатии (если тип = "Опрос")')
     button_booking_form = models.ForeignKey('booking.BookingForm', on_delete=models.SET_NULL, null=True, blank=True,
                                             verbose_name='Форма записи для кнопки',
                                             help_text='Выберите форму записи, которая откроется при нажатии (если тип = "Прямая запись")')
@@ -737,6 +740,7 @@ class HeroSettings(models.Model):
     class Meta:
         verbose_name = 'Настройки Hero'
         verbose_name_plural = 'Настройки Hero'
+        app_label = 'content'
 
     def __str__(self):
         return 'Настройки Hero'
@@ -771,6 +775,7 @@ class FooterSettings(models.Model):
     class Meta:
         verbose_name = 'Настройки подвала'
         verbose_name_plural = 'Настройки подвала'
+        app_label = 'content'
 
     def __str__(self):
         return 'Настройки подвала'

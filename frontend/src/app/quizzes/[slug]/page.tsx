@@ -15,7 +15,6 @@ export default async function QuizPage({
   } catch (error: any) {
     return (
       <main style={{ 
-        minHeight: '80vh',
         paddingLeft: '2rem',
         paddingRight: '2rem',
         paddingBottom: '2rem'
@@ -30,7 +29,6 @@ export default async function QuizPage({
 
   return (
     <main style={{ 
-      minHeight: '80vh',
       paddingLeft: '2rem',
       paddingRight: '2rem',
       paddingBottom: '2rem'

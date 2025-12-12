@@ -4,7 +4,7 @@ from django.utils.text import slugify
 
 
 class Quiz(models.Model):
-    """Анкета/Анкета"""
+    """Анкета"""
     title = models.CharField('Название', max_length=200)
     slug = models.SlugField('URL', unique=True, blank=True)
     description = models.TextField('Описание', blank=True)
@@ -14,7 +14,7 @@ class Quiz(models.Model):
 
     class Meta:
         verbose_name = 'Анкета'
-        verbose_name_plural = 'Анкетаы'
+        verbose_name_plural = 'Анкеты'
         ordering = ['-created_at']
 
     def __str__(self):
@@ -27,7 +27,7 @@ class Quiz(models.Model):
 
 
 class Question(models.Model):
-    """Вопрос в анкетае"""
+    """Вопрос в анкете"""
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions', verbose_name='Анкета')
     text = models.TextField('Текст вопроса')
     order = models.IntegerField('Порядок', default=0)
@@ -96,7 +96,7 @@ class ResultRange(models.Model):
 
 
 class QuizSubmission(models.Model):
-    """Отправка анкетаа пользователем"""
+    """Отправка анкеты пользователем"""
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='submissions', verbose_name='Анкета')
     total_points = models.IntegerField('Всего баллов', default=0)
     result = models.ForeignKey(ResultRange, on_delete=models.SET_NULL, null=True, blank=True, 
@@ -107,8 +107,8 @@ class QuizSubmission(models.Model):
     created_at = models.DateTimeField('Создана', auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Отправка анкетаа'
-        verbose_name_plural = 'Отправки анкетаов'
+        verbose_name = 'Отправка анкеты'
+        verbose_name_plural = 'Отправки анкет'
         ordering = ['-created_at']
 
     def __str__(self):

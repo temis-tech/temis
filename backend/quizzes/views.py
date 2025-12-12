@@ -20,7 +20,7 @@ class QuizViewSet(viewsets.ReadOnlyModelViewSet):
             serializer = self.get_serializer(quiz)
             return Response(serializer.data)
         except Quiz.DoesNotExist:
-            return Response({'error': 'Анкета не найден'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Анкета не найдена'}, status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=True, methods=['post'], url_path='submit')
     def submit(self, request, **kwargs):
@@ -30,7 +30,7 @@ class QuizViewSet(viewsets.ReadOnlyModelViewSet):
             lookup_value = kwargs.get('slug') or kwargs.get('pk')
             
             if not lookup_value:
-                return Response({'error': 'Не указан ID или slug анкетаа'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Не указан ID или slug анкеты'}, status=status.HTTP_400_BAD_REQUEST)
             
             # Пытаемся получить по ID (если это число)
             try:
@@ -41,7 +41,7 @@ class QuizViewSet(viewsets.ReadOnlyModelViewSet):
                 try:
                     quiz = self.queryset.get(slug=lookup_value)
                 except Quiz.DoesNotExist:
-                    return Response({'error': 'Анкета не найден'}, status=status.HTTP_404_NOT_FOUND)
+                    return Response({'error': 'Анкета не найдена'}, status=status.HTTP_404_NOT_FOUND)
             serializer = QuizSubmissionCreateSerializer(data=request.data)
             
             if not serializer.is_valid():

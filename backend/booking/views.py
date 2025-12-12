@@ -57,8 +57,8 @@ class BookingSubmissionViewSet(viewsets.ModelViewSet):
         for rule in form.rules.filter(is_active=True).order_by('order'):
             field_value = form_data.get(rule.field.name, '')
             if str(field_value) == str(rule.field_value) and rule.quiz:
-                # Правило сработало - открываем анкета
-                # Анкета будет обработан на фронтенде
+                # Правило сработало - открываем анкету
+                # Анкета будет обработана на фронтенде
                 pass
         
         # Создаем отправку формы
@@ -82,7 +82,7 @@ class BookingSubmissionViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'])
     def submit_with_quiz(self, request):
-        """Отправка формы с результатами анкетаа"""
+        """Отправка формы с результатами анкеты"""
         form_id = request.data.get('form_id')
         service_id = request.data.get('service_id')
         form_data = request.data.get('data', {})

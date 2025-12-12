@@ -13,7 +13,7 @@ class BookingForm(models.Model):
                                        default='Спасибо! Мы свяжемся с вами в ближайшее время.')
     default_quiz = models.ForeignKey('quizzes.Quiz', on_delete=models.SET_NULL, null=True, blank=True,
                                    verbose_name='Анкета по умолчанию',
-                                   help_text='Анкета, который откроется всегда при отправке формы (без условий). Если указан, будет показан вместо отправки формы.')
+                                   help_text='Анкета, которая откроется всегда при отправке формы (без условий). Если указана, будет показана вместо отправки формы.')
     is_active = models.BooleanField('Активна', default=True)
     created_at = models.DateTimeField('Создана', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлена', auto_now=True)
@@ -68,14 +68,14 @@ class FormField(models.Model):
 
 
 class FormRule(models.Model):
-    """Правило для формы: при определенном значении поля открыть анкета/анкету"""
+    """Правило для формы: при определенном значении поля открыть анкету"""
     form = models.ForeignKey(BookingForm, on_delete=models.CASCADE, related_name='rules', verbose_name='Форма')
     field = models.ForeignKey(FormField, on_delete=models.CASCADE, verbose_name='Поле')
     field_value = models.CharField('Значение поля', max_length=500,
                                    help_text='Если поле имеет это значение, сработает правило')
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, null=True, blank=True, 
-                            verbose_name='Анкета/Анкета',
-                            help_text='Анкета, который откроется при срабатывании правила')
+                            verbose_name='Анкета',
+                            help_text='Анкета, которая откроется при срабатывании правила')
     order = models.IntegerField('Порядок', default=0)
     is_active = models.BooleanField('Активно', default=True)
     created_at = models.DateTimeField('Создано', auto_now_add=True)
@@ -97,7 +97,7 @@ class BookingSubmission(models.Model):
     data = models.JSONField('Данные формы', default=dict, 
                            help_text='Все данные, отправленные через форму')
     quiz_submission = models.ForeignKey('quizzes.QuizSubmission', on_delete=models.SET_NULL, 
-                                       null=True, blank=True, verbose_name='Отправка анкетаа',
+                                       null=True, blank=True, verbose_name='Отправка анкеты',
                                        related_name='booking_submissions')
     created_at = models.DateTimeField('Создана', auto_now_add=True)
 

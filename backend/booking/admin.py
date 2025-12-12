@@ -36,21 +36,21 @@ class BookingFormAdmin(admin.ModelAdmin):
         }),
         ('Анкета по умолчанию', {
             'fields': ('default_quiz', 'default_quiz_status'),
-            'description': 'Если указан анкета по умолчанию, он будет открываться всегда при отправке формы (без проверки условий). Правила формы будут игнорироваться.'
+            'description': 'Если указана анкета по умолчанию, она будет открываться всегда при отправке формы (без проверки условий). Правила формы будут игнорироваться.'
         }),
     )
     inlines = [FormFieldInline, FormRuleInline]
     
     def default_quiz_status(self, obj):
-        """Показывает статус анкетаа по умолчанию"""
+        """Показывает статус анкеты по умолчанию"""
         if not obj.default_quiz:
-            return 'Анкета не установлен'
+            return 'Анкета не установлена'
         if not obj.default_quiz.is_active:
-            return '⚠️ Анкета неактивен'
+            return '⚠️ Анкета неактивна'
         if not obj.default_quiz.slug:
-            return '⚠️ У анкетаа нет slug'
-        return f'✅ Анкета готов: {obj.default_quiz.title}'
-    default_quiz_status.short_description = 'Статус анкетаа по умолчанию'
+            return '⚠️ У анкеты нет slug'
+        return f'✅ Анкета готова: {obj.default_quiz.title}'
+    default_quiz_status.short_description = 'Статус анкеты по умолчанию'
     
     def fields_count(self, obj):
         return obj.fields.count()
@@ -91,20 +91,20 @@ class FormRuleAdmin(admin.ModelAdmin):
         }),
         ('Анкета', {
             'fields': ('quiz', 'quiz_status'),
-            'description': 'Выберите анкета, который откроется при срабатывании правила. Анкета должен быть активен и иметь slug.'
+            'description': 'Выберите анкету, которая откроется при срабатывании правила. Анкета должна быть активна и иметь slug.'
         }),
     )
     
     def quiz_status(self, obj):
-        """Показывает статус анкетаа"""
+        """Показывает статус анкеты"""
         if not obj.quiz:
-            return '⚠️ Анкета не выбран'
+            return '⚠️ Анкета не выбрана'
         if not obj.quiz.is_active:
-            return '⚠️ Анкета неактивен'
+            return '⚠️ Анкета неактивна'
         if not obj.quiz.slug:
-            return '⚠️ У анкетаа нет slug'
-        return '✅ Анкета готов к использованию'
-    quiz_status.short_description = 'Статус анкетаа'
+            return '⚠️ У анкеты нет slug'
+        return '✅ Анкета готова к использованию'
+    quiz_status.short_description = 'Статус анкеты'
 
 
 @admin.register(BookingSubmission)
