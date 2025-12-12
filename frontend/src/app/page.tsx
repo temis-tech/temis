@@ -34,18 +34,7 @@ export default async function Home() {
     <main>
       <Hero />
       <WelcomeBanners />
-      {hasContent ? (
-        <ContentPage page={homePage} />
-      ) : (
-        <div style={{ padding: '2rem', textAlign: 'center' }}>
-          <p>Создайте главную страницу в админке через конструктор страниц</p>
-          {homePage && (
-            <p style={{ color: '#999', fontSize: '0.9rem', marginTop: '1rem' }}>
-              Debug: page_type={homePage.page_type}, is_active={String(homePage.is_active)}
-            </p>
-          )}
-        </div>
-      )}
+      {hasContent && <ContentPage page={homePage} />}
     </main>
   );
 }

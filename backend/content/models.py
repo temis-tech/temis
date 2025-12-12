@@ -313,6 +313,13 @@ class CatalogItem(models.Model):
         ('none', 'Без кнопки'),
     ]
     
+    WIDTH_CHOICES = [
+        ('narrow', 'Узкая (1/3 ширины)'),
+        ('medium', 'Средняя (1/2 ширины)'),
+        ('wide', 'Широкая (2/3 ширины)'),
+        ('full', 'На всю ширину'),
+    ]
+    
     page = models.ForeignKey(ContentPage, on_delete=models.CASCADE, related_name='catalog_items',
                             verbose_name='Страница', limit_choices_to={'page_type': 'catalog'})
     title = models.CharField('Название', max_length=200)
@@ -322,6 +329,8 @@ class CatalogItem(models.Model):
     image = models.ImageField('Изображение', upload_to='catalog/', blank=True, null=True)
     has_own_page = models.BooleanField('Может быть открыт как страница', default=False,
                                       help_text='Если включено, карточка будет иметь свой URL и может быть открыта как отдельная страница')
+    width = models.CharField('Ширина элемента', max_length=10, choices=WIDTH_CHOICES, default='medium',
+                            help_text='Ширина элемента в сетке каталога')
     order = models.IntegerField('Порядок', default=0)
     is_active = models.BooleanField('Активен', default=True)
     

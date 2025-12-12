@@ -122,7 +122,7 @@
 /* Catalog Styles */
 .catalogGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(12, 1fr);
   gap: 2rem;
 }
 
@@ -130,6 +130,23 @@
   text-decoration: none;
   color: inherit;
   display: block;
+}
+
+/* Ширины элементов каталога */
+.catalogItemNarrow {
+  grid-column: span 4;
+}
+
+.catalogItemMedium {
+  grid-column: span 6;
+}
+
+.catalogItemWide {
+  grid-column: span 8;
+}
+
+.catalogItemFull {
+  grid-column: span 12;
 }
 
 .catalogItem {
@@ -458,7 +475,18 @@
     padding: 1rem;
   }
 
-  .catalogGrid,
+  .catalogGrid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .catalogItemNarrow,
+  .catalogItemMedium,
+  .catalogItemWide,
+  .catalogItemFull {
+    grid-column: span 1;
+  }
+
   .galleryGrid {
     grid-template-columns: 1fr;
     gap: 1.5rem;

@@ -20,7 +20,7 @@ class ContactAdmin(admin.ModelAdmin):
 class CatalogItemInline(admin.TabularInline):
     model = CatalogItem
     extra = 1
-    fields = ['title', 'image', 'description', 'button_type', 'button_text', 'button_booking_form', 'button_quiz', 'button_url', 'order', 'is_active']
+    fields = ['title', 'width', 'order', 'is_active']
     show_change_link = True
     fk_name = 'page'
 
@@ -71,9 +71,9 @@ class ContentPageAdmin(admin.ModelAdmin):
 
 @admin.register(CatalogItem)
 class CatalogItemAdmin(admin.ModelAdmin):
-    list_display = ['title', 'page', 'has_own_page', 'slug', 'button_type', 'order', 'is_active', 'image_preview']
-    list_editable = ['order', 'is_active', 'has_own_page']
-    list_filter = ['page', 'has_own_page', 'button_type', 'is_active']
+    list_display = ['title', 'page', 'width', 'has_own_page', 'slug', 'button_type', 'order', 'is_active', 'image_preview']
+    list_editable = ['order', 'is_active', 'has_own_page', 'width']
+    list_filter = ['page', 'has_own_page', 'button_type', 'is_active', 'width']
     search_fields = ['title', 'description', 'slug']
     readonly_fields = ['image_preview']
     prepopulated_fields = {'slug': ('title',)}
@@ -81,6 +81,10 @@ class CatalogItemAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Основная информация', {
             'fields': ('page', 'title', 'description', 'image', 'image_preview')
+        }),
+        ('Размер и расположение', {
+            'fields': ('width',),
+            'description': 'Ширина элемента в сетке каталога. Узкая - 1/3 ширины, Средняя - 1/2, Широкая - 2/3, На всю ширину - 100%.'
         }),
         ('Страница элемента', {
             'fields': ('has_own_page', 'slug'),

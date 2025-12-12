@@ -77,6 +77,7 @@ export interface SubmissionAnswer {
 }
 
 export interface CatalogItem {
+  width?: 'narrow' | 'medium' | 'wide' | 'full';
   id: number;
   title: string;
   description: string;

@@ -71,63 +71,81 @@ export default function ContentPage({ page }: ContentPageProps) {
     )
   }
 
-  const renderCatalogItems = (items: any[]) => (
-    <div className={styles.catalogGrid}>
-      {items.map((item) => {
-        const hasPage = item.has_own_page && item.url
-        
-        const cardContent = (
-          <div className={styles.catalogItem}>
-            {item.image && (
-              <div className={styles.imageWrapper}>
-                <Image
-                  src={normalizeImageUrl(item.image)}
-                  alt={item.title}
-                  width={400}
-                  height={300}
-                  className={styles.image}
+  const renderCatalogItems = (items: any[]) => {
+    const getWidthClass = (width: string) => {
+      switch (width) {
+        case 'narrow':
+          return styles.catalogItemNarrow
+        case 'medium':
+          return styles.catalogItemMedium
+        case 'wide':
+          return styles.catalogItemWide
+        case 'full':
+          return styles.catalogItemFull
+        default:
+          return styles.catalogItemMedium
+      }
+    }
+
+    return (
+      <div className={styles.catalogGrid}>
+        {items.map((item) => {
+          const hasPage = item.has_own_page && item.url
+          const widthClass = getWidthClass(item.width || 'medium')
+          
+          const cardContent = (
+            <div className={`${styles.catalogItem} ${widthClass}`}>
+              {item.image && (
+                <div className={styles.imageWrapper}>
+                  <Image
+                    src={normalizeImageUrl(item.image)}
+                    alt={item.title}
+                    width={400}
+                    height={300}
+                    className={styles.image}
+                  />
+                </div>
+              )}
+              <h3 className={styles.itemTitle}>{item.title}</h3>
+              {item.description && (
+                <div
+                  className={styles.itemDescription}
+                  dangerouslySetInnerHTML={{ __html: item.description }}
                 />
-              </div>
-            )}
-            <h3 className={styles.itemTitle}>{item.title}</h3>
-            {item.description && (
-              <div
-                className={styles.itemDescription}
-                dangerouslySetInnerHTML={{ __html: item.description }}
-              />
-            )}
-            {item.button_type !== 'none' && (
-              <button
-                type="button"
-                className={styles.button}
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleButtonClick(item)
-                }}
-              >
-                {item.button_text || 'Записаться'}
-              </button>
-            )}
-          </div>
-        )
-        
-        if (hasPage) {
-          return (
-            <Link key={item.id} href={item.url} className={styles.catalogItemLink}>
-              {cardContent}
-            </Link>
+              )}
+              {item.button_type !== 'none' && (
+                <button
+                  type="button"
+                  className={styles.button}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleButtonClick(item)
+                  }}
+                >
+                  {item.button_text || 'Записаться'}
+                </button>
+              )}
+            </div>
           )
-        }
-        
-        return (
-          <div key={item.id}>
-            {cardContent}
-          </div>
-        )
-      })}
-    </div>
-  )
+          
+          if (hasPage) {
+            return (
+              <Link key={item.id} href={item.url} className={`${styles.catalogItemLink} ${widthClass}`}>
+                {cardContent}
+              </Link>
+            )
+          }
+          
+          return (
+            <div key={item.id} className={widthClass}>
+              {cardContent}
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
 
   if (page.page_type === 'catalog') {
     return (
