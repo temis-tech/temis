@@ -48,6 +48,29 @@ export default async function Footer() {
               })}
             </div>
           )}
+          {footerSettings?.show_social && footerSettings?.social_networks && footerSettings.social_networks.length > 0 && (
+            <div className={styles.section}>
+              <h3>Социальные сети</h3>
+              <div className={styles.socialNetworks}>
+                {footerSettings.social_networks.map((network: any) => (
+                  <a
+                    key={network.id}
+                    href={network.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.socialLink}
+                    title={network.name}
+                  >
+                    {network.icon ? (
+                      <img src={normalizeImageUrl(network.icon)} alt={network.name} className={styles.socialIcon} />
+                    ) : (
+                      <span className={styles.socialIconText}>{network.name}</span>
+                    )}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         <div className={styles.copyright}>
           <p>{footerSettings?.copyright_text || '© 2024. Все права защищены'}</p>

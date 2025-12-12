@@ -4,7 +4,7 @@ from .models import (
     Branch, Service, Specialist, Review, Promotion, Article, Contact,
     Menu, MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings,
     ContentPage, CatalogItem, GalleryImage, HomePageBlock,
-    WelcomeBanner, WelcomeBannerCard
+    WelcomeBanner, WelcomeBannerCard, SocialNetwork
 )
 
 
@@ -229,12 +229,31 @@ class HeroSettingsSerializer(serializers.ModelSerializer):
         return None
 
 
+class SocialNetworkSerializer(serializers.ModelSerializer):
+    icon = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = SocialNetwork
+        fields = ['id', 'name', 'network_type', 'url', 'icon', 'order']
+    
+    def get_icon(self, obj):
+        return get_image_url(obj.icon, self.context.get('request'))
+
+
 class FooterSettingsSerializer(serializers.ModelSerializer):
     menu = serializers.SerializerMethodField()
+    social_networks = serializers.SerializerMethodField()
     
     class Meta:
         model = FooterSettings
-        fields = ['copyright_text', 'show_contacts', 'show_navigation', 'show_social', 'additional_text', 'menu']
+        fields = ['copyright_text', 'show_contacts', 'show_navigation', 'show_social', 'additional_text', 'menu', 'social_networks']
+    
+    def get_social_networks(self, obj):
+        """Возвращает список активных соцсетей"""
+        if obj.show_social:
+            networks = SocialNetwork.objects.filter(is_active=True).order_by('order')
+            return SocialNetworkSerializer(networks, many=True, context=self.context).data
+        return []
     
     def get_menu(self, obj):
         """Возвращает меню для футера, если оно выбрано"""

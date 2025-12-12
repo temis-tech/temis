@@ -837,6 +837,44 @@ class HeroSettings(models.Model):
                 print(f"Ошибка обработки фонового изображения для Hero: {e}")
 
 
+class SocialNetwork(models.Model):
+    """Социальная сеть"""
+    NETWORK_TYPES = [
+        ('vk', 'ВКонтакте'),
+        ('telegram', 'Telegram'),
+        ('whatsapp', 'WhatsApp'),
+        ('instagram', 'Instagram'),
+        ('facebook', 'Facebook'),
+        ('youtube', 'YouTube'),
+        ('twitter', 'Twitter'),
+        ('ok', 'Одноклассники'),
+        ('custom', 'Другая'),
+    ]
+    
+    name = models.CharField('Название', max_length=100,
+                           help_text='Название соцсети для отображения')
+    network_type = models.CharField('Тип соцсети', max_length=20, choices=NETWORK_TYPES, default='custom',
+                                    help_text='Выберите тип соцсети или "Другая" для кастомной')
+    url = models.URLField('URL', max_length=500,
+                         help_text='Ссылка на профиль/канал в соцсети')
+    icon = models.ImageField('Иконка', upload_to='social/', blank=True, null=True,
+                             help_text='Иконка соцсети (если не указана, будет использована стандартная)')
+    order = models.IntegerField('Порядок', default=0,
+                               help_text='Порядок отображения в списке')
+    is_active = models.BooleanField('Активна', default=True)
+    created_at = models.DateTimeField('Создана', auto_now_add=True)
+    updated_at = models.DateTimeField('Обновлена', auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Социальная сеть'
+        verbose_name_plural = 'Социальные сети'
+        ordering = ['order', 'name']
+        app_label = 'content'
+    
+    def __str__(self):
+        return self.name
+
+
 class FooterSettings(models.Model):
     """Настройки подвала"""
     copyright_text = models.CharField('Текст копирайта', max_length=200, 

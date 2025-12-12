@@ -27,7 +27,8 @@ class CustomAdminSite(admin.AdminSite):
                 'headersettings',
                 'menu',
                 'menuitem',
-                'footersettings'
+                'footersettings',
+                'socialnetwork'
             ]
             
             # Разделяем модели на группы

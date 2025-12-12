@@ -90,6 +90,45 @@
   white-space: pre-line;
 }
 
+.socialNetworks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  padding: 0;
+  margin: 0;
+}
+
+.socialLink:hover {
+  background: rgba(102, 126, 234, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.socialIcon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.socialIconText {
+  font-size: 0.8rem;
+  color: #fff;
+  font-weight: 500;
+}
+
 @media (max-width: 768px) {
   .footer {
     padding: 3rem 1.5rem 1.5rem;

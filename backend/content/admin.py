@@ -5,7 +5,7 @@ from .models import (
     Contact,
     Menu, MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings,
     ContentPage, CatalogItem, GalleryImage, HomePageBlock,
-    WelcomeBanner, WelcomeBannerCard
+    WelcomeBanner, WelcomeBannerCard, SocialNetwork
 )
 
 
@@ -396,16 +396,43 @@ class HeroSettingsAdmin(admin.ModelAdmin):
         return False
 
 
+@admin.register(SocialNetwork)
+class SocialNetworkAdmin(admin.ModelAdmin):
+    list_display = ['name', 'network_type', 'url', 'order', 'is_active', 'icon_preview']
+    list_editable = ['order', 'is_active']
+    list_filter = ['network_type', 'is_active']
+    search_fields = ['name', 'url']
+    readonly_fields = ['icon_preview']
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('name', 'network_type', 'url', 'icon', 'icon_preview')
+        }),
+        ('Настройки', {
+            'fields': ('order', 'is_active')
+        }),
+    )
+    
+    def icon_preview(self, obj):
+        if obj and obj.icon:
+            return format_html(
+                '<img src="{}" style="max-width: 50px; max-height: 50px; object-fit: contain;" />',
+                obj.icon.url
+            )
+        return "Нет иконки (будет использована стандартная)"
+    icon_preview.short_description = 'Превью иконки'
+
+
 @admin.register(FooterSettings)
 class FooterSettingsAdmin(admin.ModelAdmin):
-    list_display = ['copyright_text', 'show_contacts', 'show_navigation', 'menu']
+    list_display = ['copyright_text', 'show_contacts', 'show_navigation', 'menu', 'show_social']
     fieldsets = (
         ('Копирайт', {
             'fields': ('copyright_text',)
         }),
         ('Отображение', {
             'fields': ('show_contacts', 'show_navigation', 'menu', 'show_social'),
-            'description': 'Выберите меню, которое будет отображаться в футере. Можно создать несколько меню для тестирования разных версий.'
+            'description': 'Выберите меню, которое будет отображаться в футере. Можно создать несколько меню для тестирования разных версий. Для отображения соцсетей создайте их в разделе "Социальные сети".'
         }),
         ('Дополнительно', {
             'fields': ('additional_text',)
@@ -527,7 +554,9 @@ def custom_get_app_list(self, request):
                 category = 'Контакты'
             elif model in [ContentPage, CatalogItem, GalleryImage, HomePageBlock]:
                 category = 'Контент'
-            elif model in [Menu, MenuItem, HeaderSettings, HeroSettings, FooterSettings, SiteSettings, PrivacyPolicy]:
+            elif model in [HeaderSettings, Menu, MenuItem, FooterSettings, SocialNetwork]:
+                category = 'Шапка и Подвал'
+            elif model in [HeroSettings, SiteSettings, PrivacyPolicy]:
                 category = 'Настройки сайта'
             else:
                 category = 'Контент'
