@@ -114,7 +114,7 @@ export default function BookingForm({ formId, serviceId, serviceTitle, onClose }
     } finally {
       setLoading(false);
     }
-  }, [formId, onClose, router, serviceId]);
+  }, [formId, onClose, router, serviceId, serviceTitle]);
 
   useEffect(() => {
     loadForm();

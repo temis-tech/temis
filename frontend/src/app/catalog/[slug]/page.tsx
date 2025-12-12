@@ -107,7 +107,7 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
               </div>
             ) : (
               <div style={{ padding: '2rem', textAlign: 'center', color: '#999', marginBottom: '2rem' }}>
-                Галерея "{item.gallery_page.title || 'Галерея'}" не содержит активных элементов. Добавьте изображения или видео в админке.
+                Галерея &quot;{item.gallery_page.title || 'Галерея'}&quot; не содержит активных элементов. Добавьте изображения или видео в админке.
               </div>
             )
           ) : null}
