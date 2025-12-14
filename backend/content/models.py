@@ -462,6 +462,9 @@ class ContentPage(models.Model):
                                     choices=[('slide', 'Слайд'), ('fade', 'Плавное появление'), ('none', 'Без анимации')],
                                     default='slide',
                                     help_text='Тип анимации при раскрытии вопроса (только для типа "FAQ")')
+    faq_columns = models.IntegerField('Количество колонок', default=1,
+                                     validators=[MinValueValidator(1), MaxValueValidator(3)],
+                                     help_text='Количество вопросов в одной строке (1, 2 или 3). Вопросы будут пропорционально распределены по ширине (только для типа "FAQ")')
     
     show_title = models.BooleanField('Показывать заголовок на странице', default=True,
                                      help_text='Если отключено, заголовок страницы не будет отображаться на сайте')

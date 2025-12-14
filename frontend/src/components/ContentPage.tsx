@@ -434,6 +434,7 @@ export default function ContentPage({ page }: ContentPageProps) {
                       backgroundColor={contentPage.faq_background_color || '#FFFFFF'}
                       backgroundImage={contentPage.faq_background_image}
                       animation={contentPage.faq_animation || 'slide'}
+                      columns={contentPage.faq_columns || 1}
                     />
                   ) : (
                     process.env.NODE_ENV === 'development' && (
@@ -478,39 +479,33 @@ export default function ContentPage({ page }: ContentPageProps) {
 
   if (page.page_type === 'faq') {
     return (
-      <>
-        <div className={styles.container}>
-          {page.show_title && page.title && (
-            <h1 className={styles.title}>{page.title}</h1>
-          )}
-          {page.description && (
-            <div
-              className={styles.description}
-              dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(page.description) }}
-            />
-          )}
-          {page.faq_items && page.faq_items.length > 0 && (
-            <FAQ
-              items={page.faq_items}
-              icon={page.faq_icon}
-              iconPosition={page.faq_icon_position || 'left'}
-              backgroundColor={page.faq_background_color || '#FFFFFF'}
-              backgroundImage={page.faq_background_image}
-              animation={page.faq_animation || 'slide'}
-            />
-          )}
-        </div>
-        {renderCatalogItems(page.catalog_items || [])}
-        {page.gallery_images && page.gallery_images.length > 0 && (
-          <Gallery
-            images={page.gallery_images}
-            displayType={page.gallery_display_type || 'grid'}
-            enableFullscreen={page.gallery_enable_fullscreen !== false}
+      <div className={styles.container}>
+        {page.show_title && page.title && (
+          <h1 className={styles.title}>{page.title}</h1>
+        )}
+        {page.description && (
+          <div
+            className={styles.description}
+            dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(page.description) }}
           />
         )}
-        {renderBranches()}
+        {page.faq_items && page.faq_items.length > 0 ? (
+          <FAQ
+            items={page.faq_items}
+            icon={page.faq_icon}
+            iconPosition={page.faq_icon_position || 'left'}
+            backgroundColor={page.faq_background_color || '#FFFFFF'}
+            backgroundImage={page.faq_background_image}
+            animation={page.faq_animation || 'slide'}
+            columns={page.faq_columns || 1}
+          />
+        ) : (
+          <div style={{ padding: '2rem', textAlign: 'center', color: '#999' }}>
+            Нет элементов FAQ для отображения. Добавьте элементы FAQ в админке.
+          </div>
+        )}
         {renderBookingForm()}
-      </>
+      </div>
     )
   }
 

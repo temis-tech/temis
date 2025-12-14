@@ -20,6 +20,7 @@ interface FAQProps {
   backgroundColor?: string
   backgroundImage?: string | null
   animation?: 'slide' | 'fade' | 'none'
+  columns?: number
 }
 
 export default function FAQ({
@@ -28,7 +29,8 @@ export default function FAQ({
   iconPosition = 'left',
   backgroundColor = '#FFFFFF',
   backgroundImage,
-  animation = 'slide'
+  animation = 'slide',
+  columns = 1
 }: FAQProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
@@ -57,9 +59,13 @@ export default function FAQ({
     backgroundRepeat: 'no-repeat',
   }
 
+  const gridClass = columns === 1 ? styles.faqListSingle : 
+                   columns === 2 ? styles.faqListTwo : 
+                   styles.faqListThree;
+
   return (
     <div className={styles.faqContainer} style={containerStyle}>
-      <div className={styles.faqList}>
+      <div className={`${styles.faqList} ${gridClass}`} style={columns > 1 ? { display: 'grid' } : undefined}>
         {items.map((item, index) => {
           const isOpen = openIndex === index
           

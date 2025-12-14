@@ -10,6 +10,22 @@
   padding: 0 1rem;
 }
 
+.faqListSingle {
+  display: block;
+}
+
+.faqListTwo {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.faqListThree {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
 .faqItem {
   margin-bottom: 1rem;
   border: 1px solid #e0e0e0;
@@ -156,6 +172,12 @@
 }
 
 /* Адаптивность */
+@media (max-width: 1024px) {
+  .faqListThree {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .faqContainer {
     padding: 1.5rem 0;
@@ -163,6 +185,11 @@
 
   .faqList {
     padding: 0 0.75rem;
+  }
+
+  .faqListTwo,
+  .faqListThree {
+    grid-template-columns: 1fr;
   }
 
   .faqQuestion {

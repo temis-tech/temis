@@ -682,7 +682,7 @@ class ContentPageSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'slug', 'page_type', 'description', 'image', 'image_align', 'image_size', 
                  'gallery_display_type', 'gallery_enable_fullscreen', 'show_title', 'is_active', 'catalog_items',
                  'gallery_images', 'home_blocks', 'faq_items', 'faq_icon', 'faq_icon_position', 
-                 'faq_background_color', 'faq_background_image', 'faq_animation', 'branches', 'display_branches',
+                 'faq_background_color', 'faq_background_image', 'faq_animation', 'faq_columns', 'branches', 'display_branches',
                  'selected_catalog_page', 'selected_gallery_page']
     
     def get_image(self, obj):

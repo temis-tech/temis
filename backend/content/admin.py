@@ -112,8 +112,8 @@ class ContentPageAdmin(admin.ModelAdmin):
             'description': 'Настройки отображения галереи. Выберите вид отображения (плитка, карусель, кирпичная кладка) и возможность открытия изображений на весь экран.'
         }),
         ('Настройки FAQ (для типа "FAQ")', {
-            'fields': ('faq_icon', 'faq_icon_preview', 'faq_icon_position', 'faq_background_color', 'faq_background_image', 'faq_background_image_preview', 'faq_animation'),
-            'description': 'Настройки визуального оформления секции FAQ. Можно выбрать иконку для вопросов, её позицию (слева или справа), цвет фона, фоновое изображение и тип анимации при раскрытии вопросов.'
+            'fields': ('faq_icon', 'faq_icon_preview', 'faq_icon_position', 'faq_background_color', 'faq_background_image', 'faq_background_image_preview', 'faq_animation', 'faq_columns'),
+            'description': 'Настройки визуального оформления секции FAQ. Можно выбрать иконку для вопросов, её позицию (слева или справа), цвет фона, фоновое изображение, тип анимации при раскрытии вопросов и количество колонок (1, 2 или 3 вопроса в строке).'
         }),
         ('Филиалы для отображения', {
             'fields': ('display_branches',),
