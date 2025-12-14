@@ -10,6 +10,10 @@ class Migration(migrations.Migration):
     dependencies = [
         ('content', '0039_add_faq_page_type'),
     ]
+    
+    # Добавляем зависимость от auth для User модели
+    if hasattr(settings, 'AUTH_USER_MODEL'):
+        dependencies.append(('auth', '__latest__'))
 
     operations = [
         # Создаем модель ServiceBranch
