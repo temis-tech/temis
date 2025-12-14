@@ -906,18 +906,26 @@ class Menu(models.Model):
 
 class MenuItem(models.Model):
     """Пункт меню"""
+    ITEM_TYPE_CHOICES = [
+        ('link', 'Обычная ссылка'),
+        ('branch_selector', 'Селектор филиала'),
+    ]
+    
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE, related_name='items',
                             verbose_name='Меню', null=True, blank=True,
                             help_text='Выберите меню, к которому относится этот пункт')
+    item_type = models.CharField('Тип пункта', max_length=20, choices=ITEM_TYPE_CHOICES, default='link',
+                                verbose_name='Тип пункта',
+                                help_text='Выберите тип пункта меню. "Селектор филиала" отобразит выбор филиала в меню.')
     title = models.CharField('Название (текст)', max_length=100, blank=True,
-                            help_text='Оставьте пустым, если используете изображение')
+                            help_text='Оставьте пустым, если используете изображение. Для селектора филиала не используется.')
     image = models.ImageField('Изображение', upload_to='menu/', blank=True, null=True,
-                             help_text='Загрузите изображение вместо текста')
+                             help_text='Загрузите изображение вместо текста. Для селектора филиала не используется.')
     url = models.CharField('URL', max_length=200, blank=True,
-                          help_text='Заполните, если используете внешнюю ссылку или кастомный URL')
+                          help_text='Заполните, если используете внешнюю ссылку или кастомный URL. Для селектора филиала не используется.')
     content_page = models.ForeignKey(ContentPage, on_delete=models.SET_NULL, null=True, blank=True,
                                     related_name='menu_items', verbose_name='Страница контента',
-                                    help_text='Выберите страницу контента, если меню ведет на неё')
+                                    help_text='Выберите страницу контента, если меню ведет на неё. Для селектора филиала не используется.')
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, 
                               related_name='children', verbose_name='Родительский пункт',
                               help_text='Выберите родительский пункт для создания вложенного меню')
@@ -933,7 +941,10 @@ class MenuItem(models.Model):
         app_label = 'content'
 
     def __str__(self):
-        display_name = self.title if self.title else (f'Изображение #{self.id}' if self.image else 'Без названия')
+        if self.item_type == 'branch_selector':
+            display_name = 'Селектор филиала'
+        else:
+            display_name = self.title if self.title else (f'Изображение #{self.id}' if self.image else 'Без названия')
         if self.parent:
             return f'{self.parent.title or "Изображение"} → {display_name}'
         return display_name

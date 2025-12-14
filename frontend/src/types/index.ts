@@ -21,6 +21,7 @@ export interface Branch {
 
 export interface MenuItem {
   id: number;
+  item_type?: 'link' | 'branch_selector';
   title?: string;
   image?: string;
   url: string;

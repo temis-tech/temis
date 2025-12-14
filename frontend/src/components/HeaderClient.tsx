@@ -8,6 +8,7 @@ import styles from './Header.module.css';
 
 interface MenuItem {
   id: number;
+  item_type?: 'link' | 'branch_selector';
   title?: string;
   image?: string;
   url: string;
@@ -55,14 +56,21 @@ export default function HeaderClient({
           )}
         </Link>
         <div className={styles.headerRight}>
-          <BranchSelector 
-            className={styles.branchSelector}
-            showLabel={false}
-          />
           {showMenu && menuItems && Array.isArray(menuItems) && menuItems.length > 0 && (
           <nav className={`${styles.nav} ${isMenuOpen ? styles.navOpen : ''}`}>
             {menuItems.map((item) => {
               if (!item) return null;
+              
+              // Селектор филиала
+              if (item.item_type === 'branch_selector') {
+                return (
+                  <div key={item.id} className={styles.menuBranchSelector}>
+                    <BranchSelector 
+                      showLabel={false}
+                    />
+                  </div>
+                );
+              }
               
               const content = item.image ? (
                 <img src={normalizeImageUrl(item.image)} alt={item.title || 'Menu item'} className={styles.menuImage} />
@@ -80,6 +88,17 @@ export default function HeaderClient({
                     </span>
                     <div className={styles.dropdownMenu}>
                       {item.children.map((child) => {
+                        // Селектор филиала во вложенном меню (не рекомендуется, но поддерживается)
+                        if (child.item_type === 'branch_selector') {
+                          return (
+                            <div key={child.id} className={styles.menuBranchSelector}>
+                              <BranchSelector 
+                                showLabel={false}
+                              />
+                            </div>
+                          );
+                        }
+                        
                         const childContent = child.image ? (
                           <img src={normalizeImageUrl(child.image)} alt={child.title || 'Menu item'} className={styles.menuImage} />
                         ) : (

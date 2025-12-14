@@ -287,7 +287,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = MenuItem
-        fields = ['id', 'title', 'image', 'url', 'content_page', 'parent', 'order', 'is_external', 'children']
+        fields = ['id', 'item_type', 'title', 'image', 'url', 'content_page', 'parent', 'order', 'is_external', 'children']
     
     def get_children(self, obj):
         children = obj.children.filter(is_active=True).order_by('order')

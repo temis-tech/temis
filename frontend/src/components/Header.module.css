@@ -35,8 +35,10 @@
   justify-content: flex-end;
 }
 
-.branchSelector {
-  margin-right: auto;
+.menuBranchSelector {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0;
 }
 
 .logo {
@@ -268,9 +270,9 @@
     justify-content: center;
   }
 
-  .branchSelector {
-    margin-right: 0;
+  .menuBranchSelector {
     width: 100%;
+    margin: 0.5rem 0;
   }
 
   .menuButton {

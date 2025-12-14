@@ -352,16 +352,20 @@ class MenuItemInline(admin.TabularInline):
 
 @admin.register(MenuItem)
 class MenuItemAdmin(admin.ModelAdmin):
-    list_display = ['display_name', 'menu', 'parent', 'url', 'order', 'is_active', 'is_external', 'image_preview']
+    list_display = ['display_name', 'item_type', 'menu', 'parent', 'url', 'order', 'is_active', 'is_external', 'image_preview']
     list_editable = ['order', 'is_active', 'is_external']
-    list_filter = ['menu', 'is_active', 'parent']
+    list_filter = ['menu', 'is_active', 'parent', 'item_type']
     search_fields = ['title', 'url']
     list_display_links = ['display_name']
     
     fieldsets = (
         ('Основная информация', {
-            'fields': ('menu', 'title', 'image', 'image_preview', 'content_page', 'url', 'parent'),
-            'description': 'Укажите либо текст (title), либо загрузите изображение. Выберите страницу контента или укажите URL вручную.'
+            'fields': ('menu', 'item_type', 'parent'),
+            'description': 'Выберите тип пункта меню. "Селектор филиала" отобразит выбор филиала в меню.'
+        }),
+        ('Контент (для типа "Обычная ссылка")', {
+            'fields': ('title', 'image', 'image_preview', 'content_page', 'url'),
+            'description': 'Укажите либо текст (title), либо загрузите изображение. Выберите страницу контента или укажите URL вручную. Эти поля используются только для типа "Обычная ссылка".'
         }),
         ('Настройки', {
             'fields': ('order', 'is_active', 'is_external')
@@ -372,6 +376,8 @@ class MenuItemAdmin(admin.ModelAdmin):
     
     def display_name(self, obj):
         """Отображает название или информацию об изображении"""
+        if obj.item_type == 'branch_selector':
+            return '📍 Селектор филиала'
         if obj.image:
             return f'🖼️ Изображение #{obj.id}'
         return obj.title or 'Без названия'
