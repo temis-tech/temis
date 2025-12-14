@@ -1,5 +1,6 @@
 import { contentApi } from '@/lib/api';
 import { normalizeImageUrl } from '@/lib/utils';
+import { normalizeHtmlContent } from '@/lib/htmlUtils';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import BookingFormWrapper from '@/components/BookingFormWrapper';
@@ -18,6 +19,7 @@ interface Service {
   image?: string;
   image_align?: 'left' | 'right' | 'center' | 'full';
   image_size?: 'small' | 'medium' | 'large' | 'full';
+  price_duration_position?: 'top' | 'bottom' | 'hidden';
   has_own_page?: boolean;
   url?: string | null;
   show_booking_button?: boolean;
@@ -129,71 +131,86 @@ export default async function ServicePage({ params }: { params: { slug: string }
             )
           })()}
           
-          <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '1.5rem',
-            marginBottom: '2rem'
-          }}>
-            {service.price && typeof service.price === 'number' && service.price > 0 && (
+          {(() => {
+            const position = service.price_duration_position || 'top';
+            const showBlocks = position !== 'hidden';
+            
+            const priceDurationBlocks = showBlocks ? (
               <div style={{ 
-                background: '#f5f5f5',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                textAlign: 'center'
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: '1.5rem',
+                marginBottom: '2rem'
               }}>
-                <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>Цена</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#FF820E' }}>
-                  {service.price.toLocaleString('ru-RU')} ₽
-                </div>
-                {service.price_with_abonement && typeof service.price_with_abonement === 'number' && service.price_with_abonement < service.price && (
-                  <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.5rem' }}>
-                    По абонементу: {service.price_with_abonement.toLocaleString('ru-RU')} ₽
+                {service.price && typeof service.price === 'number' && service.price > 0 && (
+                  <div style={{ 
+                    background: '#f5f5f5',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>Цена</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#FF820E' }}>
+                      {service.price.toLocaleString('ru-RU')} ₽
+                    </div>
+                    {service.price_with_abonement && typeof service.price_with_abonement === 'number' && service.price_with_abonement < service.price && (
+                      <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.5rem' }}>
+                        По абонементу: {service.price_with_abonement.toLocaleString('ru-RU')} ₽
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                {service.duration && (
+                  <div style={{ 
+                    background: '#f5f5f5',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>Длительность</div>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#333' }}>
+                      {service.duration}
+                    </div>
                   </div>
                 )}
               </div>
-            )}
-            
-            {service.duration && (
-              <div style={{ 
-                background: '#f5f5f5',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>Длительность</div>
-                <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#333' }}>
-                  {service.duration}
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {service.short_description && (
-            <div 
-              style={{ 
-                fontSize: '1.2rem',
-                lineHeight: '1.7',
-                color: '#333',
-                marginBottom: '2rem',
-                fontWeight: 500
-              }}
-            >
-              {service.short_description}
-            </div>
-          )}
-          
-          {service.description && (
-            <div 
-              style={{ 
-                fontSize: '1.1rem',
-                lineHeight: '1.7',
-                color: '#666',
-                marginBottom: '2rem'
-              }}
-              dangerouslySetInnerHTML={{ __html: service.description }}
-            />
-          )}
+            ) : null;
+
+            return (
+              <>
+                {position === 'top' && priceDurationBlocks}
+                
+                {service.short_description && (
+                  <div 
+                    style={{ 
+                      fontSize: '1.2rem',
+                      lineHeight: '1.7',
+                      color: '#333',
+                      marginBottom: '2rem',
+                      fontWeight: 500
+                    }}
+                  >
+                    {service.short_description}
+                  </div>
+                )}
+                
+                {service.description && (
+                  <div 
+                    style={{ 
+                      fontSize: '1.1rem',
+                      lineHeight: '1.7',
+                      color: '#666',
+                      marginBottom: '2rem'
+                    }}
+                    dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(service.description) }}
+                  />
+                )}
+                
+                {position === 'bottom' && priceDurationBlocks}
+              </>
+            );
+          })()}
           
           {service.show_booking_button && service.booking_form_id && (
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>

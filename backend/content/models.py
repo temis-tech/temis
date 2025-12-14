@@ -70,7 +70,8 @@ class Service(models.Model):
     """Услуги центра"""
     title = models.CharField('Название', max_length=200)
     slug = models.SlugField('URL', unique=True, blank=True)
-    description = models.TextField('Описание')
+    description = RichTextField('Описание', blank=True,
+                               help_text='Описание услуги с поддержкой форматирования текста')
     short_description = models.TextField('Краткое описание', blank=True)
     price = models.DecimalField('Цена', max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     price_with_abonement = models.DecimalField('Цена по абонементу', max_digits=10, decimal_places=2, 
@@ -97,6 +98,18 @@ class Service(models.Model):
                                    help_text='Как изображение выравнивается относительно текста')
     image_size = models.CharField('Размер изображения', max_length=10, choices=IMAGE_SIZE_CHOICES, default='medium',
                                  help_text='Размер изображения')
+    
+    # Расположение блоков с ценой и длительностью
+    PRICE_DURATION_POSITION_CHOICES = [
+        ('top', 'Сверху текста'),
+        ('bottom', 'Снизу текста'),
+        ('hidden', 'Не отображать'),
+    ]
+    price_duration_position = models.CharField('Расположение блоков цены и длительности', 
+                                               max_length=10, 
+                                               choices=PRICE_DURATION_POSITION_CHOICES, 
+                                               default='top',
+                                               help_text='Где отображать блоки с ценой и длительностью относительно описания')
     
     has_own_page = models.BooleanField('Может быть открыта как страница', default=False,
                                       help_text='Если включено, услуга будет иметь свой URL и может быть открыта как отдельная страница')

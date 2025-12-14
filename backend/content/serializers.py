@@ -161,7 +161,8 @@ class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = ['id', 'title', 'slug', 'description', 'short_description', 'price', 
-                 'price_with_abonement', 'duration', 'image', 'image_align', 'image_size', 'has_own_page', 'url', 'order', 
+                 'price_with_abonement', 'duration', 'image', 'image_align', 'image_size', 
+                 'price_duration_position', 'has_own_page', 'url', 'order', 
                  'show_booking_button', 'booking_form_id', 'booking_form_title',
                  'service_branches', 'price_range', 'price_with_abonement_range']
     
