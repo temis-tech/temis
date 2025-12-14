@@ -4,7 +4,7 @@ from config.constants import get_api_domain, get_protocol, get_media_base_url, M
 from .models import (
     Branch, Service, Specialist, Review, Promotion, Article, Contact,
     Menu, MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings,
-    ContentPage, CatalogItem, GalleryImage, HomePageBlock,
+    ContentPage, CatalogItem, GalleryImage, HomePageBlock, FAQItem,
     WelcomeBanner, WelcomeBannerCard, SocialNetwork
 )
 
@@ -536,6 +536,12 @@ class ContentPageSerializer(serializers.ModelSerializer):
     def get_image(self, obj):
         return get_image_url(obj.image, self.context.get('request'))
     
+    def get_faq_icon(self, obj):
+        return get_image_url(obj.faq_icon, self.context.get('request'))
+    
+    def get_faq_background_image(self, obj):
+        return get_image_url(obj.faq_background_image, self.context.get('request'))
+    
     def get_catalog_items(self, obj):
         # Каталог можно добавить на страницу любого типа
         items = obj.catalog_items.filter(is_active=True).order_by('order')
@@ -551,5 +557,11 @@ class ContentPageSerializer(serializers.ModelSerializer):
             blocks = obj.home_blocks.filter(is_active=True).order_by('order')
             # Используем упрощенный сериализатор для блоков, чтобы избежать глубокой рекурсии
             return HomePageBlockSerializer(blocks, many=True, context=self.context).data
+        return []
+    
+    def get_faq_items(self, obj):
+        if obj.page_type == 'faq':
+            items = obj.faq_items.filter(is_active=True).order_by('order')
+            return FAQItemSerializer(items, many=True, context=self.context).data
         return []
 

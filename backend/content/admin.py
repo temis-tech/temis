@@ -4,7 +4,7 @@ from django import forms
 from .models import (
     Contact,
     Menu, MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings,
-    ContentPage, CatalogItem, GalleryImage, HomePageBlock,
+    ContentPage, CatalogItem, GalleryImage, HomePageBlock, FAQItem,
     WelcomeBanner, WelcomeBannerCard, SocialNetwork
 )
 
@@ -37,6 +37,14 @@ class HomePageBlockInline(admin.TabularInline):
     model = HomePageBlock
     extra = 1
     fields = ['content_page', 'title', 'show_title', 'order', 'is_active']
+    show_change_link = True
+    fk_name = 'page'
+
+
+class FAQItemInline(admin.TabularInline):
+    model = FAQItem
+    extra = 1
+    fields = ['question', 'answer', 'order', 'is_active']
     show_change_link = True
     fk_name = 'page'
 
@@ -91,6 +99,10 @@ class ContentPageAdmin(admin.ModelAdmin):
         if obj and obj.pk and obj.page_type == 'home':
             inlines.append(HomePageBlockInline)
         
+        # FAQ элементы только для типа 'faq'
+        if obj and obj.pk and obj.page_type == 'faq':
+            inlines.append(FAQItemInline)
+        
         return inlines
 
 
@@ -144,6 +156,22 @@ class CatalogItemAdmin(admin.ModelAdmin):
             )
         return "Нет изображения"
     page_image_preview.short_description = 'Превью страницы'
+
+
+@admin.register(FAQItem)
+class FAQItemAdmin(admin.ModelAdmin):
+    list_display = ['question', 'page', 'order', 'is_active', 'created_at']
+    list_editable = ['order', 'is_active']
+    list_filter = ['page', 'is_active', 'created_at']
+    search_fields = ['question', 'answer']
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('page', 'question', 'answer')
+        }),
+        ('Настройки', {
+            'fields': ('order', 'is_active')
+        }),
+    )
 
 
 @admin.register(GalleryImage)

@@ -296,6 +296,7 @@ class ContentPage(models.Model):
         ('gallery', 'Галерея'),
         ('home', 'Главная'),
         ('text', 'Описание'),
+        ('faq', 'FAQ (Вопросы-Ответы)'),
     ]
     
     title = models.CharField('Название страницы', max_length=200)
@@ -338,6 +339,22 @@ class ContentPage(models.Model):
                                            help_text='Выберите способ отображения изображений галереи (только для типа "Галерея")')
     gallery_enable_fullscreen = models.BooleanField('Открывать изображения на весь экран', default=True,
                                                     help_text='Если включено, при клике на изображение оно откроется в полноэкранном режиме с возможностью перелистывания (только для типа "Галерея")')
+    
+    # Настройки FAQ (для типа "FAQ")
+    faq_icon = models.ImageField('Иконка вопроса', upload_to='faq/', blank=True, null=True,
+                                help_text='Маленькая пиктограммка для вопроса (только для типа "FAQ")')
+    faq_icon_position = models.CharField('Позиция иконки', max_length=10, 
+                                        choices=[('left', 'Слева'), ('right', 'Справа')], 
+                                        default='left',
+                                        help_text='Расположение иконки относительно вопроса (только для типа "FAQ")')
+    faq_background_color = models.CharField('Цвет фона', max_length=7, default='#FFFFFF', blank=True,
+                                          help_text='Цвет фона секции FAQ в формате HEX (например, #FFFFFF) (только для типа "FAQ")')
+    faq_background_image = models.ImageField('Фоновое изображение', upload_to='faq/', blank=True, null=True,
+                                           help_text='Фоновое изображение для секции FAQ (только для типа "FAQ")')
+    faq_animation = models.CharField('Анимация разворачивания', max_length=20,
+                                    choices=[('slide', 'Слайд'), ('fade', 'Плавное появление'), ('none', 'Без анимации')],
+                                    default='slide',
+                                    help_text='Тип анимации при раскрытии вопроса (только для типа "FAQ")')
     
     show_title = models.BooleanField('Показывать заголовок на странице', default=True,
                                      help_text='Если отключено, заголовок страницы не будет отображаться на сайте')
@@ -525,6 +542,27 @@ class GalleryImage(models.Model):
                 super().save(update_fields=['image'])
             except Exception as e:
                 print(f"Ошибка обработки изображения для GalleryImage {self.id}: {e}")
+
+
+class FAQItem(models.Model):
+    """Элемент FAQ (вопрос-ответ)"""
+    page = models.ForeignKey(ContentPage, on_delete=models.CASCADE, related_name='faq_items',
+                            verbose_name='Страница FAQ',
+                            limit_choices_to={'page_type': 'faq'})
+    question = models.CharField('Вопрос', max_length=500)
+    answer = RichTextField('Ответ', help_text='Ответ на вопрос с поддержкой форматирования')
+    order = models.IntegerField('Порядок', default=0)
+    is_active = models.BooleanField('Активен', default=True)
+    created_at = models.DateTimeField('Создан', auto_now_add=True)
+    updated_at = models.DateTimeField('Обновлен', auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Элемент FAQ'
+        verbose_name_plural = 'Элементы FAQ'
+        ordering = ['order', 'created_at']
+    
+    def __str__(self):
+        return self.question[:50] + ('...' if len(self.question) > 50 else '')
 
 
 class WelcomeBanner(models.Model):

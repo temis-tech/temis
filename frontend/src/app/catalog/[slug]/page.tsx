@@ -57,6 +57,7 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
       paddingRight: '2rem',
       paddingBottom: '2rem'
     }}>
+        <GalleryDebug item={item} />
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <h1 style={{ 
             textAlign: 'center', 

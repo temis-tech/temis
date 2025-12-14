@@ -129,11 +129,18 @@ export interface HomePageBlock {
   content_page_data?: ContentPage;
 }
 
+export interface FAQItem {
+  id: number;
+  question: string;
+  answer: string;
+  order: number;
+}
+
 export interface ContentPage {
   id: number;
   title: string;
   slug: string;
-  page_type: 'catalog' | 'gallery' | 'home' | 'text';
+  page_type: 'catalog' | 'gallery' | 'home' | 'text' | 'faq';
   description: string;
   image?: string;
   image_align?: 'left' | 'right' | 'center' | 'full';
@@ -145,6 +152,13 @@ export interface ContentPage {
   catalog_items?: CatalogItem[];
   gallery_images?: GalleryImage[];
   home_blocks?: HomePageBlock[];
+  // FAQ настройки
+  faq_items?: FAQItem[];
+  faq_icon?: string | null;
+  faq_icon_position?: 'left' | 'right';
+  faq_background_color?: string;
+  faq_background_image?: string | null;
+  faq_animation?: 'slide' | 'fade' | 'none';
 }
 
 export interface WelcomeBannerCard {
