@@ -481,20 +481,25 @@ class MoyKlassFieldMappingForm(forms.ModelForm):
         # Получаем integration из instance или из initial
         integration = None
         
-        # Сначала пробуем получить из instance (для существующих записей)
-        if self.instance:
+        # ПРИОРИТЕТ 1: Пробуем получить из parent_obj (передается через get_form в inline)
+        if hasattr(self, 'parent_obj') and self.parent_obj:
+            integration = self.parent_obj
+            logger.info(f'MoyKlassFieldMappingForm.__init__: integration из parent_obj: {integration.id}')
+        
+        # ПРИОРИТЕТ 2: Пробуем получить из instance (для существующих записей)
+        if not integration and self.instance:
             # Для существующих записей с pk
             if self.instance.pk:
                 # Пробуем получить через связь
                 if hasattr(self.instance, 'integration') and self.instance.integration:
                     integration = self.instance.integration
-                    logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из instance.integration (pk={self.instance.pk}): {integration.id}')
+                    logger.info(f'MoyKlassFieldMappingForm.__init__: integration из instance.integration (pk={self.instance.pk}): {integration.id}')
                 # Если связь не загружена, пробуем через integration_id
                 elif hasattr(self.instance, 'integration_id') and self.instance.integration_id:
                     from .models import MoyKlassIntegration
                     try:
                         integration = MoyKlassIntegration.objects.select_related('booking_form', 'quiz').get(id=self.instance.integration_id)
-                        logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из integration_id (pk={self.instance.pk}): {integration.id}')
+                        logger.info(f'MoyKlassFieldMappingForm.__init__: integration из integration_id (pk={self.instance.pk}): {integration.id}')
                     except MoyKlassIntegration.DoesNotExist:
                         logger.warning(f'MoyKlassFieldMappingForm.__init__: integration с id={self.instance.integration_id} не найден')
             # Для новых записей без pk
@@ -502,17 +507,17 @@ class MoyKlassFieldMappingForm(forms.ModelForm):
                 # Пробуем получить через связь, если она установлена
                 if hasattr(self.instance, 'integration') and self.instance.integration:
                     integration = self.instance.integration
-                    logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из instance.integration (новый): {integration.id}')
+                    logger.info(f'MoyKlassFieldMappingForm.__init__: integration из instance.integration (новый): {integration.id}')
                 # Или через integration_id
                 elif hasattr(self.instance, 'integration_id') and self.instance.integration_id:
                     from .models import MoyKlassIntegration
                     try:
                         integration = MoyKlassIntegration.objects.select_related('booking_form', 'quiz').get(id=self.instance.integration_id)
-                        logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из integration_id (новый): {integration.id}')
+                        logger.info(f'MoyKlassFieldMappingForm.__init__: integration из integration_id (новый): {integration.id}')
                     except MoyKlassIntegration.DoesNotExist:
                         logger.warning(f'MoyKlassFieldMappingForm.__init__: integration с id={self.instance.integration_id} не найден')
         
-        # Если не нашли, пробуем из initial
+        # ПРИОРИТЕТ 3: Пробуем из initial
         if not integration and 'initial' in kwargs:
             initial = kwargs.get('initial', {})
             if 'integration' in initial:
@@ -520,16 +525,18 @@ class MoyKlassFieldMappingForm(forms.ModelForm):
                 from .models import MoyKlassIntegration
                 try:
                     integration = MoyKlassIntegration.objects.select_related('booking_form', 'quiz').get(id=integration_id)
-                    logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из initial: {integration.id}')
+                    logger.info(f'MoyKlassFieldMappingForm.__init__: integration из initial: {integration.id}')
                 except (MoyKlassIntegration.DoesNotExist, ValueError, TypeError) as e:
                     logger.warning(f'MoyKlassFieldMappingForm.__init__: ошибка получения integration из initial: {e}')
         
         if not integration:
-            logger.warning(
+            logger.error(
                 f'MoyKlassFieldMappingForm.__init__: integration не найден. '
                 f'instance.pk={self.instance.pk if self.instance else None}, '
                 f'hasattr integration={hasattr(self.instance, "integration") if self.instance else False}, '
-                f'integration_id={getattr(self.instance, "integration_id", None) if self.instance else None}'
+                f'integration_id={getattr(self.instance, "integration_id", None) if self.instance else None}, '
+                f'hasattr parent_obj={hasattr(self, "parent_obj")}, '
+                f'parent_obj={getattr(self, "parent_obj", None)}'
             )
         
         # Если integration есть, заполняем choices для source_field_name
@@ -589,6 +596,23 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
         qs = super().get_queryset(request)
         return qs.select_related('integration', 'integration__booking_form', 'integration__quiz')
     
+    def get_form(self, request, obj=None, **kwargs):
+        """Передаем parent_obj в форму через замыкание"""
+        # Сохраняем parent_obj для использования в форме
+        parent_obj = obj
+        
+        # Получаем базовую форму
+        form_class = super().get_form(request, obj, **kwargs)
+        
+        # Создаем обертку для формы, которая передаст parent_obj
+        class FormWithParent(form_class):
+            def __init__(self, *args, **kwargs):
+                # Сохраняем parent_obj перед вызовом super().__init__
+                self.parent_obj = parent_obj
+                super().__init__(*args, **kwargs)
+        
+        return FormWithParent
+    
     def get_formset(self, request, obj=None, **kwargs):
         # Сохраняем obj для использования в формах
         parent_obj = obj
@@ -605,50 +629,75 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
                         if 'integration' not in initial_data:
                             initial_data['integration'] = parent_obj.id
                 
+                # Сохраняем parent_obj для использования в _construct_form
+                self._parent_obj = parent_obj
+                
                 super().__init__(*args, **kwargs)
                 
                 import logging
                 logger = logging.getLogger(__name__)
                 
                 if parent_obj:
-                    logger.debug(f'MoyKlassFieldMappingInline.get_formset: обновление choices для интеграции {parent_obj.id}, тип: {parent_obj.source_type}')
+                    logger.info(f'MoyKlassFieldMappingInline.get_formset: обновление choices для интеграции {parent_obj.id}, тип: {parent_obj.source_type}')
                     
                     # Загружаем связанные объекты для parent_obj
                     if parent_obj.source_type == 'booking_form' and parent_obj.booking_form_id:
                         from booking.models import BookingForm
                         try:
                             parent_obj.booking_form = BookingForm.objects.prefetch_related('fields').get(id=parent_obj.booking_form_id)
+                            logger.info(f'MoyKlassFieldMappingInline: загружена форма записи {parent_obj.booking_form.id} с {parent_obj.booking_form.fields.count()} полями')
                         except BookingForm.DoesNotExist:
                             logger.warning(f'MoyKlassFieldMappingInline: форма записи {parent_obj.booking_form_id} не найдена')
                     elif parent_obj.source_type == 'quiz' and parent_obj.quiz_id:
                         from quizzes.models import Quiz
                         try:
                             parent_obj.quiz = Quiz.objects.prefetch_related('questions').get(id=parent_obj.quiz_id)
+                            logger.info(f'MoyKlassFieldMappingInline: загружена анкета {parent_obj.quiz.id} с {parent_obj.quiz.questions.count()} вопросами')
                         except Quiz.DoesNotExist:
                             logger.warning(f'MoyKlassFieldMappingInline: анкета {parent_obj.quiz_id} не найдена')
+            
+            def _construct_form(self, i, **kwargs):
+                """Устанавливаем parent_obj для каждой формы перед её созданием"""
+                form = super()._construct_form(i, **kwargs)
+                if hasattr(self, '_parent_obj') and self._parent_obj:
+                    # Устанавливаем parent_obj для формы
+                    form.parent_obj = self._parent_obj
+                    # Также устанавливаем для instance
+                    if hasattr(form, 'instance') and form.instance:
+                        form.instance.integration = self._parent_obj
+                return form
                     
                     # Обновляем choices для каждого поля в каждой форме
                     for idx, form in enumerate(self.forms):
                         if 'source_field_name' in form.fields:
+                            # Устанавливаем parent_obj для формы (для использования в форме)
+                            if hasattr(form, 'parent_obj'):
+                                form.parent_obj = parent_obj
+                            else:
+                                # Добавляем parent_obj как атрибут формы
+                                form.parent_obj = parent_obj
+                            
                             # Устанавливаем integration для формы, если его нет
                             if hasattr(form, 'instance') and form.instance:
                                 if not hasattr(form.instance, 'integration') or not form.instance.integration:
                                     form.instance.integration = parent_obj
+                                    logger.info(f'Форма {idx}: установлен integration {parent_obj.id} для instance')
                                 elif form.instance.integration_id != parent_obj.id:
                                     form.instance.integration = parent_obj
+                                    logger.info(f'Форма {idx}: обновлен integration {parent_obj.id} для instance')
                             
                             choices = [('', '---------')]
                             
                             if parent_obj.source_type == 'booking_form' and parent_obj.booking_form:
                                 form_fields = parent_obj.booking_form.fields.all().order_by('order', 'id')
-                                logger.debug(f'Форма {idx}: форма записи {parent_obj.booking_form.id}, полей: {form_fields.count()}')
+                                logger.info(f'Форма {idx}: форма записи {parent_obj.booking_form.id}, полей: {form_fields.count()}')
                                 if form_fields.exists():
                                     for field in form_fields:
                                         choices.append((
                                             field.name,
                                             f'{field.label} ({field.name}) - {field.get_field_type_display()}'
                                         ))
-                                    logger.debug(f'Форма {idx}: добавлено {len(choices)-1} полей')
+                                    logger.info(f'Форма {idx}: добавлено {len(choices)-1} полей в choices')
                                 else:
                                     choices.append(('', 'В форме нет полей. Добавьте поля в форму записи.'))
                                     logger.warning(f'Форма {idx}: в форме {parent_obj.booking_form.id} нет полей')
@@ -662,6 +711,9 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
                                         f'question_{question.id}',
                                         f'{question.text[:50]}... (question_{question.id})'
                                     ))
+                                logger.info(f'Форма {idx}: добавлены поля анкеты, всего опций: {len(choices)}')
+                            else:
+                                logger.warning(f'Форма {idx}: parent_obj не имеет booking_form или quiz. source_type={parent_obj.source_type}')
                             
                             # Обновляем choices виджета - ПРИНУДИТЕЛЬНО
                             # Полностью пересоздаем виджет с правильными choices
@@ -672,7 +724,7 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
                                     'data-integration-id': str(parent_obj.id)
                                 }
                             )
-                            logger.debug(f'Форма {idx}: обновлены choices для source_field_name, всего опций: {len(choices)}')
+                            logger.info(f'Форма {idx}: обновлены choices для source_field_name, всего опций: {len(choices)}')
                             
                             # Устанавливаем integration для новых форм
                             if hasattr(form, 'instance') and form.instance:
@@ -682,7 +734,7 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
                                     if not hasattr(form, 'initial') or form.initial is None:
                                         form.initial = {}
                                     form.initial['integration'] = parent_obj.id
-                                    logger.debug(f'Форма {idx}: установлена интеграция {parent_obj.id} для нового маппинга')
+                                    logger.info(f'Форма {idx}: установлена интеграция {parent_obj.id} для нового маппинга')
         
         return CustomFormSet
 
