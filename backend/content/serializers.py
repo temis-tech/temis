@@ -350,12 +350,13 @@ class CatalogItemSerializer(serializers.ModelSerializer):
     button_booking_form_id = serializers.SerializerMethodField()
     button_quiz_slug = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField()
+    gallery_page = serializers.SerializerMethodField()
     
     class Meta:
         model = CatalogItem
         fields = ['id', 'title', 'card_description', 'description', 'card_image', 'image', 'image_align', 'image_size', 'has_own_page', 'slug', 'url', 'width',
                  'button_type', 'button_text', 'button_booking_form_id', 'button_quiz_slug', 
-                 'button_url', 'video_url', 'video_width', 'video_height', 'order']
+                 'button_url', 'video_url', 'video_width', 'video_height', 'gallery_page', 'order']
     
     def get_card_image(self, obj):
         """Возвращает изображение для карточки (превью)"""
