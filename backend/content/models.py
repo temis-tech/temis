@@ -35,6 +35,10 @@ class Branch(models.Model):
     metro = models.CharField('Метро', max_length=100)
     phone = models.CharField('Телефон', max_length=20)
     image = models.ImageField('Изображение', upload_to='branches/', blank=True, null=True)
+    # Связь со страницей контента - позволяет создать страницу филиала через конструктор
+    content_page = models.ForeignKey('ContentPage', on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='branches', verbose_name='Страница филиала',
+                                    help_text='Страница контента для отображения информации о филиале через конструктор')
     order = models.IntegerField('Порядок', default=0)
     is_active = models.BooleanField('Активен', default=True)
     created_at = models.DateTimeField('Создан', auto_now_add=True)
@@ -501,7 +505,17 @@ class CatalogItem(models.Model):
     
     page = models.ForeignKey(ContentPage, on_delete=models.CASCADE, related_name='catalog_items',
                             verbose_name='Страница', help_text='Каталог можно добавить на страницу любого типа')
-    title = models.CharField('Название', max_length=200)
+    
+    # Связи с услугами и филиалами - позволяет отображать их в каталоге
+    service = models.ForeignKey('Service', on_delete=models.SET_NULL, null=True, blank=True,
+                               related_name='catalog_items', verbose_name='Услуга',
+                               help_text='Если выбрана услуга, элемент каталога будет использовать данные услуги (название, описание, изображение, цены)')
+    branch = models.ForeignKey('Branch', on_delete=models.SET_NULL, null=True, blank=True,
+                              related_name='catalog_items', verbose_name='Филиал',
+                              help_text='Если выбран филиал, элемент каталога будет использовать данные филиала (название, адрес, изображение)')
+    
+    title = models.CharField('Название', max_length=200, blank=True,
+                            help_text='Автоматически заполняется из услуги или филиала, если они выбраны. Можно переопределить вручную.')
     slug = models.SlugField('URL', unique=True, blank=True,
                            help_text='Автоматически генерируется из названия, если не указан. Используется для создания страницы элемента.')
     
@@ -595,6 +609,40 @@ class CatalogItem(models.Model):
         return None
     
     def save(self, *args, **kwargs):
+        # Автоматически заполняем title из услуги или филиала, если они выбраны и title не указан
+        if not self.title:
+            if self.service:
+                self.title = self.service.title
+            elif self.branch:
+                self.title = self.branch.name
+        
+        # Автоматически заполняем описание из услуги, если оно не указано
+        if not self.description and self.service:
+            self.description = self.service.description
+        
+        # Автоматически заполняем card_description из услуги, если оно не указано
+        if not self.card_description and self.service:
+            self.card_description = self.service.short_description or self.service.description
+        
+        # Автоматически заполняем изображение из услуги или филиала, если оно не указано
+        # Примечание: копируем путь к файлу, а не сам файл
+        if not self.card_image:
+            if self.service and self.service.image:
+                # Копируем путь к изображению услуги
+                self.card_image = self.service.image
+            elif self.branch and self.branch.image:
+                # Копируем путь к изображению филиала
+                self.card_image = self.branch.image
+        
+        # Если выбрана услуга, автоматически настраиваем кнопку "Записаться"
+        if self.service and self.service.show_booking_button and self.service.booking_form:
+            if self.button_type == 'none' or not self.button_type:
+                self.button_type = 'booking'
+                if not self.button_text:
+                    self.button_text = 'Записаться'
+                if not self.button_booking_form:
+                    self.button_booking_form = self.service.booking_form
+        
         if not self.slug and self.has_own_page:
             self.slug = transliterate_slug(self.title) or f'catalog-item-{self.id or 0}'
         super().save(*args, **kwargs)

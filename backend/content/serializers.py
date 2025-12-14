@@ -103,13 +103,20 @@ def get_image_url(image_field, request=None):
 
 class BranchSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
+    content_page = serializers.SerializerMethodField()
     
     class Meta:
         model = Branch
-        fields = ['id', 'name', 'address', 'metro', 'phone', 'image', 'order']
+        fields = ['id', 'name', 'address', 'metro', 'phone', 'image', 'content_page', 'order']
     
     def get_image(self, obj):
         return get_image_url(obj.image, self.context.get('request'))
+    
+    def get_content_page(self, obj):
+        """Возвращает данные страницы контента филиала, если она есть"""
+        if obj.content_page:
+            return ContentPageSerializer(obj.content_page, context=self.context).data
+        return None
 
 
 class ServiceBranchSerializer(serializers.ModelSerializer):
@@ -434,12 +441,17 @@ class CatalogItemSerializer(serializers.ModelSerializer):
     button_quiz_slug = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField()
     gallery_page = serializers.SerializerMethodField()
+    service = serializers.SerializerMethodField()
+    branch = serializers.SerializerMethodField()
+    service_id = serializers.IntegerField(source='service.id', read_only=True, allow_null=True)
+    branch_id = serializers.IntegerField(source='branch.id', read_only=True, allow_null=True)
     
     class Meta:
         model = CatalogItem
         fields = ['id', 'title', 'card_description', 'description', 'card_image', 'image', 'image_align', 'image_size', 'has_own_page', 'slug', 'url', 'width',
                  'button_type', 'button_text', 'button_booking_form_id', 'button_quiz_slug', 
-                 'button_url', 'video_url', 'video_width', 'video_height', 'gallery_page', 'order']
+                 'button_url', 'video_url', 'video_width', 'video_height', 'gallery_page', 
+                 'service', 'service_id', 'branch', 'branch_id', 'order']
     
     def get_card_image(self, obj):
         """Возвращает изображение для карточки (превью)"""
@@ -479,6 +491,18 @@ class CatalogItemSerializer(serializers.ModelSerializer):
             if not gallery_data.get('gallery_images'):
                 gallery_data['gallery_images'] = []
             return gallery_data
+        return None
+    
+    def get_service(self, obj):
+        """Возвращает данные услуги, если она выбрана"""
+        if obj.service:
+            return ServiceSerializer(obj.service, context=self.context).data
+        return None
+    
+    def get_branch(self, obj):
+        """Возвращает данные филиала, если он выбран"""
+        if obj.branch:
+            return BranchSerializer(obj.branch, context=self.context).data
         return None
 
 
@@ -608,6 +632,7 @@ class ContentPageSerializer(serializers.ModelSerializer):
     gallery_images = serializers.SerializerMethodField()
     home_blocks = serializers.SerializerMethodField()
     faq_items = serializers.SerializerMethodField()
+    branches = serializers.SerializerMethodField()
     
     image = serializers.SerializerMethodField()
     faq_icon = serializers.SerializerMethodField()
@@ -618,7 +643,7 @@ class ContentPageSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'slug', 'page_type', 'description', 'image', 'image_align', 'image_size', 
                  'gallery_display_type', 'gallery_enable_fullscreen', 'show_title', 'is_active', 'catalog_items',
                  'gallery_images', 'home_blocks', 'faq_items', 'faq_icon', 'faq_icon_position', 
-                 'faq_background_color', 'faq_background_image', 'faq_animation']
+                 'faq_background_color', 'faq_background_image', 'faq_animation', 'branches']
     
     def get_image(self, obj):
         return get_image_url(obj.image, self.context.get('request'))
@@ -651,4 +676,9 @@ class ContentPageSerializer(serializers.ModelSerializer):
             items = obj.faq_items.filter(is_active=True).order_by('order')
             return FAQItemSerializer(items, many=True, context=self.context).data
         return []
+    
+    def get_branches(self, obj):
+        """Возвращает список филиалов, связанных с этой страницей"""
+        branches = obj.branches.filter(is_active=True).order_by('order')
+        return BranchSerializer(branches, many=True, context=self.context).data
 

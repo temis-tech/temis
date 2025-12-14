@@ -22,15 +22,19 @@ class ContactAdmin(admin.ModelAdmin):
 # ==================== ФИЛИАЛЫ ====================
 @admin.register(Branch)
 class BranchAdmin(admin.ModelAdmin):
-    list_display = ['name', 'metro', 'address', 'phone', 'order', 'is_active', 'image_preview']
+    list_display = ['name', 'metro', 'address', 'phone', 'order', 'is_active', 'content_page', 'image_preview']
     list_editable = ['order', 'is_active']
-    list_filter = ['is_active', 'created_at']
+    list_filter = ['is_active', 'created_at', 'content_page']
     search_fields = ['name', 'address', 'metro', 'phone']
     readonly_fields = ['image_preview', 'created_at', 'updated_at']
     
     fieldsets = (
         ('Основная информация', {
             'fields': ('name', 'address', 'metro', 'phone', 'image', 'image_preview')
+        }),
+        ('Страница филиала', {
+            'fields': ('content_page',),
+            'description': 'Выберите страницу контента для отображения информации о филиале через конструктор. Это позволит создать отдельную страницу для филиала с описанием, галереей и другими элементами.'
         }),
         ('Настройки', {
             'fields': ('order', 'is_active', 'created_at', 'updated_at')
@@ -139,16 +143,17 @@ class ContentPageAdmin(admin.ModelAdmin):
 
 @admin.register(CatalogItem)
 class CatalogItemAdmin(admin.ModelAdmin):
-    list_display = ['title', 'page', 'width', 'has_own_page', 'slug', 'button_type', 'order', 'is_active', 'card_image_preview']
+    list_display = ['title', 'page', 'service', 'branch', 'width', 'has_own_page', 'slug', 'button_type', 'order', 'is_active', 'card_image_preview']
     list_editable = ['order', 'is_active', 'has_own_page', 'width']
-    list_filter = ['page', 'has_own_page', 'button_type', 'is_active', 'width']
-    search_fields = ['title', 'description', 'slug']
+    list_filter = ['page', 'service', 'branch', 'has_own_page', 'button_type', 'is_active', 'width']
+    search_fields = ['title', 'description', 'slug', 'service__title', 'branch__name']
     readonly_fields = ['card_image_preview', 'page_image_preview']
     prepopulated_fields = {'slug': ('title',)}
     
     fieldsets = (
         ('Основная информация', {
-            'fields': ('page', 'title')
+            'fields': ('page', 'service', 'branch', 'title'),
+            'description': 'Выберите услугу или филиал для автоматического заполнения данных элемента каталога. Название, описание и изображение будут автоматически взяты из выбранной услуги или филиала, но их можно переопределить вручную.'
         }),
         ('Карточка (превью в списке)', {
             'fields': ('card_image', 'card_image_preview', 'card_description', 'width', 'button_type', 'button_text', 'button_booking_form', 'button_quiz', 'button_url'),
