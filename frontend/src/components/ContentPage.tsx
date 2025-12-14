@@ -330,6 +330,17 @@ export default function ContentPage({ page }: ContentPageProps) {
               {contentPage.page_type === 'text' && contentPage.description && (
                 <div className={styles.textContent} dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(contentPage.description) }} />
               )}
+
+              {contentPage.page_type === 'faq' && contentPage.faq_items && contentPage.faq_items.length > 0 && (
+                <FAQ
+                  items={contentPage.faq_items}
+                  icon={contentPage.faq_icon}
+                  iconPosition={contentPage.faq_icon_position || 'left'}
+                  backgroundColor={contentPage.faq_background_color || '#FFFFFF'}
+                  backgroundImage={contentPage.faq_background_image}
+                  animation={contentPage.faq_animation || 'slide'}
+                />
+              )}
             </div>
           )
         })}
