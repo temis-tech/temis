@@ -49,6 +49,13 @@ export const contentApi = {
   getCatalogItemBySlug: (slug: string) => api.get(`/content/catalog-items/by-slug/${slug}/`),
   // Услуги
   getServiceBySlug: (slug: string) => api.get(`/content/services/by-slug/${slug}/`),
+  getServices: (branchId?: number) => {
+    const url = branchId 
+      ? `/content/services/by-branch/${branchId}/`
+      : '/content/services/';
+    return api.get(url);
+  },
+  getBranchById: (id: number) => api.get(`/content/branches/${id}/`),
 };
 
 // Quizzes API

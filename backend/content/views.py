@@ -163,6 +163,25 @@ class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ServiceSerializer
     lookup_field = 'slug'
     
+    def get_queryset(self):
+        """Фильтруем услуги по филиалу, если указан branch_id"""
+        queryset = super().get_queryset()
+        branch_id = self.request.query_params.get('branch_id', None)
+        
+        if branch_id:
+            try:
+                branch_id = int(branch_id)
+                # Фильтруем услуги, которые доступны в указанном филиале
+                queryset = queryset.filter(
+                    service_branches__branch_id=branch_id,
+                    service_branches__is_available=True,
+                    service_branches__branch__is_active=True
+                ).distinct()
+            except (ValueError, TypeError):
+                pass  # Игнорируем невалидный branch_id
+        
+        return queryset
+    
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context['request'] = self.request
@@ -172,8 +191,25 @@ class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
     def by_slug(self, request, slug=None):
         """Получить услугу по slug"""
         try:
-            service = self.queryset.get(slug=slug)
+            service = self.get_queryset().get(slug=slug)
             serializer = self.get_serializer(service)
             return Response(serializer.data)
         except Service.DoesNotExist:
             return Response({'error': 'Услуга не найдена'}, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=False, methods=['get'], url_path='by-branch/(?P<branch_id>[^/.]+)')
+    def by_branch(self, request, branch_id=None):
+        """Получить услуги по филиалу"""
+        try:
+            branch_id = int(branch_id)
+            services = self.get_queryset().filter(
+                service_branches__branch_id=branch_id,
+                service_branches__is_available=True,
+                service_branches__branch__is_active=True
+            ).distinct()
+            serializer = self.get_serializer(services, many=True)
+            return Response(serializer.data)
+        except (ValueError, TypeError):
+            return Response({'error': 'Неверный ID филиала'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

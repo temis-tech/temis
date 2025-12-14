@@ -638,12 +638,14 @@ class ContentPageSerializer(serializers.ModelSerializer):
     faq_icon = serializers.SerializerMethodField()
     faq_background_image = serializers.SerializerMethodField()
     
+    display_branches = serializers.SerializerMethodField()
+    
     class Meta:
         model = ContentPage
         fields = ['id', 'title', 'slug', 'page_type', 'description', 'image', 'image_align', 'image_size', 
                  'gallery_display_type', 'gallery_enable_fullscreen', 'show_title', 'is_active', 'catalog_items',
                  'gallery_images', 'home_blocks', 'faq_items', 'faq_icon', 'faq_icon_position', 
-                 'faq_background_color', 'faq_background_image', 'faq_animation', 'branches']
+                 'faq_background_color', 'faq_background_image', 'faq_animation', 'branches', 'display_branches']
     
     def get_image(self, obj):
         return get_image_url(obj.image, self.context.get('request'))
@@ -678,7 +680,12 @@ class ContentPageSerializer(serializers.ModelSerializer):
         return []
     
     def get_branches(self, obj):
-        """Возвращает список филиалов, связанных с этой страницей"""
+        """Возвращает список филиалов, связанных с этой страницей (через content_page)"""
         branches = obj.branches.filter(is_active=True).order_by('order')
+        return BranchSerializer(branches, many=True, context=self.context).data
+    
+    def get_display_branches(self, obj):
+        """Возвращает список филиалов для отображения на странице (через ManyToMany)"""
+        branches = obj.display_branches.filter(is_active=True).order_by('order')
         return BranchSerializer(branches, many=True, context=self.context).data
 

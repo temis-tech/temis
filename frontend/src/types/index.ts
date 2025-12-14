@@ -169,6 +169,9 @@ export interface ContentPage {
   faq_background_color?: string;
   faq_background_image?: string | null;
   faq_animation?: 'slide' | 'fade' | 'none';
+  // Филиалы
+  branches?: Branch[];  // Филиалы, связанные через content_page (для страницы филиала)
+  display_branches?: Branch[];  // Филиалы для отображения на странице (ManyToMany)
 }
 
 export interface WelcomeBannerCard {

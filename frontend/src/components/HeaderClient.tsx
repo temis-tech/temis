@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { normalizeImageUrl } from '@/lib/utils';
+import BranchSelector from './BranchSelector';
 import styles from './Header.module.css';
 
 interface MenuItem {
@@ -53,7 +54,12 @@ export default function HeaderClient({
             <span className={styles.logoText}>{logoText}</span>
           )}
         </Link>
-        {showMenu && menuItems && Array.isArray(menuItems) && menuItems.length > 0 && (
+        <div className={styles.headerRight}>
+          <BranchSelector 
+            className={styles.branchSelector}
+            showLabel={false}
+          />
+          {showMenu && menuItems && Array.isArray(menuItems) && menuItems.length > 0 && (
           <nav className={`${styles.nav} ${isMenuOpen ? styles.navOpen : ''}`}>
             {menuItems.map((item) => {
               if (!item) return null;
@@ -131,12 +137,13 @@ export default function HeaderClient({
               );
             })}
           </nav>
-        )}
-        {showPhone && phoneText && (
-          <a href={`tel:${phoneText}`} className={styles.phone}>
-            {phoneText}
-          </a>
-        )}
+          )}
+          {showPhone && phoneText && (
+            <a href={`tel:${phoneText}`} className={styles.phone}>
+              {phoneText}
+            </a>
+          )}
+        </div>
         <button 
           className={styles.menuButton}
           onClick={() => setIsMenuOpen(!isMenuOpen)}

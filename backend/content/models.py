@@ -465,6 +465,13 @@ class ContentPage(models.Model):
     
     show_title = models.BooleanField('Показывать заголовок на странице', default=True,
                                      help_text='Если отключено, заголовок страницы не будет отображаться на сайте')
+    
+    # Филиалы для отображения на странице
+    display_branches = models.ManyToManyField('Branch', blank=True, 
+                                              related_name='displayed_on_pages',
+                                              verbose_name='Филиалы для отображения',
+                                              help_text='Выберите филиалы, которые будут отображаться на этой странице. Можно использовать для создания страницы контактов или страницы с информацией о филиалах.')
+    
     is_active = models.BooleanField('Активна', default=True)
     order = models.IntegerField('Порядок', default=0)
     created_at = models.DateTimeField('Создана', auto_now_add=True)

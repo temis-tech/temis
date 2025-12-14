@@ -27,6 +27,18 @@
   min-height: var(--header-height, 140px);
 }
 
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.branchSelector {
+  margin-right: auto;
+}
+
 .logo {
   font-size: 1.8rem;
   font-weight: 700;
@@ -246,6 +258,19 @@
 @media (max-width: 768px) {
   .container {
     padding: 0.6rem 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .headerRight {
+    order: 3;
+    width: 100%;
+    margin-top: 0.5rem;
+    justify-content: center;
+  }
+
+  .branchSelector {
+    margin-right: 0;
+    width: 100%;
   }
 
   .menuButton {

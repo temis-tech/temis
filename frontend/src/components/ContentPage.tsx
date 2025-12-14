@@ -10,6 +10,7 @@ import { useState } from 'react'
 import BookingForm from './BookingForm'
 import Gallery from './Gallery'
 import FAQ from './FAQ'
+import BranchesList from './BranchesList'
 import styles from './ContentPage.module.css'
 
 interface ContentPageProps {
@@ -189,6 +190,14 @@ export default function ContentPage({ page }: ContentPageProps) {
     return null
   }
 
+  const renderBranches = () => {
+    // Отображаем филиалы, если они выбраны для отображения на странице
+    if (page.display_branches && page.display_branches.length > 0) {
+      return <BranchesList branches={page.display_branches} />
+    }
+    return null
+  }
+
   const renderGallery = () => {
     if (page.gallery_images && page.gallery_images.length > 0) {
       return (
@@ -234,6 +243,7 @@ export default function ContentPage({ page }: ContentPageProps) {
               enableFullscreen={page.gallery_enable_fullscreen !== false}
             />
           ) : null}
+          {renderBranches()}
         </div>
 
         {renderBookingForm()}
@@ -274,6 +284,7 @@ export default function ContentPage({ page }: ContentPageProps) {
               'Галерея не загружена. Проверьте настройки страницы.'}
           </div>
         )}
+        {renderBranches()}
         {renderBookingForm()}
       </div>
     )
@@ -325,6 +336,11 @@ export default function ContentPage({ page }: ContentPageProps) {
                   displayType={contentPage.gallery_display_type || 'grid'}
                   enableFullscreen={contentPage.gallery_enable_fullscreen !== false}
                 />
+              )}
+
+              {/* Филиалы для отображения на странице */}
+              {contentPage.display_branches && contentPage.display_branches.length > 0 && (
+                <BranchesList branches={contentPage.display_branches} />
               )}
 
               {contentPage.page_type === 'text' && contentPage.description && (
@@ -381,6 +397,7 @@ export default function ContentPage({ page }: ContentPageProps) {
             enableFullscreen={page.gallery_enable_fullscreen !== false}
           />
         )}
+        {renderBranches()}
         {renderBookingForm()}
       </>
     )
@@ -443,6 +460,7 @@ export default function ContentPage({ page }: ContentPageProps) {
             enableFullscreen={page.gallery_enable_fullscreen !== false}
           />
         ) : null}
+        {renderBranches()}
         {renderBookingForm()}
       </div>
     )
