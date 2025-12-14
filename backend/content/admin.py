@@ -918,6 +918,13 @@ def custom_get_app_list(self, request, app_label=None):
                 'Социальные сети': 5,
             }
             app['models'].sort(key=lambda x: header_footer_order.get(x['name'], 999))
+        elif app['name'] == 'Настройки сайта':
+            # Порядок для раздела "Настройки сайта"
+            settings_order = {
+                'Настройки Hero': 1,
+                'Настройки цвета сайта': 2,
+            }
+            app['models'].sort(key=lambda x: settings_order.get(x['name'], 999))
         else:
             # Для остальных разделов сортируем по имени
             app['models'].sort(key=lambda x: x['name'])
