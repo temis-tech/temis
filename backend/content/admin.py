@@ -54,7 +54,7 @@ class BranchAdmin(admin.ModelAdmin):
 # ==================== КОНСТРУКТОР СТРАНИЦ ====================
 class CatalogItemInline(admin.TabularInline):
     model = CatalogItem
-    extra = 1
+    extra = 0
     fields = ['title', 'width', 'order', 'is_active']
     show_change_link = True
     fk_name = 'page'
@@ -62,7 +62,7 @@ class CatalogItemInline(admin.TabularInline):
 
 class GalleryImageInline(admin.TabularInline):
     model = GalleryImage
-    extra = 1
+    extra = 0
     fields = ['content_type', 'image', 'video_file', 'video_url', 'description', 'order', 'is_active']
     show_change_link = True
     fk_name = 'page'
@@ -70,7 +70,7 @@ class GalleryImageInline(admin.TabularInline):
 
 class HomePageBlockInline(admin.TabularInline):
     model = HomePageBlock
-    extra = 1
+    extra = 0
     fields = ['content_page', 'title', 'show_title', 'order', 'is_active']
     show_change_link = True
     fk_name = 'page'
@@ -78,7 +78,7 @@ class HomePageBlockInline(admin.TabularInline):
 
 class FAQItemInline(admin.TabularInline):
     model = FAQItem
-    extra = 1
+    extra = 0
     fields = ['question', 'answer', 'order', 'is_active']
     show_change_link = True
     fk_name = 'page'
@@ -286,7 +286,7 @@ class HomePageBlockAdmin(admin.ModelAdmin):
 
 class WelcomeBannerCardInline(admin.TabularInline):
     model = WelcomeBannerCard
-    extra = 1
+    extra = 0
     fields = [
         'title', 'description', 'image', 'button_type', 'button_text',
         'button_url', 'button_booking_form', 'button_quiz', 'order', 'is_active'
@@ -341,7 +341,7 @@ class MenuAdmin(admin.ModelAdmin):
 
 class MenuItemInline(admin.TabularInline):
     model = MenuItem
-    extra = 1
+    extra = 0
     fields = ['title', 'image', 'content_page', 'url', 'parent', 'order', 'is_active', 'is_external']
     show_change_link = True
 

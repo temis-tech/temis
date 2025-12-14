@@ -2,6 +2,7 @@ import Hero from '@/components/Hero';
 import WelcomeBanners from '@/components/WelcomeBanners';
 import ContentPage from '@/components/ContentPage';
 import { contentApi } from '@/lib/api';
+import { HomePageBlock } from '@/types';
 
 // Отключаем статическую генерацию для главной страницы, чтобы меню обновлялось динамически
 export const dynamic = 'force-dynamic';
@@ -22,7 +23,7 @@ export default async function Home() {
         page_type: homePage.page_type,
         is_active: homePage.is_active,
         blocks_count: homePage.home_blocks?.length || 0,
-        blocks: homePage.home_blocks?.map(b => ({
+        blocks: homePage.home_blocks?.map((b: HomePageBlock) => ({
           id: b.id,
           is_active: b.is_active,
           has_content_page_data: !!b.content_page_data,
