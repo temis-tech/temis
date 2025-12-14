@@ -11,6 +11,8 @@ import BookingForm from './BookingForm'
 import Gallery from './Gallery'
 import FAQ from './FAQ'
 import BranchesList from './BranchesList'
+import ServicesList from './ServicesList'
+import { useBranch } from '@/hooks/useBranch'
 import styles from './ContentPage.module.css'
 
 interface ContentPageProps {
@@ -19,6 +21,7 @@ interface ContentPageProps {
 
 export default function ContentPage({ page }: ContentPageProps) {
   const router = useRouter()
+  const { selectedBranch } = useBranch()
   const [showBookingForm, setShowBookingForm] = useState(false)
   const [selectedFormId, setSelectedFormId] = useState<number | null>(null)
   const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null)
@@ -198,6 +201,19 @@ export default function ContentPage({ page }: ContentPageProps) {
     return null
   }
 
+  const renderServices = () => {
+    // Отображаем услуги, если они выбраны для отображения на странице
+    if (page.display_services && page.display_services.length > 0) {
+      return (
+        <ServicesList 
+          services={page.display_services} 
+          filterByBranchId={selectedBranch?.id || null}
+        />
+      )
+    }
+    return null
+  }
+
   const renderGallery = () => {
     if (page.gallery_images && page.gallery_images.length > 0) {
       return (
@@ -243,6 +259,7 @@ export default function ContentPage({ page }: ContentPageProps) {
               enableFullscreen={page.gallery_enable_fullscreen !== false}
             />
           ) : null}
+          {renderServices()}
           {renderBranches()}
         </div>
 
@@ -465,6 +482,14 @@ export default function ContentPage({ page }: ContentPageProps) {
                 />
               )}
 
+              {/* Услуги для отображения на странице */}
+              {contentPage.display_services && contentPage.display_services.length > 0 && (
+                <ServicesList 
+                  services={contentPage.display_services} 
+                  filterByBranchId={selectedBranch?.id || null}
+                />
+              )}
+
               {/* Филиалы для отображения на странице */}
               {contentPage.display_branches && contentPage.display_branches.length > 0 && (
                 <BranchesList branches={contentPage.display_branches} />
@@ -580,6 +605,7 @@ export default function ContentPage({ page }: ContentPageProps) {
             enableFullscreen={page.gallery_enable_fullscreen !== false}
           />
         ) : null}
+        {renderServices()}
         {renderBranches()}
         {renderBookingForm()}
       </div>

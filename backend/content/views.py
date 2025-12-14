@@ -110,6 +110,7 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
         'faq_items',
         'branches',
         'display_branches',
+        'display_services__service_branches__branch',
         'selected_catalog_page__catalog_items',
         'selected_gallery_page__gallery_images'
     ).select_related(
@@ -145,6 +146,7 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
                 'faq_items',
                 'branches',
                 'display_branches',
+                'display_services__service_branches__branch',
                 'selected_catalog_page__catalog_items',
                 'selected_gallery_page__gallery_images'
             ).select_related(

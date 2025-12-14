@@ -487,6 +487,11 @@ class ContentPage(models.Model):
                                               verbose_name='Филиалы для отображения',
                                               help_text='Выберите филиалы, которые будут отображаться на этой странице. Можно использовать для создания страницы контактов или страницы с информацией о филиалах.')
     
+    display_services = models.ManyToManyField('Service', blank=True,
+                                             related_name='displayed_on_pages',
+                                             verbose_name='Услуги для отображения',
+                                             help_text='Выберите услуги, которые будут отображаться на этой странице. Услуги будут автоматически фильтроваться по выбранному филиалу, если он указан.')
+    
     is_active = models.BooleanField('Активна', default=True)
     order = models.IntegerField('Порядок', default=0)
     created_at = models.DateTimeField('Создана', auto_now_add=True)

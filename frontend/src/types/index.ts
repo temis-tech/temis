@@ -195,6 +195,8 @@ export interface ContentPage {
     gallery_display_type?: 'grid' | 'carousel' | 'masonry';
     gallery_enable_fullscreen?: boolean;
   } | null;
+  // Услуги для отображения на странице
+  display_services?: Service[];
 }
 
 export interface WelcomeBannerCard {
@@ -223,5 +225,43 @@ export interface WelcomeBanner {
   start_at?: string | null;
   end_at?: string | null;
   cards: WelcomeBannerCard[];
+}
+
+export interface ServiceBranch {
+  id: number;
+  branch?: Branch | number;  // Может быть объектом Branch или ID
+  branch_id?: number;
+  branch_name?: string;
+  price?: number | null;
+  price_with_abonement?: number | null;
+  final_price?: number | null;
+  final_price_with_abonement?: number | null;
+  is_available: boolean;
+  order: number;
+  crm_item_id?: string | null;
+  crm_item_data?: any;
+}
+
+export interface Service {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  short_description?: string;
+  price: number;
+  price_with_abonement?: number | null;
+  duration: string;
+  image?: string | null;
+  image_align?: 'left' | 'right' | 'center' | 'full';
+  image_size?: 'small' | 'medium' | 'large' | 'full';
+  has_own_page?: boolean;
+  url?: string | null;
+  order: number;
+  show_booking_button?: boolean;
+  booking_form_id?: number | null;
+  booking_form_title?: string | null;
+  service_branches?: ServiceBranch[];
+  price_range?: number | { min: number; max: number } | null;
+  price_with_abonement_range?: number | { min: number; max: number } | null;
 }
 
