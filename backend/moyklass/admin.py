@@ -475,18 +475,27 @@ class MoyKlassFieldMappingForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
+        import logging
+        logger = logging.getLogger(__name__)
+        
         # Получаем integration из instance или из initial
         integration = None
         
         # Сначала пробуем получить из instance
         if self.instance and self.instance.pk:
             integration = self.instance.integration
+            logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из instance.pk: {integration}')
         elif self.instance and hasattr(self.instance, 'integration_id') and self.instance.integration_id:
             from .models import MoyKlassIntegration
             try:
                 integration = MoyKlassIntegration.objects.get(id=self.instance.integration_id)
+                logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из integration_id: {integration}')
             except MoyKlassIntegration.DoesNotExist:
-                pass
+                logger.warning(f'MoyKlassFieldMappingForm.__init__: integration с id={self.instance.integration_id} не найден')
+        elif self.instance and hasattr(self.instance, 'integration') and self.instance.integration:
+            # Для новых inline форм integration может быть установлен через form.instance.integration
+            integration = self.instance.integration
+            logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из instance.integration: {integration}')
         
         # Если не нашли, пробуем из initial
         if not integration:
@@ -495,8 +504,12 @@ class MoyKlassFieldMappingForm(forms.ModelForm):
                 from .models import MoyKlassIntegration
                 try:
                     integration = MoyKlassIntegration.objects.get(id=integration_id)
-                except (MoyKlassIntegration.DoesNotExist, ValueError, TypeError):
-                    pass
+                    logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из initial: {integration}')
+                except (MoyKlassIntegration.DoesNotExist, ValueError, TypeError) as e:
+                    logger.warning(f'MoyKlassFieldMappingForm.__init__: ошибка получения integration из initial: {e}')
+        
+        if not integration:
+            logger.warning(f'MoyKlassFieldMappingForm.__init__: integration не найден. instance.pk={self.instance.pk if self.instance else None}, hasattr integration={hasattr(self.instance, "integration") if self.instance else False}')
         
         # Если integration есть, заполняем choices для source_field_name
         if integration:
@@ -592,11 +605,21 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
                                     f'{question.text[:50]}... (question_{question.id})'
                                 ))
                         
-                        # Пересоздаем виджет с правильными choices
-                        form.fields['source_field_name'].widget = forms.Select(
-                            choices=choices,
-                            attrs={'class': 'source-field-select', 'data-integration-id': str(obj.id)}
-                        )
+                        # Обновляем choices виджета
+                        widget = form.fields['source_field_name'].widget
+                        widget.choices = choices
+                        # Обновляем атрибуты виджета
+                        if hasattr(widget, 'attrs'):
+                            widget.attrs.update({
+                                'class': 'source-field-select',
+                                'data-integration-id': str(obj.id)
+                            })
+                        else:
+                            widget.attrs = {
+                                'class': 'source-field-select',
+                                'data-integration-id': str(obj.id)
+                            }
+                        logger.debug(f'Форма {idx}: обновлены choices для source_field_name, всего опций: {len(choices)}')
                         
                         # Устанавливаем integration для новых форм
                         if not form.instance.pk and hasattr(form, 'instance'):
