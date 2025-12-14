@@ -804,12 +804,14 @@ def custom_get_app_list(self, request, app_label=None):
             # Определяем категорию модели
             if model == Contact:
                 category = 'Контакты'
-            elif model in [ContentPage, CatalogItem, GalleryImage, HomePageBlock, WelcomeBanner]:
+            elif model in [Branch, Service, ServiceBranch, ServiceBranchPriceHistory]:
+                category = 'Филиалы и услуги'
+            elif model in [ContentPage, CatalogItem, GalleryImage, HomePageBlock, FAQItem, WelcomeBanner]:
                 category = 'Контент'
             elif model in [HeaderSettings, Menu, MenuItem, FooterSettings, SocialNetwork]:
                 category = 'Шапка и Подвал'
             elif model in [HeroSettings, SiteSettings]:
-                category = 'Настройки цвета сайта'
+                category = 'Настройки сайта'
             elif model == PrivacyPolicy:
                 category = 'Политики'
             else:
@@ -871,21 +873,51 @@ def custom_get_app_list(self, request, app_label=None):
                 'add_url': f'/admin/{app_label}/{model._meta.model_name}/add/',
             })
     
-    # Сортируем приложения
-    app_list = sorted(app_dict.values(), key=lambda x: x['name'])
+    # Определяем порядок категорий (не по алфавиту, а логически)
+    category_order = {
+        'Контакты': 1,
+        'Филиалы и услуги': 2,
+        'Контент': 3,
+        'Шапка и Подвал': 4,
+        'Настройки сайта': 5,
+        'Политики': 6,
+    }
+    
+    # Сортируем приложения по заданному порядку
+    app_list = sorted(app_dict.values(), key=lambda x: category_order.get(x['name'], 999))
     
     # Сортируем модели внутри каждого приложения
     for app in app_list:
         if app['name'] == 'Контент':
             # Кастомный порядок для раздела "Контент"
             content_order = {
-                'Блоки главной страницы': 1,
-                'Страницы контента': 2,
-                'Изображения галереи': 3,
-                'Элементы каталога': 4,
-                'Приветственные баннеры': 5,
+                'Страницы контента': 1,
+                'Блоки главной страницы': 2,
+                'Элементы каталога': 3,
+                'Элементы галереи': 4,
+                'Элементы FAQ': 5,
+                'Приветственные баннеры': 6,
             }
             app['models'].sort(key=lambda x: content_order.get(x['name'], 999))
+        elif app['name'] == 'Филиалы и услуги':
+            # Порядок для раздела "Филиалы и услуги"
+            services_order = {
+                'Филиалы': 1,
+                'Услуги': 2,
+                'Услуги в филиалах': 3,
+                'История изменений цен': 4,
+            }
+            app['models'].sort(key=lambda x: services_order.get(x['name'], 999))
+        elif app['name'] == 'Шапка и Подвал':
+            # Порядок для раздела "Шапка и Подвал"
+            header_footer_order = {
+                'Меню': 1,
+                'Элементы меню': 2,
+                'Настройки шапки': 3,
+                'Настройки подвала': 4,
+                'Социальные сети': 5,
+            }
+            app['models'].sort(key=lambda x: header_footer_order.get(x['name'], 999))
         else:
             # Для остальных разделов сортируем по имени
             app['models'].sort(key=lambda x: x['name'])
