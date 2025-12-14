@@ -44,14 +44,21 @@ class BookingSubmissionViewSet(viewsets.ModelViewSet):
         if service_id:
             try:
                 service = Service.objects.get(id=service_id, is_active=True)
-                # Подставляем название услуги в скрытые поля
-                for field in form.fields.all():
-                    if field.field_type == 'hidden' and field.default_value:
-                        default = field.default_value.replace('{service_title}', service.title)
-                        if field.name not in form_data:
-                            form_data[field.name] = default
             except Service.DoesNotExist:
                 pass
+        
+        # Подставляем значения в скрытые поля (для всех полей, не только если есть service)
+        for field in form.fields.all():
+            if field.field_type == 'hidden' and field.default_value:
+                # Если поле уже заполнено в form_data, не перезаписываем
+                if field.name not in form_data:
+                    default = field.default_value
+                    # Заменяем плейсхолдеры
+                    if service:
+                        default = default.replace('{service_title}', service.title)
+                    if source_page:
+                        default = default.replace('{source_page}', source_page)
+                    form_data[field.name] = default
         
         # Проверяем правила формы
         quiz_submission = None
@@ -87,6 +94,7 @@ class BookingSubmissionViewSet(viewsets.ModelViewSet):
         """Отправка формы с результатами анкеты"""
         form_id = request.data.get('form_id')
         service_id = request.data.get('service_id')
+        source_page = request.data.get('source_page', '')
         form_data = request.data.get('data', {})
         quiz_submission_id = request.data.get('quiz_submission_id')
         
@@ -102,6 +110,19 @@ class BookingSubmissionViewSet(viewsets.ModelViewSet):
             except Service.DoesNotExist:
                 pass
         
+        # Подставляем значения в скрытые поля
+        for field in form.fields.all():
+            if field.field_type == 'hidden' and field.default_value:
+                # Если поле уже заполнено в form_data, не перезаписываем
+                if field.name not in form_data:
+                    default = field.default_value
+                    # Заменяем плейсхолдеры
+                    if service:
+                        default = default.replace('{service_title}', service.title)
+                    if source_page:
+                        default = default.replace('{source_page}', source_page)
+                    form_data[field.name] = default
+        
         quiz_submission = None
         if quiz_submission_id:
             try:
@@ -112,6 +133,7 @@ class BookingSubmissionViewSet(viewsets.ModelViewSet):
         submission = BookingSubmission.objects.create(
             form=form,
             service=service,
+            source_page=source_page,
             data=form_data,
             quiz_submission=quiz_submission
         )
