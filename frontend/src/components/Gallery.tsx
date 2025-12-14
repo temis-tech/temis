@@ -102,6 +102,8 @@ interface GalleryProps {
 export default function Gallery({ images, displayType = 'grid', enableFullscreen = true }: GalleryProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState<number | null>(null)
   const [carouselIndex, setCarouselIndex] = useState(0)
+  const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({})
+  const iframeRefs = useRef<{ [key: number]: HTMLIFrameElement | null }>({})
 
   // Отладочная информация
   useEffect(() => {
@@ -169,6 +171,76 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
   }, [currentImageIndex, images.length])
 
   // Автоматическая прокрутка карусели отключена - пользователь управляет вручную
+
+  // Пауза видео при перелистывании карусели
+  useEffect(() => {
+    if (displayType === 'carousel') {
+      // Ставим на паузу все видео, кроме текущего
+      images.forEach((image, index) => {
+        if (image.content_type === 'video') {
+          if (index !== carouselIndex) {
+            // Пауза локального видео
+            const videoElement = videoRefs.current[index]
+            if (videoElement) {
+              videoElement.pause()
+            }
+            
+            // Пауза iframe видео (YouTube, Rutube, Vimeo)
+            const iframeElement = iframeRefs.current[index]
+            if (iframeElement && iframeElement.contentWindow) {
+              try {
+                // YouTube
+                if (image.video_embed_url?.includes('youtube.com')) {
+                  iframeElement.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*')
+                }
+                // Rutube
+                else if (image.video_embed_url?.includes('rutube.ru')) {
+                  iframeElement.contentWindow.postMessage('{"method":"pause"}', '*')
+                }
+                // Vimeo
+                else if (image.video_embed_url?.includes('vimeo.com')) {
+                  iframeElement.contentWindow.postMessage('{"method":"pause"}', '*')
+                }
+              } catch (e) {
+                // Игнорируем ошибки CORS
+                console.warn('Не удалось поставить видео на паузу:', e)
+              }
+            }
+          }
+        }
+      })
+    }
+  }, [carouselIndex, displayType, images])
+
+  // Пауза видео при переключении в полноэкранном режиме
+  useEffect(() => {
+    if (currentImageIndex !== null) {
+      // Ставим на паузу все видео, кроме текущего
+      images.forEach((image, index) => {
+        if (image.content_type === 'video' && index !== currentImageIndex) {
+          const videoElement = videoRefs.current[index]
+          if (videoElement) {
+            videoElement.pause()
+          }
+          
+          const iframeElement = iframeRefs.current[index]
+          if (iframeElement && iframeElement.contentWindow) {
+            try {
+              if (image.video_embed_url?.includes('youtube.com')) {
+                iframeElement.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*')
+              } else if (image.video_embed_url?.includes('rutube.ru')) {
+                iframeElement.contentWindow.postMessage('{"method":"pause"}', '*')
+              } else if (image.video_embed_url?.includes('vimeo.com')) {
+                iframeElement.contentWindow.postMessage('{"method":"pause"}', '*')
+              }
+            } catch (e) {
+              console.warn('Не удалось поставить видео на паузу:', e)
+            }
+          }
+        }
+      })
+    }
+  }, [currentImageIndex, images])
 
   // Проверка на пустой массив (после всех хуков)
   if (!images || images.length === 0) {
@@ -251,6 +323,9 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                           return (
                             <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', width: '100%' }}>
                               <iframe
+                                ref={(el) => {
+                                  if (el) iframeRefs.current[index] = el
+                                }}
                                 src={image.video_embed_url}
                                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
                                 allowFullScreen
@@ -264,6 +339,9 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                     ) : image.video_file ? (
                       <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                         <video
+                          ref={(el) => {
+                            if (el) videoRefs.current[index] = el
+                          }}
                           src={normalizeImageUrl(image.video_file)}
                           style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                           preload="metadata"
@@ -410,6 +488,9 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                         return (
                           <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', width: '100%' }}>
                             <iframe
+                              ref={(el) => {
+                                if (el) iframeRefs.current[index] = el
+                              }}
                               src={image.video_embed_url}
                               style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
                               allowFullScreen
@@ -423,6 +504,9 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                   ) : image.video_file ? (
                     <div className={styles.masonryImageWrapper} style={{ position: 'relative', height: '300px' }}>
                       <video
+                        ref={(el) => {
+                          if (el) videoRefs.current[index] = el
+                        }}
                         src={normalizeImageUrl(image.video_file)}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         preload="metadata"
@@ -546,6 +630,9 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                       return (
                         <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', width: '100%' }}>
                           <iframe
+                            ref={(el) => {
+                              if (el) iframeRefs.current[index] = el
+                            }}
                             src={image.video_embed_url}
                             style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
                             allowFullScreen
@@ -567,6 +654,9 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                     {/* Превью для локального видео */}
                     <div className={styles.gridImageWrapper} style={{ position: 'relative' }}>
                       <video
+                        ref={(el) => {
+                          if (el) videoRefs.current[index] = el
+                        }}
                         src={normalizeImageUrl(image.video_file)}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         preload="metadata"
