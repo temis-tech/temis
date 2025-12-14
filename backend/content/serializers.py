@@ -645,13 +645,16 @@ class ContentPageSerializer(serializers.ModelSerializer):
     faq_background_image = serializers.SerializerMethodField()
     
     display_branches = serializers.SerializerMethodField()
+    selected_catalog_page = serializers.SerializerMethodField()
+    selected_gallery_page = serializers.SerializerMethodField()
     
     class Meta:
         model = ContentPage
         fields = ['id', 'title', 'slug', 'page_type', 'description', 'image', 'image_align', 'image_size', 
                  'gallery_display_type', 'gallery_enable_fullscreen', 'show_title', 'is_active', 'catalog_items',
                  'gallery_images', 'home_blocks', 'faq_items', 'faq_icon', 'faq_icon_position', 
-                 'faq_background_color', 'faq_background_image', 'faq_animation', 'branches', 'display_branches']
+                 'faq_background_color', 'faq_background_image', 'faq_animation', 'branches', 'display_branches',
+                 'selected_catalog_page', 'selected_gallery_page']
     
     def get_image(self, obj):
         return get_image_url(obj.image, self.context.get('request'))
@@ -694,4 +697,38 @@ class ContentPageSerializer(serializers.ModelSerializer):
         """Возвращает список филиалов для отображения на странице (через ManyToMany)"""
         branches = obj.display_branches.filter(is_active=True).order_by('order')
         return BranchSerializer(branches, many=True, context=self.context).data
+    
+    def get_selected_catalog_page(self, obj):
+        """Возвращает данные выбранной страницы каталога, если она есть"""
+        if obj.selected_catalog_page and obj.selected_catalog_page.is_active:
+            # Используем упрощенный сериализатор, чтобы избежать рекурсии
+            return {
+                'id': obj.selected_catalog_page.id,
+                'title': obj.selected_catalog_page.title,
+                'slug': obj.selected_catalog_page.slug,
+                'catalog_items': CatalogItemSerializer(
+                    obj.selected_catalog_page.catalog_items.filter(is_active=True).order_by('order'),
+                    many=True,
+                    context=self.context
+                ).data
+            }
+        return None
+    
+    def get_selected_gallery_page(self, obj):
+        """Возвращает данные выбранной страницы галереи, если она есть"""
+        if obj.selected_gallery_page and obj.selected_gallery_page.is_active:
+            # Используем упрощенный сериализатор, чтобы избежать рекурсии
+            return {
+                'id': obj.selected_gallery_page.id,
+                'title': obj.selected_gallery_page.title,
+                'slug': obj.selected_gallery_page.slug,
+                'gallery_images': GalleryImageSerializer(
+                    obj.selected_gallery_page.gallery_images.filter(is_active=True).order_by('order'),
+                    many=True,
+                    context=self.context
+                ).data,
+                'gallery_display_type': obj.selected_gallery_page.gallery_display_type,
+                'gallery_enable_fullscreen': obj.selected_gallery_page.gallery_enable_fullscreen
+            }
+        return None
 

@@ -173,6 +173,21 @@ export interface ContentPage {
   // Филиалы
   branches?: Branch[];  // Филиалы, связанные через content_page (для страницы филиала)
   display_branches?: Branch[];  // Филиалы для отображения на странице (ManyToMany)
+  // Выбранные страницы для отображения (для типа "Описание")
+  selected_catalog_page?: {
+    id: number;
+    title: string;
+    slug: string;
+    catalog_items?: CatalogItem[];
+  } | null;
+  selected_gallery_page?: {
+    id: number;
+    title: string;
+    slug: string;
+    gallery_images?: GalleryImage[];
+    gallery_display_type?: 'grid' | 'carousel' | 'masonry';
+    gallery_enable_fullscreen?: boolean;
+  } | null;
 }
 
 export interface WelcomeBannerCard {

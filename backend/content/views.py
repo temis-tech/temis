@@ -103,7 +103,12 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
         'home_blocks__content_page',
         'faq_items',
         'branches',
-        'display_branches'
+        'display_branches',
+        'selected_catalog_page__catalog_items',
+        'selected_gallery_page__gallery_images'
+    ).select_related(
+        'selected_catalog_page',
+        'selected_gallery_page'
     )
     serializer_class = ContentPageSerializer
     lookup_field = 'slug'

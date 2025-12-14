@@ -472,9 +472,23 @@ export default function ContentPage({ page }: ContentPageProps) {
             dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(page.description) }}
           />
         )}
-        {renderCatalog()}
-        {/* Галерея для страницы типа 'text' */}
-        {page.gallery_images && page.gallery_images.length > 0 ? (
+        {/* Выбранный каталог для страницы типа 'text' */}
+        {page.selected_catalog_page?.catalog_items && page.selected_catalog_page.catalog_items.length > 0 && (
+          renderCatalogItems(page.selected_catalog_page.catalog_items)
+        )}
+        
+        {/* Выбранная галерея для страницы типа 'text' */}
+        {page.selected_gallery_page?.gallery_images && page.selected_gallery_page.gallery_images.length > 0 && (
+          <Gallery
+            images={page.selected_gallery_page.gallery_images}
+            displayType={page.selected_gallery_page.gallery_display_type || 'grid'}
+            enableFullscreen={page.selected_gallery_page.gallery_enable_fullscreen !== false}
+          />
+        )}
+        
+        {/* Обычный каталог и галерея (если не выбраны специальные страницы) */}
+        {!page.selected_catalog_page && renderCatalog()}
+        {!page.selected_gallery_page && page.gallery_images && page.gallery_images.length > 0 ? (
           <Gallery
             images={page.gallery_images}
             displayType={page.gallery_display_type || 'grid'}

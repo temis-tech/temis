@@ -466,6 +466,18 @@ class ContentPage(models.Model):
     show_title = models.BooleanField('Показывать заголовок на странице', default=True,
                                      help_text='Если отключено, заголовок страницы не будет отображаться на сайте')
     
+    # Выбор каталога или галереи для отображения (для типа "Описание")
+    selected_catalog_page = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
+                                              related_name='used_as_catalog_in',
+                                              verbose_name='Каталог для отображения',
+                                              help_text='Выберите страницу с типом "Каталог", которая будет отображаться на этой странице (только для типа "Описание")',
+                                              limit_choices_to={'page_type': 'catalog', 'is_active': True})
+    selected_gallery_page = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
+                                             related_name='used_as_gallery_in',
+                                             verbose_name='Галерея для отображения',
+                                             help_text='Выберите страницу с типом "Галерея", которая будет отображаться на этой странице (только для типа "Описание")',
+                                             limit_choices_to={'page_type': 'gallery', 'is_active': True})
+    
     # Филиалы для отображения на странице
     display_branches = models.ManyToManyField('Branch', blank=True, 
                                               related_name='displayed_on_pages',
