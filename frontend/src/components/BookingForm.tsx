@@ -11,6 +11,7 @@ interface BookingFormProps {
   serviceId: number;
   serviceTitle: string;
   sourcePage?: string;
+  hiddenFields?: Record<string, string>; // Дополнительные данные для скрытых полей
   onClose: () => void;
 }
 
@@ -50,7 +51,7 @@ interface BookingFormData {
   default_quiz_title?: string | null;
 }
 
-export default function BookingForm({ formId, serviceId, serviceTitle, sourcePage, onClose }: BookingFormProps) {
+export default function BookingForm({ formId, serviceId, serviceTitle, sourcePage, hiddenFields, onClose }: BookingFormProps) {
   const [form, setForm] = useState<BookingFormData | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -104,8 +105,25 @@ export default function BookingForm({ formId, serviceId, serviceTitle, sourcePag
       // Заполняем значения по умолчанию
       const defaults: Record<string, any> = {};
       formData.fields.forEach((field: FormField) => {
-        if (field.default_value) {
-          defaults[field.name] = field.default_value.replace('{service_title}', serviceTitle);
+        if (field.field_type === 'hidden') {
+          // Для скрытых полей: сначала проверяем hiddenFields, потом default_value
+          if (hiddenFields && hiddenFields[field.name]) {
+            defaults[field.name] = hiddenFields[field.name];
+          } else if (field.default_value) {
+            // Заменяем плейсхолдеры в default_value
+            let value = field.default_value.replace('{service_title}', serviceTitle);
+            if (sourcePage) {
+              value = value.replace('{source_page}', sourcePage);
+            }
+            defaults[field.name] = value;
+          }
+        } else if (field.default_value) {
+          // Для обычных полей используем default_value с заменой плейсхолдеров
+          let value = field.default_value.replace('{service_title}', serviceTitle);
+          if (sourcePage) {
+            value = value.replace('{source_page}', sourcePage);
+          }
+          defaults[field.name] = value;
         }
       });
       setFormData(defaults);
@@ -115,7 +133,7 @@ export default function BookingForm({ formId, serviceId, serviceTitle, sourcePag
     } finally {
       setLoading(false);
     }
-  }, [formId, onClose, router, serviceId, serviceTitle]);
+  }, [formId, onClose, router, serviceId, serviceTitle, sourcePage, hiddenFields]);
 
   useEffect(() => {
     loadForm();

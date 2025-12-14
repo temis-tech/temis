@@ -52,7 +52,7 @@ class FormField(models.Model):
     is_required = models.BooleanField('Обязательное', default=True)
     order = models.IntegerField('Порядок', default=0)
     default_value = models.CharField('Значение по умолчанию', max_length=500, blank=True,
-                                    help_text='Для скрытых полей можно использовать {service_title} для подстановки названия услуги')
+                                    help_text='Для скрытых полей можно использовать плейсхолдеры: {service_title} - название услуги, {source_page} - URL страницы источника')
     options = models.TextField('Варианты выбора (для select/radio)', blank=True,
                                help_text='Каждый вариант с новой строки')
     created_at = models.DateTimeField('Создано', auto_now_add=True)
