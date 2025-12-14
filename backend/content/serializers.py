@@ -588,8 +588,30 @@ class HomePageBlockSerializer(serializers.ModelSerializer):
                     'home_blocks': []  # Не сериализуем вложенные блоки, чтобы избежать рекурсии
                 }
             # Для других типов страниц используем полный сериализатор
-            serializer = ContentPageSerializer(obj.content_page, context=self.context)
-            return serializer.data
+            # Но нужно убедиться, что мы не создаем рекурсию
+            # Используем тот же контекст, чтобы избежать проблем
+            try:
+                serializer = ContentPageSerializer(obj.content_page, context=self.context)
+                data = serializer.data
+                # Убеждаемся, что для страниц в блоках мы не возвращаем home_blocks
+                # чтобы избежать глубокой рекурсии
+                if 'home_blocks' in data and obj.content_page.page_type != 'home':
+                    # Для страниц в блоках главной страницы не возвращаем их собственные home_blocks
+                    data['home_blocks'] = []
+                return data
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f'Error serializing content_page_data for block {obj.id}: {e}')
+                # Возвращаем базовую информацию в случае ошибки
+                return {
+                    'id': obj.content_page.id,
+                    'title': obj.content_page.title,
+                    'slug': obj.content_page.slug,
+                    'page_type': obj.content_page.page_type,
+                    'description': obj.content_page.description,
+                    'is_active': obj.content_page.is_active,
+                }
 
 
 class WelcomeBannerCardSerializer(serializers.ModelSerializer):

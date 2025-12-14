@@ -291,6 +291,22 @@ export default function ContentPage({ page }: ContentPageProps) {
   }
 
   if (page.page_type === 'home') {
+    const activeBlocks = page.home_blocks?.filter((block) => block.is_active) || [];
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Home page blocks:', {
+        total_blocks: page.home_blocks?.length || 0,
+        active_blocks: activeBlocks.length,
+        blocks: activeBlocks.map(b => ({
+          id: b.id,
+          is_active: b.is_active,
+          has_content_page_data: !!b.content_page_data,
+          content_page_type: b.content_page_data?.page_type,
+          content_page_title: b.content_page_data?.title
+        }))
+      });
+    }
+    
     return (
       <div className={styles.container}>
         {page.description && (
@@ -299,7 +315,12 @@ export default function ContentPage({ page }: ContentPageProps) {
             dangerouslySetInnerHTML={{ __html: page.description }}
           />
         )}
-        {page.home_blocks?.filter((block) => block.is_active).map((block) => {
+        {activeBlocks.length === 0 && (
+          <div style={{ padding: '2rem', textAlign: 'center', color: '#999' }}>
+            Нет активных блоков для отображения. Добавьте блоки в админке.
+          </div>
+        )}
+        {activeBlocks.map((block) => {
           if (!block.content_page_data) {
             console.warn('Home block missing content_page_data:', block.id);
             return null;
@@ -319,6 +340,22 @@ export default function ContentPage({ page }: ContentPageProps) {
           // Определяем тип страницы для правильного отображения
           const pageType = contentPage.page_type
 
+          // Отладочная информация
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Rendering home block:', {
+              block_id: block.id,
+              page_type: pageType,
+              has_description: !!contentPage.description,
+              description_length: contentPage.description?.length || 0,
+              has_faq_items: !!contentPage.faq_items,
+              faq_items_count: contentPage.faq_items?.length || 0,
+              has_catalog_items: !!contentPage.catalog_items,
+              catalog_items_count: contentPage.catalog_items?.length || 0,
+              has_gallery_images: !!contentPage.gallery_images,
+              gallery_images_count: contentPage.gallery_images?.length || 0,
+            });
+          }
+
           return (
             <div key={block.id} className={styles.homeBlock}>
               {block.show_title && displayTitle && (
@@ -328,7 +365,24 @@ export default function ContentPage({ page }: ContentPageProps) {
                     textAlign: block.title_align || 'center',
                     color: block.title_color || '#333',
                     fontWeight: block.title_bold ? 'bold' : 'normal',
-                    fontStyle: block.title_italic ? 'italic' : 'normal'
+                    fontStyle: block.title_italic ? 'italic' : 'normal',
+                    ...(block.title_custom_css ? (() => {
+                      try {
+                        // Парсим CSS строку в объект стилей
+                        const stylesObj: Record<string, string> = {};
+                        block.title_custom_css.split(';').forEach(rule => {
+                          const [key, value] = rule.split(':').map(s => s.trim());
+                          if (key && value) {
+                            // Конвертируем kebab-case в camelCase
+                            const camelKey = key.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+                            stylesObj[camelKey] = value;
+                          }
+                        });
+                        return stylesObj;
+                      } catch (e) {
+                        return {};
+                      }
+                    })() : {})
                   }}
                 >
                   {displayTitle}
@@ -344,12 +398,92 @@ export default function ContentPage({ page }: ContentPageProps) {
                 />
               )}
 
-              {/* Каталог и галерея могут быть на любой странице */}
-              {contentPage.catalog_items && contentPage.catalog_items.length > 0 && (
+              {/* Текст для страниц типа 'text' - отображаем описание и изображение */}
+              {pageType === 'text' && (
+                <>
+                  {contentPage.image && (
+                    <div className={styles.textImageWrapper}>
+                      <Image
+                        src={normalizeImageUrl(contentPage.image)}
+                        alt={contentPage.title}
+                        width={600}
+                        height={400}
+                        className={styles.textImage}
+                        style={{ objectFit: 'cover', borderRadius: '8px' }}
+                      />
+                    </div>
+                  )}
+                  {contentPage.description && (
+                    <div 
+                      className={styles.textContent} 
+                      dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(contentPage.description) }} 
+                    />
+                  )}
+                  {/* Выбранный каталог или галерея для страницы типа 'text' */}
+                  {contentPage.selected_catalog_page?.catalog_items && contentPage.selected_catalog_page.catalog_items.length > 0 && (
+                    renderCatalogItems(contentPage.selected_catalog_page.catalog_items)
+                  )}
+                  {contentPage.selected_gallery_page?.gallery_images && contentPage.selected_gallery_page.gallery_images.length > 0 && (
+                    <Gallery
+                      images={contentPage.selected_gallery_page.gallery_images}
+                      displayType={contentPage.selected_gallery_page.gallery_display_type || 'grid'}
+                      enableFullscreen={contentPage.selected_gallery_page.gallery_enable_fullscreen !== false}
+                    />
+                  )}
+                  {/* Обычный каталог и галерея, если не выбраны специальные страницы */}
+                  {!contentPage.selected_catalog_page && contentPage.catalog_items && contentPage.catalog_items.length > 0 && (
+                    renderCatalogItems(contentPage.catalog_items)
+                  )}
+                  {!contentPage.selected_gallery_page && contentPage.gallery_images && contentPage.gallery_images.length > 0 && (
+                    <Gallery
+                      images={contentPage.gallery_images}
+                      displayType={contentPage.gallery_display_type || 'grid'}
+                      enableFullscreen={contentPage.gallery_enable_fullscreen !== false}
+                    />
+                  )}
+                </>
+              )}
+
+              {/* FAQ для страниц типа 'faq' */}
+              {pageType === 'faq' && (
+                <>
+                  {contentPage.description && (
+                    <div
+                      className={styles.description}
+                      dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(contentPage.description) }}
+                    />
+                  )}
+                  {contentPage.faq_items && Array.isArray(contentPage.faq_items) && contentPage.faq_items.length > 0 ? (
+                    <FAQ
+                      items={contentPage.faq_items}
+                      icon={contentPage.faq_icon}
+                      iconPosition={contentPage.faq_icon_position || 'left'}
+                      backgroundColor={contentPage.faq_background_color || '#FFFFFF'}
+                      backgroundImage={contentPage.faq_background_image}
+                      animation={contentPage.faq_animation || 'slide'}
+                    />
+                  ) : (
+                    process.env.NODE_ENV === 'development' && (
+                      <div style={{ padding: '1rem', background: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', margin: '1rem 0' }}>
+                        <strong>Отладка FAQ:</strong> FAQ блок найден (page_type: {pageType}), но faq_items: {JSON.stringify({
+                          exists: !!contentPage.faq_items,
+                          isArray: Array.isArray(contentPage.faq_items),
+                          length: contentPage.faq_items?.length || 0,
+                          items: contentPage.faq_items
+                        })}. 
+                        Проверьте, что в админке добавлены элементы FAQ для этой страницы и они активны.
+                      </div>
+                    )
+                  )}
+                </>
+              )}
+
+              {/* Каталог и галерея могут быть на любой странице (если не используется selected_catalog_page/selected_gallery_page) */}
+              {pageType !== 'text' && contentPage.catalog_items && contentPage.catalog_items.length > 0 && (
                 renderCatalogItems(contentPage.catalog_items)
               )}
 
-              {contentPage.gallery_images && contentPage.gallery_images.length > 0 && (
+              {pageType !== 'text' && contentPage.gallery_images && contentPage.gallery_images.length > 0 && (
                 <Gallery
                   images={contentPage.gallery_images}
                   displayType={contentPage.gallery_display_type || 'grid'}
@@ -360,23 +494,6 @@ export default function ContentPage({ page }: ContentPageProps) {
               {/* Филиалы для отображения на странице */}
               {contentPage.display_branches && contentPage.display_branches.length > 0 && (
                 <BranchesList branches={contentPage.display_branches} />
-              )}
-
-              {/* Текст для страниц типа 'text' */}
-              {pageType === 'text' && contentPage.description && (
-                <div className={styles.textContent} dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(contentPage.description) }} />
-              )}
-
-              {/* FAQ для страниц типа 'faq' */}
-              {pageType === 'faq' && contentPage.faq_items && contentPage.faq_items.length > 0 && (
-                <FAQ
-                  items={contentPage.faq_items}
-                  icon={contentPage.faq_icon}
-                  iconPosition={contentPage.faq_icon_position || 'left'}
-                  backgroundColor={contentPage.faq_background_color || '#FFFFFF'}
-                  backgroundImage={contentPage.faq_background_image}
-                  animation={contentPage.faq_animation || 'slide'}
-                />
               )}
             </div>
           )

@@ -100,7 +100,11 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ContentPage.objects.filter(is_active=True).prefetch_related(
         'catalog_items',
         'gallery_images',
-        'home_blocks__content_page',
+        'home_blocks__content_page__catalog_items',
+        'home_blocks__content_page__gallery_images',
+        'home_blocks__content_page__faq_items',
+        'home_blocks__content_page__selected_catalog_page__catalog_items',
+        'home_blocks__content_page__selected_gallery_page__gallery_images',
         'faq_items',
         'branches',
         'display_branches',
@@ -108,7 +112,10 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
         'selected_gallery_page__gallery_images'
     ).select_related(
         'selected_catalog_page',
-        'selected_gallery_page'
+        'selected_gallery_page',
+        'home_blocks__content_page',
+        'home_blocks__content_page__selected_catalog_page',
+        'home_blocks__content_page__selected_gallery_page'
     )
     serializer_class = ContentPageSerializer
     lookup_field = 'slug'
@@ -121,10 +128,41 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'], url_path='by-slug/(?P<slug>[^/.]+)')
     def by_slug(self, request, slug=None):
         try:
-            page = self.queryset.get(slug=slug)
+            # Используем базовый queryset без фильтра is_active для отладки
+            # Но все равно фильтруем только активные страницы
+            page = ContentPage.objects.filter(is_active=True).prefetch_related(
+                'catalog_items',
+                'gallery_images',
+                'home_blocks__content_page__catalog_items',
+                'home_blocks__content_page__gallery_images',
+                'home_blocks__content_page__faq_items',
+                'home_blocks__content_page__selected_catalog_page__catalog_items',
+                'home_blocks__content_page__selected_gallery_page__gallery_images',
+                'faq_items',
+                'branches',
+                'display_branches',
+                'selected_catalog_page__catalog_items',
+                'selected_gallery_page__gallery_images'
+            ).select_related(
+                'selected_catalog_page',
+                'selected_gallery_page',
+                'home_blocks__content_page',
+                'home_blocks__content_page__selected_catalog_page',
+                'home_blocks__content_page__selected_gallery_page'
+            ).get(slug=slug)
+            
+            # Логирование для отладки
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f'Loading page by slug: {slug}, page_type: {page.page_type}, is_active: {page.is_active}')
+            logger.info(f'Home blocks count: {page.home_blocks.count()}, active: {page.home_blocks.filter(is_active=True).count()}')
+            
             serializer = self.get_serializer(page)
             return Response(serializer.data)
         except ContentPage.DoesNotExist:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f'Page not found by slug: {slug}')
             return Response({'error': 'Страница не найдена'}, status=status.HTTP_404_NOT_FOUND)
 
 
