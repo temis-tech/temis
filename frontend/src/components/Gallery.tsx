@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import { normalizeImageUrl } from '@/lib/utils'
 import { normalizeHtmlContent } from '@/lib/htmlUtils'
@@ -41,10 +41,12 @@ function FullscreenView({
         try {
           const iframes = document.querySelectorAll('iframe')
           iframes.forEach(iframe => {
-            if (iframe.src.includes('youtube.com')) {
+            if (iframe.src.includes('youtube.com') || iframe.src.includes('youtu.be')) {
               iframe.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*')
             } else if (iframe.src.includes('rutube.ru')) {
-              iframe.contentWindow?.postMessage('{"method":"pause"}', '*')
+              // Rutube API - правильный формат
+              const message = JSON.stringify({ type: 'player:action', action: 'pause' })
+              iframe.contentWindow?.postMessage(message, '*')
             } else if (iframe.src.includes('vimeo.com')) {
               iframe.contentWindow?.postMessage('{"method":"pause"}', '*')
             }
@@ -249,25 +251,7 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
       // Ставим на паузу все видео, кроме текущего
       images.forEach((image, index) => {
         if (image.content_type === 'video' && index !== currentImageIndex) {
-          const videoElement = videoRefs.current[index]
-          if (videoElement) {
-            videoElement.pause()
-          }
-          
-          const iframeElement = iframeRefs.current[index]
-          if (iframeElement && iframeElement.contentWindow) {
-            try {
-              if (image.video_embed_url?.includes('youtube.com')) {
-                iframeElement.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*')
-              } else if (image.video_embed_url?.includes('rutube.ru')) {
-                iframeElement.contentWindow.postMessage('{"method":"pause"}', '*')
-              } else if (image.video_embed_url?.includes('vimeo.com')) {
-                iframeElement.contentWindow.postMessage('{"method":"pause"}', '*')
-              }
-            } catch (e) {
-              console.warn('Не удалось поставить видео на паузу:', e)
-            }
-          }
+          pauseVideoByIndex(index)
         }
       })
     }
