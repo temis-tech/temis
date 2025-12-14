@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    ContactViewSet,
+    ContactViewSet, BranchViewSet,
     MenuItemViewSet, HeaderSettingsView, HeroSettingsView,
     FooterSettingsView, PrivacyPolicyViewSet, SiteSettingsView, ContentPageViewSet,
     WelcomeBannerViewSet, CatalogItemViewSet, ServiceViewSet
@@ -9,6 +9,7 @@ from .views import (
 
 router = DefaultRouter()
 router.register(r'contacts', ContactViewSet, basename='contact')
+router.register(r'branches', BranchViewSet, basename='branch')
 router.register(r'menu', MenuItemViewSet, basename='menuitem')
 router.register(r'pages', ContentPageViewSet, basename='contentpage')
 router.register(r'banners', WelcomeBannerViewSet, basename='welcomebanner')

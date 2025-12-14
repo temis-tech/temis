@@ -1,8 +1,11 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django import forms
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 from .models import (
-    Contact,
+    Contact, Branch, Service, ServiceBranch, ServiceBranchPriceHistory,
     Menu, MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings,
     ContentPage, CatalogItem, GalleryImage, HomePageBlock, FAQItem,
     WelcomeBanner, WelcomeBannerCard, SocialNetwork
@@ -14,6 +17,34 @@ from .models import (
 class ContactAdmin(admin.ModelAdmin):
     list_display = ['phone', 'phone_secondary', 'email', 'is_active']
     list_editable = ['is_active']
+
+
+# ==================== ФИЛИАЛЫ ====================
+@admin.register(Branch)
+class BranchAdmin(admin.ModelAdmin):
+    list_display = ['name', 'metro', 'address', 'phone', 'order', 'is_active', 'image_preview']
+    list_editable = ['order', 'is_active']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['name', 'address', 'metro', 'phone']
+    readonly_fields = ['image_preview', 'created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('name', 'address', 'metro', 'phone', 'image', 'image_preview')
+        }),
+        ('Настройки', {
+            'fields': ('order', 'is_active', 'created_at', 'updated_at')
+        }),
+    )
+    
+    def image_preview(self, obj):
+        if obj and obj.image:
+            return format_html(
+                '<img src="{}" style="max-width: 200px; max-height: 200px; object-fit: contain;" />',
+                obj.image.url
+            )
+        return "Нет изображения"
+    image_preview.short_description = 'Превью изображения'
 
 
 # ==================== КОНСТРУКТОР СТРАНИЦ ====================
@@ -574,6 +605,156 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+class ServiceBranchInline(admin.TabularInline):
+    """Inline для управления услугами в филиалах"""
+    model = ServiceBranch
+    extra = 0
+    fields = ['branch', 'price', 'price_with_abonement', 'is_available', 'order', 'crm_item_id']
+    readonly_fields = []
+    show_change_link = True
+    
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+        # Если услуга новая, не показываем inline
+        if obj is None:
+            formset.extra = 0
+        return formset
+
+
+@admin.register(Service)
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ['title', 'price', 'price_with_abonement', 'has_own_page', 'slug', 'order', 'is_active']
+    list_editable = ['order', 'is_active']
+    list_filter = ['is_active', 'has_own_page', 'created_at']
+    search_fields = ['title', 'description', 'slug']
+    prepopulated_fields = {'slug': ('title',)}
+    readonly_fields = ['created_at', 'updated_at']
+    inlines = [ServiceBranchInline]
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('title', 'slug', 'description', 'short_description')
+        }),
+        ('Цены (базовые)', {
+            'fields': ('price', 'price_with_abonement', 'duration'),
+            'description': 'Базовые цены услуги. Если для филиала не указана индивидуальная цена, будет использована базовая.'
+        }),
+        ('Изображение', {
+            'fields': ('image', 'image_align', 'image_size')
+        }),
+        ('Настройки страницы', {
+            'fields': ('has_own_page', 'show_booking_button', 'booking_form')
+        }),
+        ('Настройки', {
+            'fields': ('order', 'is_active', 'created_at', 'updated_at')
+        }),
+    )
+    
+    actions = ['add_to_all_branches', 'remove_from_all_branches']
+    
+    def save_formset(self, request, form, formset, change):
+        """Переопределяем для передачи пользователя при сохранении inline"""
+        instances = formset.save(commit=False)
+        for instance in instances:
+            if isinstance(instance, ServiceBranch) and change:
+                instance.save(changed_by=request.user)
+            else:
+                instance.save()
+        formset.save_m2m()
+        for obj in formset.deleted_objects:
+            obj.delete()
+    
+    def add_to_all_branches(self, request, queryset):
+        """Добавить выбранные услуги во все активные филиалы"""
+        branches = Branch.objects.filter(is_active=True)
+        count = 0
+        for service in queryset:
+            for branch in branches:
+                ServiceBranch.objects.get_or_create(
+                    service=service,
+                    branch=branch,
+                    defaults={
+                        'is_available': True,
+                        'order': service.order
+                    }
+                )
+                count += 1
+        self.message_user(request, f'Добавлено {count} связей услуг с филиалами.')
+    add_to_all_branches.short_description = 'Добавить во все активные филиалы'
+    
+    def remove_from_all_branches(self, request, queryset):
+        """Удалить выбранные услуги из всех филиалов"""
+        count = ServiceBranch.objects.filter(service__in=queryset).delete()[0]
+        self.message_user(request, f'Удалено {count} связей услуг с филиалами.')
+    remove_from_all_branches.short_description = 'Удалить из всех филиалов'
+
+
+@admin.register(ServiceBranch)
+class ServiceBranchAdmin(admin.ModelAdmin):
+    list_display = ['service', 'branch', 'get_final_price', 'get_final_price_with_abonement', 'is_available', 'order', 'crm_item_id']
+    list_editable = ['is_available', 'order']
+    list_filter = ['is_available', 'branch', 'service', 'created_at']
+    search_fields = ['service__title', 'branch__name', 'crm_item_id']
+    readonly_fields = ['created_at', 'updated_at']
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('service', 'branch')
+        }),
+        ('Цены', {
+            'fields': ('price', 'price_with_abonement'),
+            'description': 'Если не указаны, используются базовые цены из услуги'
+        }),
+        ('Интеграция с CRM', {
+            'fields': ('crm_item_id', 'crm_item_data')
+        }),
+        ('Настройки', {
+            'fields': ('is_available', 'order', 'created_at', 'updated_at')
+        }),
+    )
+    
+    def save_model(self, request, obj, form, change):
+        """Переопределяем save для передачи пользователя в ServiceBranch.save()"""
+        if change:
+            obj.save(changed_by=request.user)
+        else:
+            obj.save()
+        super().save_model(request, obj, form, change)
+    
+    def get_final_price(self, obj):
+        """Показывает финальную цену (из ServiceBranch или Service)"""
+        price = obj.get_final_price()
+        return f'{price} ₽' if price else '-'
+    get_final_price.short_description = 'Цена'
+    
+    def get_final_price_with_abonement(self, obj):
+        """Показывает финальную цену по абонементу"""
+        price = obj.get_final_price_with_abonement()
+        return f'{price} ₽' if price else '-'
+    get_final_price_with_abonement.short_description = 'Цена по абонементу'
+
+
+@admin.register(ServiceBranchPriceHistory)
+class ServiceBranchPriceHistoryAdmin(admin.ModelAdmin):
+    list_display = ['service_branch', 'price', 'price_with_abonement', 'changed_at', 'changed_by']
+    list_filter = ['changed_at', 'service_branch__branch', 'service_branch__service']
+    search_fields = ['service_branch__service__title', 'service_branch__branch__name', 'notes']
+    readonly_fields = ['service_branch', 'price', 'price_with_abonement', 'changed_at', 'changed_by', 'notes']
+    date_hierarchy = 'changed_at'
+    
+    fieldsets = (
+        ('Информация об изменении', {
+            'fields': ('service_branch', 'price', 'price_with_abonement', 'changed_at', 'changed_by', 'notes')
+        }),
+    )
+    
+    def has_add_permission(self, request):
+        return False  # История создается автоматически
+    
+    def has_delete_permission(self, request, obj=None):
+        return False  # Историю нельзя удалять
 
 
 @admin.register(PrivacyPolicy)

@@ -5,12 +5,12 @@ from rest_framework.views import APIView
 from django.db import models
 from django.utils import timezone
 from .models import (
-    Contact,
+    Contact, Branch,
     MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings,
     ContentPage, WelcomeBanner, CatalogItem, Service
 )
 from .serializers import (
-    ContactSerializer,
+    ContactSerializer, BranchSerializer,
     MenuItemSerializer, HeaderSettingsSerializer, HeroSettingsSerializer,
     FooterSettingsSerializer, PrivacyPolicySerializer, SiteSettingsSerializer,
     ContentPageSerializer, WelcomeBannerSerializer, CatalogItemSerializer, ServiceSerializer
@@ -20,6 +20,17 @@ from .serializers import (
 class ContactViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Contact.objects.filter(is_active=True)
     serializer_class = ContactSerializer
+
+
+class BranchViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet для филиалов"""
+    queryset = Branch.objects.filter(is_active=True).order_by('order', 'name')
+    serializer_class = BranchSerializer
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 
 class MenuItemViewSet(viewsets.ReadOnlyModelViewSet):

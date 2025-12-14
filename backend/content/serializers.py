@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.conf import settings
 from config.constants import get_api_domain, get_protocol, get_media_base_url, MEDIA_PATH
 from .models import (
-    Branch, Service, Specialist, Review, Promotion, Article, Contact,
+    Branch, Service, ServiceBranch, Specialist, Review, Promotion, Article, Contact,
     Menu, MenuItem, HeaderSettings, HeroSettings, FooterSettings, PrivacyPolicy, SiteSettings,
     ContentPage, CatalogItem, GalleryImage, HomePageBlock, FAQItem,
     WelcomeBanner, WelcomeBannerCard, SocialNetwork
@@ -112,17 +112,45 @@ class BranchSerializer(serializers.ModelSerializer):
         return get_image_url(obj.image, self.context.get('request'))
 
 
+class ServiceBranchSerializer(serializers.ModelSerializer):
+    """Сериализатор для связи услуги с филиалом"""
+    branch = BranchSerializer(read_only=True)
+    branch_id = serializers.IntegerField(source='branch.id', read_only=True)
+    branch_name = serializers.CharField(source='branch.name', read_only=True)
+    final_price = serializers.SerializerMethodField()
+    final_price_with_abonement = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ServiceBranch
+        fields = ['id', 'branch', 'branch_id', 'branch_name', 'price', 'price_with_abonement',
+                 'final_price', 'final_price_with_abonement', 'is_available', 'order',
+                 'crm_item_id', 'crm_item_data']
+    
+    def get_final_price(self, obj):
+        """Возвращает финальную цену (из ServiceBranch или Service)"""
+        return float(obj.get_final_price()) if obj.get_final_price() else None
+    
+    def get_final_price_with_abonement(self, obj):
+        """Возвращает финальную цену по абонементу"""
+        price = obj.get_final_price_with_abonement()
+        return float(price) if price else None
+
+
 class ServiceSerializer(serializers.ModelSerializer):
     booking_form_id = serializers.IntegerField(source='booking_form.id', read_only=True, allow_null=True)
     booking_form_title = serializers.CharField(source='booking_form.title', read_only=True, allow_null=True)
     image = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField()
+    service_branches = serializers.SerializerMethodField()
+    price_range = serializers.SerializerMethodField()
+    price_with_abonement_range = serializers.SerializerMethodField()
     
     class Meta:
         model = Service
         fields = ['id', 'title', 'slug', 'description', 'short_description', 'price', 
                  'price_with_abonement', 'duration', 'image', 'image_align', 'image_size', 'has_own_page', 'url', 'order', 
-                 'show_booking_button', 'booking_form_id', 'booking_form_title']
+                 'show_booking_button', 'booking_form_id', 'booking_form_title',
+                 'service_branches', 'price_range', 'price_with_abonement_range']
     
     def get_image(self, obj):
         return get_image_url(obj.image, self.context.get('request'))
@@ -130,6 +158,61 @@ class ServiceSerializer(serializers.ModelSerializer):
     def get_url(self, obj):
         """Возвращает URL страницы услуги, если она может быть открыта как страница"""
         return obj.get_absolute_url()
+    
+    def get_service_branches(self, obj):
+        """Возвращает список филиалов, где доступна услуга"""
+        branches = obj.service_branches.filter(is_available=True, branch__is_active=True).select_related('branch')
+        return ServiceBranchSerializer(branches, many=True, context=self.context).data
+    
+    def get_price_range(self, obj):
+        """Возвращает диапазон цен по всем филиалам (min-max)"""
+        branches = obj.service_branches.filter(is_available=True, branch__is_active=True)
+        prices = []
+        
+        # Добавляем базовую цену
+        if obj.price:
+            prices.append(float(obj.price))
+        
+        # Добавляем цены из филиалов
+        for branch in branches:
+            final_price = branch.get_final_price()
+            if final_price:
+                prices.append(float(final_price))
+        
+        if not prices:
+            return None
+        
+        min_price = min(prices)
+        max_price = max(prices)
+        
+        if min_price == max_price:
+            return min_price
+        return {'min': min_price, 'max': max_price}
+    
+    def get_price_with_abonement_range(self, obj):
+        """Возвращает диапазон цен по абонементу по всем филиалам (min-max)"""
+        branches = obj.service_branches.filter(is_available=True, branch__is_active=True)
+        prices = []
+        
+        # Добавляем базовую цену по абонементу
+        if obj.price_with_abonement:
+            prices.append(float(obj.price_with_abonement))
+        
+        # Добавляем цены из филиалов
+        for branch in branches:
+            final_price = branch.get_final_price_with_abonement()
+            if final_price:
+                prices.append(float(final_price))
+        
+        if not prices:
+            return None
+        
+        min_price = min(prices)
+        max_price = max(prices)
+        
+        if min_price == max_price:
+            return min_price
+        return {'min': min_price, 'max': max_price}
 
 
 class SpecialistSerializer(serializers.ModelSerializer):

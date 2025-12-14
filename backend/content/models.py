@@ -4,9 +4,12 @@ from django.utils.text import slugify
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 from ckeditor.fields import RichTextField
 from .utils.image_processing import process_uploaded_image
 import re
+
+User = get_user_model()
 
 
 def transliterate_slug(text):
@@ -165,6 +168,106 @@ class Specialist(models.Model):
                 super().save(update_fields=['photo'])
             except Exception as e:
                 print(f"Ошибка обработки фото для Specialist {self.name}: {e}")
+
+
+class ServiceBranch(models.Model):
+    """Связь услуги с филиалом - позволяет настроить индивидуальные цены и настройки"""
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='service_branches',
+                               verbose_name='Услуга')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True,
+                              verbose_name='Филиал',
+                              help_text='Если филиал удален, связь сохраняется для истории')
+    
+    # Цены (если null - используются базовые из Service)
+    price = models.DecimalField('Цена в этом филиале', max_digits=10, decimal_places=2, null=True, blank=True,
+                               help_text='Если не указана, используется базовая цена из услуги')
+    price_with_abonement = models.DecimalField('Цена по абонементу', max_digits=10, decimal_places=2, null=True, blank=True,
+                                              help_text='Если не указана, используется базовая цена по абонементу из услуги')
+    
+    # Доступность и порядок
+    is_available = models.BooleanField('Доступна в этом филиале', default=True,
+                                      help_text='Можно временно отключить услугу в конкретном филиале')
+    order = models.IntegerField('Порядок отображения', default=0,
+                               help_text='Порядок отображения услуги в списке услуг филиала')
+    
+    # Интеграция с CRM МойКласс
+    crm_item_id = models.CharField('ID айтема в CRM МойКласс', max_length=100, blank=True, null=True,
+                                  help_text='ID услуги/айтема в системе МойКласс для синхронизации данных')
+    crm_item_data = models.JSONField('Данные из CRM', blank=True, null=True,
+                                     help_text='Дополнительные данные из CRM (цены абонементов, условия и т.д.)')
+    
+    created_at = models.DateTimeField('Создана', auto_now_add=True)
+    updated_at = models.DateTimeField('Обновлена', auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Услуга в филиале'
+        verbose_name_plural = 'Услуги в филиалах'
+        unique_together = [['service', 'branch']]  # Одна услуга - один раз в филиале
+        ordering = ['order', 'branch__order', 'service__order']
+        indexes = [
+            models.Index(fields=['service', 'branch']),
+            models.Index(fields=['is_available', 'branch']),
+        ]
+    
+    def __str__(self):
+        branch_name = self.branch.name if self.branch else 'Удаленный филиал'
+        return f'{self.service.title} - {branch_name}'
+    
+    def save(self, *args, **kwargs):
+        # Сохраняем текущие цены в историю перед обновлением
+        user = kwargs.pop('changed_by', None)
+        if self.pk:  # Только для существующих записей
+            try:
+                old_instance = ServiceBranch.objects.get(pk=self.pk)
+                price_changed = old_instance.price != self.price
+                abonement_price_changed = old_instance.price_with_abonement != self.price_with_abonement
+                
+                if price_changed or abonement_price_changed:
+                    # Определяем финальные цены для истории
+                    final_price = self.price if self.price is not None else self.service.price
+                    final_abonement_price = self.price_with_abonement if self.price_with_abonement is not None else self.service.price_with_abonement
+                    
+                    ServiceBranchPriceHistory.objects.create(
+                        service_branch=self,
+                        price=final_price,
+                        price_with_abonement=final_abonement_price,
+                        changed_by=user
+                    )
+            except ServiceBranch.DoesNotExist:
+                pass  # Новая запись, истории нет
+        super().save(*args, **kwargs)
+    
+    def get_final_price(self):
+        """Возвращает финальную цену: из ServiceBranch или из Service"""
+        return self.price if self.price is not None else self.service.price
+    
+    def get_final_price_with_abonement(self):
+        """Возвращает финальную цену по абонементу: из ServiceBranch или из Service"""
+        return self.price_with_abonement if self.price_with_abonement is not None else self.service.price_with_abonement
+
+
+class ServiceBranchPriceHistory(models.Model):
+    """История изменений цен услуг в филиалах (аудит)"""
+    service_branch = models.ForeignKey(ServiceBranch, on_delete=models.CASCADE, related_name='price_history',
+                                      verbose_name='Услуга в филиале')
+    price = models.DecimalField('Цена', max_digits=10, decimal_places=2)
+    price_with_abonement = models.DecimalField('Цена по абонементу', max_digits=10, decimal_places=2, null=True, blank=True)
+    changed_at = models.DateTimeField('Изменено', auto_now_add=True)
+    changed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                                  verbose_name='Изменено пользователем')
+    notes = models.TextField('Примечание', blank=True,
+                            help_text='Причина изменения цены или дополнительная информация')
+    
+    class Meta:
+        verbose_name = 'История изменения цены'
+        verbose_name_plural = 'История изменений цен'
+        ordering = ['-changed_at']
+        indexes = [
+            models.Index(fields=['service_branch', '-changed_at']),
+        ]
+    
+    def __str__(self):
+        return f'{self.service_branch} - {self.changed_at.strftime("%d.%m.%Y %H:%M")}'
 
 
 class Review(models.Model):
