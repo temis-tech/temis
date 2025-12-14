@@ -607,14 +607,18 @@ class ContentPageSerializer(serializers.ModelSerializer):
     catalog_items = serializers.SerializerMethodField()
     gallery_images = serializers.SerializerMethodField()
     home_blocks = serializers.SerializerMethodField()
+    faq_items = serializers.SerializerMethodField()
     
     image = serializers.SerializerMethodField()
+    faq_icon = serializers.SerializerMethodField()
+    faq_background_image = serializers.SerializerMethodField()
     
     class Meta:
         model = ContentPage
         fields = ['id', 'title', 'slug', 'page_type', 'description', 'image', 'image_align', 'image_size', 
                  'gallery_display_type', 'gallery_enable_fullscreen', 'show_title', 'is_active', 'catalog_items',
-                 'gallery_images', 'home_blocks']
+                 'gallery_images', 'home_blocks', 'faq_items', 'faq_icon', 'faq_icon_position', 
+                 'faq_background_color', 'faq_background_image', 'faq_animation']
     
     def get_image(self, obj):
         return get_image_url(obj.image, self.context.get('request'))
