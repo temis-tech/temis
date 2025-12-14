@@ -138,6 +138,38 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
   const videoRefs = useRef<{ [key: number]: HTMLVideoElement | null }>({})
   const iframeRefs = useRef<{ [key: number]: HTMLIFrameElement | null }>({})
 
+  // Функция для паузы видео по индексу
+  const pauseVideoByIndex = useCallback((index: number) => {
+    const image = images[index]
+    if (!image || image.content_type !== 'video') return
+
+    // Пауза локального видео
+    const videoElement = videoRefs.current[index]
+    if (videoElement) {
+      videoElement.pause()
+    }
+    
+    // Пауза iframe видео (YouTube, Rutube, Vimeo)
+    const iframeElement = iframeRefs.current[index]
+    if (iframeElement && iframeElement.contentWindow) {
+      try {
+        if (image.video_embed_url?.includes('youtube.com') || image.video_embed_url?.includes('youtu.be')) {
+          // YouTube API
+          iframeElement.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*')
+        } else if (image.video_embed_url?.includes('rutube.ru')) {
+          // Rutube API - правильный формат
+          const message = JSON.stringify({ type: 'player:action', action: 'pause' })
+          iframeElement.contentWindow.postMessage(message, '*')
+        } else if (image.video_embed_url?.includes('vimeo.com')) {
+          // Vimeo API
+          iframeElement.contentWindow.postMessage('{"method":"pause"}', '*')
+        }
+      } catch (e) {
+        console.warn('Не удалось поставить видео на паузу:', e)
+      }
+    }
+  }, [images])
+
   // Отладочная информация
   useEffect(() => {
     console.log('🖼️ Gallery component props:', {
@@ -257,7 +289,7 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
         }
       })
     }
-  }, [currentImageIndex, images])
+  }, [currentImageIndex, images, pauseVideoByIndex])
 
   // Проверка на пустой массив (после всех хуков)
   if (!images || images.length === 0) {
