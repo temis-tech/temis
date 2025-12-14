@@ -70,10 +70,25 @@
 }
 
 .branchCard {
-  background: #f8f9fa;
+  background: white;
   border-radius: 12px;
   padding: 2rem;
   text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.branchCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.branchImage {
+  margin-bottom: 1rem;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 8px;
 }
 
 .branchCard h3 {
@@ -85,12 +100,21 @@
 .address {
   color: #666;
   margin-bottom: 0.5rem;
+  font-size: 0.95rem;
 }
 
 .metro {
   color: #4a90e2;
   font-weight: 500;
   margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.branchCard .phone {
+  color: #4a90e2;
+  font-weight: 500;
+  margin-top: 1rem;
+  font-size: 1.1rem;
 }
 
 @media (max-width: 768px) {
