@@ -21,7 +21,13 @@ export default async function Home() {
         title: homePage.title,
         page_type: homePage.page_type,
         is_active: homePage.is_active,
-        blocks_count: homePage.home_blocks?.length || 0
+        blocks_count: homePage.home_blocks?.length || 0,
+        blocks: homePage.home_blocks?.map(b => ({
+          id: b.id,
+          is_active: b.is_active,
+          has_content_page_data: !!b.content_page_data,
+          content_page_type: b.content_page_data?.page_type
+        }))
       });
     }
   } catch (error) {

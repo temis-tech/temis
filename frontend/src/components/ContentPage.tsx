@@ -300,11 +300,17 @@ export default function ContentPage({ page }: ContentPageProps) {
           />
         )}
         {page.home_blocks?.filter((block) => block.is_active).map((block) => {
-          if (!block.content_page_data) return null
+          if (!block.content_page_data) {
+            console.warn('Home block missing content_page_data:', block.id);
+            return null;
+          }
           const contentPage = block.content_page_data
 
           // Пропускаем страницы типа 'home', чтобы избежать рекурсии
-          if (contentPage.page_type === 'home') return null
+          if (contentPage.page_type === 'home') {
+            console.warn('Skipping home page block with home page type:', block.id);
+            return null;
+          }
 
           const TitleTag = block.title_tag || 'h2'
           const displayTitle = block.title || contentPage.title

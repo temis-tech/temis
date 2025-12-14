@@ -24,7 +24,7 @@ class ContactViewSet(viewsets.ReadOnlyModelViewSet):
 
 class BranchViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet для филиалов"""
-    queryset = Branch.objects.filter(is_active=True).order_by('order', 'name')
+    queryset = Branch.objects.filter(is_active=True).select_related('content_page').order_by('order', 'name')
     serializer_class = BranchSerializer
     
     def get_serializer_context(self):
@@ -97,7 +97,14 @@ class SiteSettingsView(APIView):
 
 
 class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ContentPage.objects.filter(is_active=True)
+    queryset = ContentPage.objects.filter(is_active=True).prefetch_related(
+        'catalog_items',
+        'gallery_images',
+        'home_blocks__content_page',
+        'faq_items',
+        'branches',
+        'display_branches'
+    )
     serializer_class = ContentPageSerializer
     lookup_field = 'slug'
     

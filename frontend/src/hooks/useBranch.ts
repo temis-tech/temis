@@ -26,10 +26,13 @@ export function useBranch() {
             if (response.data) {
               setSelectedBranch(response.data);
             }
-          } catch (error) {
-            // Если филиал не найден, удаляем cookie
+          } catch (error: any) {
+            // Если филиал не найден или ошибка сервера, удаляем cookie
             console.error('Error loading branch:', error);
-            deleteCookie(BRANCH_COOKIE_NAME);
+            if (error.response?.status !== 500) {
+              // Удаляем cookie только если это не ошибка сервера (500)
+              deleteCookie(BRANCH_COOKIE_NAME);
+            }
           }
         }
       } catch (error) {

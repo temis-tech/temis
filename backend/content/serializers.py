@@ -113,9 +113,15 @@ class BranchSerializer(serializers.ModelSerializer):
         return get_image_url(obj.image, self.context.get('request'))
     
     def get_content_page(self, obj):
-        """Возвращает данные страницы контента филиала, если она есть"""
+        """Возвращает базовую информацию о странице контента филиала, если она есть"""
         if obj.content_page:
-            return ContentPageSerializer(obj.content_page, context=self.context).data
+            # Возвращаем только базовую информацию, чтобы избежать циклической зависимости
+            return {
+                'id': obj.content_page.id,
+                'title': obj.content_page.title,
+                'slug': obj.content_page.slug,
+                'url': obj.content_page.get_absolute_url(),
+            }
         return None
 
 

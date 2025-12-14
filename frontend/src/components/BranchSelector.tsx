@@ -28,9 +28,11 @@ export default function BranchSelector({
         setIsLoadingBranches(true);
         const response = await contentApi.getBranches();
         const branchesData = response.data.results || response.data || [];
-        setBranches(branchesData);
-      } catch (error) {
+        setBranches(Array.isArray(branchesData) ? branchesData : []);
+      } catch (error: any) {
         console.error('Error loading branches:', error);
+        // Устанавливаем пустой массив при ошибке, чтобы компонент не сломался
+        setBranches([]);
       } finally {
         setIsLoadingBranches(false);
       }
