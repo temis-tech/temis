@@ -8,6 +8,16 @@ export interface Contact {
   email?: string;
 }
 
+export interface Branch {
+  id: number;
+  name: string;
+  address: string;
+  metro: string;
+  phone: string;
+  image?: string | null;
+  order: number;
+}
+
 export interface MenuItem {
   id: number;
   title?: string;

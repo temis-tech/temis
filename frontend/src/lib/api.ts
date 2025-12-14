@@ -29,6 +29,8 @@ const api = axios.create({
 export const contentApi = {
   // Контакты (используется в Footer)
   getContacts: () => api.get('/content/contacts/'),
+  // Филиалы
+  getBranches: () => api.get('/content/branches/'),
   // Настройки сайта
   getMenu: () => api.get('/content/menu/'),
   getHeaderSettings: () => api.get('/content/settings/header/'),
