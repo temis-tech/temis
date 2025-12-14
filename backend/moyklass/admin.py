@@ -547,9 +547,10 @@ class MoyKlassFieldMappingForm(forms.ModelForm):
             self.fields['source_field_name'].widget.attrs['data-integration-id'] = integration.id if integration else ''
         else:
             # Если integration нет, показываем пустой список
+            # Но НЕ устанавливаем disabled, чтобы можно было обновить через formset
             self.fields['source_field_name'].widget = forms.Select(
-                choices=[('', 'Сначала выберите форму/анкету')],
-                attrs={'class': 'source-field-select', 'disabled': True}
+                choices=[('', 'Поля не найдены')],
+                attrs={'class': 'source-field-select'}
             )
 
 
@@ -572,6 +573,12 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
         # Создаем кастомный FormSet класс, который передает obj в формы
         class CustomFormSet(FormSet):
             def __init__(self, *args, **kwargs):
+                # Устанавливаем integration для всех форм ДО инициализации
+                if parent_obj and 'initial' in kwargs:
+                    for initial_data in kwargs.get('initial', []):
+                        if 'integration' not in initial_data:
+                            initial_data['integration'] = parent_obj.id
+                
                 super().__init__(*args, **kwargs)
                 
                 import logging
@@ -609,20 +616,16 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
                                         f'{question.text[:50]}... (question_{question.id})'
                                     ))
                             
-                            # Обновляем choices виджета
+                            # Обновляем choices виджета - ПРИНУДИТЕЛЬНО
                             widget = form.fields['source_field_name'].widget
-                            widget.choices = choices
-                            # Обновляем атрибуты виджета
-                            if hasattr(widget, 'attrs'):
-                                widget.attrs.update({
-                                    'class': 'source-field-select',
-                                    'data-integration-id': str(parent_obj.id)
-                                })
-                            else:
-                                widget.attrs = {
+                            # Полностью пересоздаем виджет с правильными choices
+                            form.fields['source_field_name'].widget = forms.Select(
+                                choices=choices,
+                                attrs={
                                     'class': 'source-field-select',
                                     'data-integration-id': str(parent_obj.id)
                                 }
+                            )
                             logger.debug(f'Форма {idx}: обновлены choices для source_field_name, всего опций: {len(choices)}')
                             
                             # Устанавливаем integration для новых форм
