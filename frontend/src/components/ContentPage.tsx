@@ -303,11 +303,15 @@ export default function ContentPage({ page }: ContentPageProps) {
           if (!block.content_page_data) return null
           const contentPage = block.content_page_data
 
+          // Пропускаем страницы типа 'home', чтобы избежать рекурсии
           if (contentPage.page_type === 'home') return null
 
           const TitleTag = block.title_tag || 'h2'
           const displayTitle = block.title || contentPage.title
           const titleSizeClass = block.title_size ? styles[`titleSize_${block.title_size}`] : styles.titleSize_large
+
+          // Определяем тип страницы для правильного отображения
+          const pageType = contentPage.page_type
 
           return (
             <div key={block.id} className={styles.homeBlock}>
@@ -323,6 +327,15 @@ export default function ContentPage({ page }: ContentPageProps) {
                 >
                   {displayTitle}
                 </TitleTag>
+              )}
+
+              {/* Описание страницы (для типов catalog и gallery) */}
+              {contentPage.description && 
+               (pageType === 'catalog' || pageType === 'gallery') && (
+                <div
+                  className={styles.description}
+                  dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(contentPage.description) }}
+                />
               )}
 
               {/* Каталог и галерея могут быть на любой странице */}
@@ -343,11 +356,13 @@ export default function ContentPage({ page }: ContentPageProps) {
                 <BranchesList branches={contentPage.display_branches} />
               )}
 
-              {contentPage.page_type === 'text' && contentPage.description && (
+              {/* Текст для страниц типа 'text' */}
+              {pageType === 'text' && contentPage.description && (
                 <div className={styles.textContent} dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(contentPage.description) }} />
               )}
 
-              {contentPage.page_type === 'faq' && contentPage.faq_items && contentPage.faq_items.length > 0 && (
+              {/* FAQ для страниц типа 'faq' */}
+              {pageType === 'faq' && contentPage.faq_items && contentPage.faq_items.length > 0 && (
                 <FAQ
                   items={contentPage.faq_items}
                   icon={contentPage.faq_icon}

@@ -16,6 +16,7 @@ export interface Branch {
   phone: string;
   image?: string | null;
   order: number;
+  content_page?: ContentPage | null;  // Страница филиала (если есть)
 }
 
 export interface MenuItem {

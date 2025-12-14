@@ -56,7 +56,9 @@ export default function BranchesList({
                   📞 {branch.phone}
                 </a>
               )}
-              {branch.content_page && typeof branch.content_page === 'object' && branch.content_page.slug && (
+              {branch.content_page && 
+               typeof branch.content_page === 'object' && 
+               branch.content_page.slug && (
                 <Link href={`/${branch.content_page.slug}/`} className={styles.link}>
                   Подробнее →
                 </Link>
