@@ -16,7 +16,12 @@ export interface Branch {
   phone: string;
   image?: string | null;
   order: number;
-  content_page?: ContentPage | null;  // Страница филиала (если есть)
+  content_page?: {
+    id: number;
+    title: string;
+    slug: string;
+    url: string;
+  } | null;  // Страница филиала (если есть)
 }
 
 export interface MenuItem {

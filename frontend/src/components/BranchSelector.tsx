@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useBranch } from '@/hooks/useBranch';
 import { Branch } from '@/types';
 import { contentApi } from '@/lib/api';
@@ -17,6 +18,7 @@ export default function BranchSelector({
   showLabel = true,
   className = '' 
 }: BranchSelectorProps) {
+  const router = useRouter();
   const { selectedBranch, selectBranch, clearBranch, isLoading } = useBranch();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -44,6 +46,12 @@ export default function BranchSelector({
   const handleBranchSelect = (branch: Branch) => {
     selectBranch(branch);
     setIsOpen(false);
+    
+    // Если у филиала есть страница описания, перенаправляем на неё
+    if (branch.content_page && typeof branch.content_page === 'object' && branch.content_page.url) {
+      router.push(branch.content_page.url);
+    }
+    
     if (onBranchChange) {
       onBranchChange(branch);
     }
@@ -123,9 +131,13 @@ export default function BranchSelector({
                   onClick={() => handleBranchSelect(branch)}
                   role="option"
                   aria-selected={selectedBranch?.id === branch.id}
+                  title={branch.content_page ? 'Нажмите, чтобы перейти на страницу филиала' : undefined}
                 >
                   <div className={styles.optionContent}>
-                    <span className={styles.optionName}>{branch.name}</span>
+                    <span className={styles.optionName}>
+                      {branch.name}
+                      {branch.content_page && <span className={styles.hasPageIndicator}> 📄</span>}
+                    </span>
                     {branch.metro && (
                       <span className={styles.optionMetro}>🚇 {branch.metro}</span>
                     )}
