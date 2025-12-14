@@ -10,6 +10,7 @@ interface BookingFormProps {
   formId: number;
   serviceId: number;
   serviceTitle: string;
+  sourcePage?: string;
   onClose: () => void;
 }
 
@@ -49,7 +50,7 @@ interface BookingFormData {
   default_quiz_title?: string | null;
 }
 
-export default function BookingForm({ formId, serviceId, serviceTitle, onClose }: BookingFormProps) {
+export default function BookingForm({ formId, serviceId, serviceTitle, sourcePage, onClose }: BookingFormProps) {
   const [form, setForm] = useState<BookingFormData | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -274,6 +275,7 @@ export default function BookingForm({ formId, serviceId, serviceTitle, onClose }
         await contentApi.submitBooking({
           form_id: formId,
           service_id: serviceId,
+          source_page: sourcePage,
           data: normalizedData
         });
         

@@ -27,12 +27,13 @@ class BookingSubmissionViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         form_id = request.data.get('form_id')
         service_id = request.data.get('service_id')
+        source_page = request.data.get('source_page', '')
         form_data = request.data.get('data', {})
         
         # Логируем входящие данные для отладки
         import logging
         logger = logging.getLogger(__name__)
-        logger.info(f'BookingSubmission create: form_id={form_id}, service_id={service_id}, data={form_data}')
+        logger.info(f'BookingSubmission create: form_id={form_id}, service_id={service_id}, source_page={source_page}, data={form_data}')
         
         try:
             form = BookingForm.objects.get(id=form_id, is_active=True)
@@ -65,6 +66,7 @@ class BookingSubmissionViewSet(viewsets.ModelViewSet):
         submission = BookingSubmission.objects.create(
             form=form,
             service=service,
+            source_page=source_page,
             data=form_data
         )
         

@@ -109,10 +109,10 @@ class FormRuleAdmin(admin.ModelAdmin):
 
 @admin.register(BookingSubmission)
 class BookingSubmissionAdmin(admin.ModelAdmin):
-    list_display = ['form', 'service', 'created_at', 'user_info']
+    list_display = ['form', 'service', 'source_page', 'created_at', 'user_info']
     list_filter = ['form', 'created_at']
-    search_fields = ['form__title', 'service__title']
-    readonly_fields = ['form', 'service', 'data', 'quiz_submission', 'created_at']
+    search_fields = ['form__title', 'service__title', 'source_page']
+    readonly_fields = ['form', 'service', 'source_page', 'data', 'quiz_submission', 'created_at']
     
     def user_info(self, obj):
         data = obj.data or {}

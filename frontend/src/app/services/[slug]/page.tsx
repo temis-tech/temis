@@ -134,15 +134,18 @@ export default async function ServicePage({ params }: { params: { slug: string }
           {(() => {
             const position = service.price_duration_position || 'top';
             const showBlocks = position !== 'hidden';
+            const hasPrice = service.price && (typeof service.price === 'number' || typeof service.price === 'string') && Number(service.price) > 0;
+            const hasDuration = service.duration && service.duration.trim() !== '';
+            const shouldShowBlocks = showBlocks && (hasPrice || hasDuration);
             
-            const priceDurationBlocks = showBlocks ? (
+            const priceDurationBlocks = shouldShowBlocks ? (
               <div style={{ 
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
                 gap: '1.5rem',
                 marginBottom: '2rem'
               }}>
-                {service.price && typeof service.price === 'number' && service.price > 0 && (
+                {hasPrice && (
                   <div style={{ 
                     background: '#f5f5f5',
                     padding: '1.5rem',
@@ -151,17 +154,17 @@ export default async function ServicePage({ params }: { params: { slug: string }
                   }}>
                     <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>Цена</div>
                     <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#FF820E' }}>
-                      {service.price.toLocaleString('ru-RU')} ₽
+                      {Number(service.price).toLocaleString('ru-RU')} ₽
                     </div>
-                    {service.price_with_abonement && typeof service.price_with_abonement === 'number' && service.price_with_abonement < service.price && (
+                    {service.price_with_abonement && (typeof service.price_with_abonement === 'number' || typeof service.price_with_abonement === 'string') && Number(service.price_with_abonement) < Number(service.price) && (
                       <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.5rem' }}>
-                        По абонементу: {service.price_with_abonement.toLocaleString('ru-RU')} ₽
+                        По абонементу: {Number(service.price_with_abonement).toLocaleString('ru-RU')} ₽
                       </div>
                     )}
                   </div>
                 )}
                 
-                {service.duration && (
+                {hasDuration && (
                   <div style={{ 
                     background: '#f5f5f5',
                     padding: '1.5rem',
@@ -218,6 +221,7 @@ export default async function ServicePage({ params }: { params: { slug: string }
                 formId={service.booking_form_id}
                 serviceId={service.id}
                 serviceTitle={service.title}
+                sourcePage={`/services/${service.slug}/`}
               />
             </div>
           )}

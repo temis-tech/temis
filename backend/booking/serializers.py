@@ -68,7 +68,7 @@ class BookingSubmissionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = BookingSubmission
-        fields = ['id', 'form', 'form_title', 'service', 'service_title', 'data', 
+        fields = ['id', 'form', 'form_title', 'service', 'service_title', 'source_page', 'data', 
                  'quiz_submission', 'created_at']
         read_only_fields = ['created_at']
 

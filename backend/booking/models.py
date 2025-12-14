@@ -96,6 +96,8 @@ class BookingSubmission(models.Model):
                                verbose_name='Услуга', related_name='bookings')
     data = models.JSONField('Данные формы', default=dict, 
                            help_text='Все данные, отправленные через форму')
+    source_page = models.CharField('Страница источника', max_length=500, blank=True,
+                                   help_text='URL страницы, с которой была отправлена форма')
     quiz_submission = models.ForeignKey('quizzes.QuizSubmission', on_delete=models.SET_NULL, 
                                        null=True, blank=True, verbose_name='Отправка анкеты',
                                        related_name='booking_submissions')
