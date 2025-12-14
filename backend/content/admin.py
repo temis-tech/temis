@@ -111,6 +111,10 @@ class ContentPageAdmin(admin.ModelAdmin):
             'fields': ('gallery_display_type', 'gallery_enable_fullscreen'),
             'description': 'Настройки отображения галереи. Выберите вид отображения (плитка, карусель, кирпичная кладка) и возможность открытия изображений на весь экран.'
         }),
+        ('Настройки FAQ (для типа "FAQ")', {
+            'fields': ('faq_icon', 'faq_icon_preview', 'faq_icon_position', 'faq_background_color', 'faq_background_image', 'faq_background_image_preview', 'faq_animation'),
+            'description': 'Настройки визуального оформления секции FAQ. Можно выбрать иконку для вопросов, её позицию (слева или справа), цвет фона, фоновое изображение и тип анимации при раскрытии вопросов.'
+        }),
         ('Филиалы для отображения', {
             'fields': ('display_branches',),
             'description': 'Выберите филиалы, которые будут отображаться на этой странице. Можно использовать для создания страницы контактов или страницы с информацией о филиалах.'
@@ -132,6 +136,24 @@ class ContentPageAdmin(admin.ModelAdmin):
             )
         return "Нет изображения"
     image_preview.short_description = 'Превью изображения'
+    
+    def faq_icon_preview(self, obj):
+        if obj and obj.faq_icon:
+            return format_html(
+                '<img src="{}" style="max-width: 50px; max-height: 50px; object-fit: contain;" />',
+                obj.faq_icon.url
+            )
+        return "Нет иконки"
+    faq_icon_preview.short_description = 'Превью иконки FAQ'
+    
+    def faq_background_image_preview(self, obj):
+        if obj and obj.faq_background_image:
+            return format_html(
+                '<img src="{}" style="max-width: 200px; max-height: 100px; object-fit: cover; border-radius: 4px;" />',
+                obj.faq_background_image.url
+            )
+        return "Нет фонового изображения"
+    faq_background_image_preview.short_description = 'Превью фонового изображения FAQ'
     
     def get_inlines(self, request, obj):
         """Показываем inline формы в зависимости от типа страницы"""
