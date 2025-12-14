@@ -28,7 +28,17 @@ export async function GET(
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      let errorData;
+      try {
+        const text = await response.text();
+        try {
+          errorData = JSON.parse(text);
+        } catch {
+          errorData = { error: text || 'Unknown error', status: response.status };
+        }
+      } catch {
+        errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+      }
       return NextResponse.json(errorData, { status: response.status });
     }
 
@@ -66,7 +76,17 @@ export async function POST(
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      let errorData;
+      try {
+        const text = await response.text();
+        try {
+          errorData = JSON.parse(text);
+        } catch {
+          errorData = { error: text || 'Unknown error', status: response.status };
+        }
+      } catch {
+        errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
+      }
       return NextResponse.json(errorData, { status: response.status });
     }
 
