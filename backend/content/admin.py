@@ -91,7 +91,7 @@ class ContentPageAdmin(admin.ModelAdmin):
     list_filter = ['page_type', 'is_active', 'created_at']
     search_fields = ['title', 'slug', 'description']
     prepopulated_fields = {'slug': ('title',)}
-    readonly_fields = ['image_preview']
+    readonly_fields = ['image_preview', 'faq_icon_preview', 'faq_background_image_preview']
     # Inline формы для каталога и галереи доступны на всех страницах
     inlines = [CatalogItemInline, GalleryImageInline]
     
