@@ -45,42 +45,68 @@ export default function ServicesList({
   const formatPrice = (price: number | { min: number; max: number } | null | undefined) => {
     if (!price) return null;
     if (typeof price === 'number') {
+      if (isNaN(price) || price === null || price === undefined) return null;
       return price.toLocaleString('ru-RU');
     }
-    if (price.min === price.max) {
-      return price.min.toLocaleString('ru-RU');
+    if (typeof price === 'object' && 'min' in price && 'max' in price) {
+      const min = price.min;
+      const max = price.max;
+      if (min === undefined || max === undefined || isNaN(min) || isNaN(max)) return null;
+      if (min === max) {
+        return min.toLocaleString('ru-RU');
+      }
+      return `${min.toLocaleString('ru-RU')} - ${max.toLocaleString('ru-RU')}`;
     }
-    return `${price.min.toLocaleString('ru-RU')} - ${price.max.toLocaleString('ru-RU')}`;
+    return null;
   };
 
-  const getServicePrice = (service: Service, branchId?: number | null) => {
-    if (branchId && service.service_branches) {
+  const getServicePrice = (service: Service, branchId?: number | null): number | { min: number; max: number } | null => {
+    if (branchId && service.service_branches && Array.isArray(service.service_branches)) {
       const serviceBranch = service.service_branches.find(
         (sb: any) => sb.branch_id === branchId || (sb.branch && typeof sb.branch === 'object' && sb.branch.id === branchId)
       );
       if (serviceBranch) {
         // Используем final_price если есть, иначе price, иначе базовая цена услуги
-        return serviceBranch.final_price || serviceBranch.price || service.price;
+        const price = serviceBranch.final_price ?? serviceBranch.price ?? service.price;
+        if (price !== null && price !== undefined && !isNaN(Number(price))) {
+          return Number(price);
+        }
       }
     }
     // Если есть диапазон цен, показываем его
     if (service.price_range) {
-      return service.price_range;
+      if (typeof service.price_range === 'object' && 'min' in service.price_range && 'max' in service.price_range) {
+        return service.price_range;
+      }
+      if (typeof service.price_range === 'number' && !isNaN(service.price_range)) {
+        return service.price_range;
+      }
     }
-    return service.price;
+    // Возвращаем базовую цену, если она валидна
+    if (service.price !== null && service.price !== undefined && !isNaN(Number(service.price))) {
+      return Number(service.price);
+    }
+    return null;
   };
 
-  const getServicePriceWithAbonement = (service: Service, branchId?: number | null) => {
-    if (branchId && service.service_branches) {
+  const getServicePriceWithAbonement = (service: Service, branchId?: number | null): number | null => {
+    if (branchId && service.service_branches && Array.isArray(service.service_branches)) {
       const serviceBranch = service.service_branches.find(
         (sb: any) => sb.branch_id === branchId || (sb.branch && typeof sb.branch === 'object' && sb.branch.id === branchId)
       );
       if (serviceBranch) {
         // Используем final_price_with_abonement если есть, иначе price_with_abonement
-        return serviceBranch.final_price_with_abonement || serviceBranch.price_with_abonement || service.price_with_abonement;
+        const price = serviceBranch.final_price_with_abonement ?? serviceBranch.price_with_abonement ?? service.price_with_abonement;
+        if (price !== null && price !== undefined && !isNaN(Number(price))) {
+          return Number(price);
+        }
       }
     }
-    return service.price_with_abonement;
+    // Возвращаем базовую цену по абонементу, если она валидна
+    if (service.price_with_abonement !== null && service.price_with_abonement !== undefined && !isNaN(Number(service.price_with_abonement))) {
+      return Number(service.price_with_abonement);
+    }
+    return null;
   };
 
   return (
@@ -117,20 +143,22 @@ export default function ServicesList({
                 {service.duration && (
                   <p className={styles.duration}>⏱️ {service.duration}</p>
                 )}
-                <div className={styles.priceContainer}>
-                  {formattedPrice && (
-                    <div className={styles.price}>
-                      <span className={styles.priceLabel}>Цена:</span>
-                      <span className={styles.priceValue}>{formattedPrice} ₽</span>
-                    </div>
-                  )}
-                  {formattedPriceWithAbonement && (
-                    <div className={styles.priceAbonement}>
-                      <span className={styles.priceLabel}>По абонементу:</span>
-                      <span className={styles.priceValue}>{formattedPriceWithAbonement} ₽</span>
-                    </div>
-                  )}
-                </div>
+                {(formattedPrice || formattedPriceWithAbonement) && (
+                  <div className={styles.priceContainer}>
+                    {formattedPrice && (
+                      <div className={styles.price}>
+                        <span className={styles.priceLabel}>Цена:</span>
+                        <span className={styles.priceValue}>{formattedPrice} ₽</span>
+                      </div>
+                    )}
+                    {formattedPriceWithAbonement && (
+                      <div className={styles.priceAbonement}>
+                        <span className={styles.priceLabel}>По абонементу:</span>
+                        <span className={styles.priceValue}>{formattedPriceWithAbonement} ₽</span>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {service.has_own_page && service.url && (
                   <Link href={service.url} className={styles.link}>
                     Подробнее →

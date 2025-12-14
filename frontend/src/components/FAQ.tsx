@@ -32,10 +32,10 @@ export default function FAQ({
   animation = 'slide',
   columns = 1
 }: FAQProps) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null)
+  const [openItemId, setOpenItemId] = useState<number | null>(null)
 
-  const toggleItem = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index)
+  const toggleItem = (itemId: number) => {
+    setOpenItemId(openItemId === itemId ? null : itemId)
   }
 
   const getAnimationClass = () => {
@@ -66,8 +66,8 @@ export default function FAQ({
   return (
     <div className={styles.faqContainer} style={containerStyle}>
       <div className={`${styles.faqList} ${gridClass}`} style={columns > 1 ? { display: 'grid' } : undefined}>
-        {items.map((item, index) => {
-          const isOpen = openIndex === index
+        {items.map((item) => {
+          const isOpen = openItemId === item.id
           
           return (
             <div
@@ -76,7 +76,7 @@ export default function FAQ({
             >
               <button
                 className={styles.faqQuestion}
-                onClick={() => toggleItem(index)}
+                onClick={() => toggleItem(item.id)}
                 aria-expanded={isOpen}
                 aria-controls={`faq-answer-${item.id}`}
               >
