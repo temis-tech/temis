@@ -563,76 +563,78 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
     ordering = ['order', 'id']
     
     def get_formset(self, request, obj=None, **kwargs):
-        formset = super().get_formset(request, obj, **kwargs)
+        # Сохраняем obj для использования в формах
+        parent_obj = obj
         
-        # Обновляем choices для полей source_field_name
-        if obj:
-            original_init = formset.__init__
-            
-            def custom_init(self, *args, **kwargs):
-                original_init(self, *args, **kwargs)
+        # Получаем базовый formset
+        FormSet = super().get_formset(request, obj, **kwargs)
+        
+        # Создаем кастомный FormSet класс, который передает obj в формы
+        class CustomFormSet(FormSet):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
                 
                 import logging
                 logger = logging.getLogger(__name__)
-                logger.debug(f'MoyKlassFieldMappingInline.get_formset: обновление choices для интеграции {obj.id}, тип: {obj.source_type}')
                 
-                # Обновляем choices для каждого поля в каждой форме
-                for idx, form in enumerate(self.forms):
-                    if 'source_field_name' in form.fields:
-                        choices = [('', '---------')]
-                        
-                        if obj.source_type == 'booking_form' and obj.booking_form:
-                            form_fields = obj.booking_form.fields.all().order_by('order', 'id')
-                            logger.debug(f'Форма {idx}: форма записи {obj.booking_form.id}, полей: {form_fields.count()}')
-                            if form_fields.exists():
-                                for field in form_fields:
-                                    choices.append((
-                                        field.name,
-                                        f'{field.label} ({field.name}) - {field.get_field_type_display()}'
-                                    ))
-                                logger.debug(f'Форма {idx}: добавлено {len(choices)-1} полей')
-                            else:
-                                choices.append(('', 'В форме нет полей. Добавьте поля в форму записи.'))
-                                logger.warning(f'Форма {idx}: в форме {obj.booking_form.id} нет полей')
-                        elif obj.source_type == 'quiz' and obj.quiz:
-                            choices.append(('user_name', 'Имя пользователя (user_name)'))
-                            choices.append(('user_phone', 'Телефон пользователя (user_phone)'))
-                            choices.append(('user_email', 'Email пользователя (user_email)'))
+                if parent_obj:
+                    logger.debug(f'MoyKlassFieldMappingInline.get_formset: обновление choices для интеграции {parent_obj.id}, тип: {parent_obj.source_type}')
+                    
+                    # Обновляем choices для каждого поля в каждой форме
+                    for idx, form in enumerate(self.forms):
+                        if 'source_field_name' in form.fields:
+                            choices = [('', '---------')]
                             
-                            for question in obj.quiz.questions.all().order_by('order', 'id'):
-                                choices.append((
-                                    f'question_{question.id}',
-                                    f'{question.text[:50]}... (question_{question.id})'
-                                ))
-                        
-                        # Обновляем choices виджета
-                        widget = form.fields['source_field_name'].widget
-                        widget.choices = choices
-                        # Обновляем атрибуты виджета
-                        if hasattr(widget, 'attrs'):
-                            widget.attrs.update({
-                                'class': 'source-field-select',
-                                'data-integration-id': str(obj.id)
-                            })
-                        else:
-                            widget.attrs = {
-                                'class': 'source-field-select',
-                                'data-integration-id': str(obj.id)
-                            }
-                        logger.debug(f'Форма {idx}: обновлены choices для source_field_name, всего опций: {len(choices)}')
-                        
-                        # Устанавливаем integration для новых форм
-                        if not form.instance.pk and hasattr(form, 'instance'):
-                            form.instance.integration = obj
-                            # Также устанавливаем в initial для формы
-                            if not hasattr(form, 'initial') or form.initial is None:
-                                form.initial = {}
-                            form.initial['integration'] = obj.id
-                            logger.debug(f'Форма {idx}: установлена интеграция {obj.id} для нового маппинга')
-            
-            formset.__init__ = custom_init
+                            if parent_obj.source_type == 'booking_form' and parent_obj.booking_form:
+                                form_fields = parent_obj.booking_form.fields.all().order_by('order', 'id')
+                                logger.debug(f'Форма {idx}: форма записи {parent_obj.booking_form.id}, полей: {form_fields.count()}')
+                                if form_fields.exists():
+                                    for field in form_fields:
+                                        choices.append((
+                                            field.name,
+                                            f'{field.label} ({field.name}) - {field.get_field_type_display()}'
+                                        ))
+                                    logger.debug(f'Форма {idx}: добавлено {len(choices)-1} полей')
+                                else:
+                                    choices.append(('', 'В форме нет полей. Добавьте поля в форму записи.'))
+                                    logger.warning(f'Форма {idx}: в форме {parent_obj.booking_form.id} нет полей')
+                            elif parent_obj.source_type == 'quiz' and parent_obj.quiz:
+                                choices.append(('user_name', 'Имя пользователя (user_name)'))
+                                choices.append(('user_phone', 'Телефон пользователя (user_phone)'))
+                                choices.append(('user_email', 'Email пользователя (user_email)'))
+                                
+                                for question in parent_obj.quiz.questions.all().order_by('order', 'id'):
+                                    choices.append((
+                                        f'question_{question.id}',
+                                        f'{question.text[:50]}... (question_{question.id})'
+                                    ))
+                            
+                            # Обновляем choices виджета
+                            widget = form.fields['source_field_name'].widget
+                            widget.choices = choices
+                            # Обновляем атрибуты виджета
+                            if hasattr(widget, 'attrs'):
+                                widget.attrs.update({
+                                    'class': 'source-field-select',
+                                    'data-integration-id': str(parent_obj.id)
+                                })
+                            else:
+                                widget.attrs = {
+                                    'class': 'source-field-select',
+                                    'data-integration-id': str(parent_obj.id)
+                                }
+                            logger.debug(f'Форма {idx}: обновлены choices для source_field_name, всего опций: {len(choices)}')
+                            
+                            # Устанавливаем integration для новых форм
+                            if not form.instance.pk and hasattr(form, 'instance'):
+                                form.instance.integration = parent_obj
+                                # Также устанавливаем в initial для формы
+                                if not hasattr(form, 'initial') or form.initial is None:
+                                    form.initial = {}
+                                form.initial['integration'] = parent_obj.id
+                                logger.debug(f'Форма {idx}: установлена интеграция {parent_obj.id} для нового маппинга')
         
-        return formset
+        return CustomFormSet
 
 
 @admin.register(MoyKlassIntegration)
