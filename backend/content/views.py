@@ -105,6 +105,8 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
         'home_blocks__content_page__faq_items',
         'home_blocks__content_page__selected_catalog_page__catalog_items',
         'home_blocks__content_page__selected_gallery_page__gallery_images',
+        'home_blocks__content_page__selected_catalog_page',
+        'home_blocks__content_page__selected_gallery_page',
         'faq_items',
         'branches',
         'display_branches',
@@ -112,10 +114,7 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
         'selected_gallery_page__gallery_images'
     ).select_related(
         'selected_catalog_page',
-        'selected_gallery_page',
-        'home_blocks__content_page',
-        'home_blocks__content_page__selected_catalog_page',
-        'home_blocks__content_page__selected_gallery_page'
+        'selected_gallery_page'
     )
     serializer_class = ContentPageSerializer
     lookup_field = 'slug'
@@ -141,6 +140,8 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
                 'home_blocks__content_page__faq_items',
                 'home_blocks__content_page__selected_catalog_page__catalog_items',
                 'home_blocks__content_page__selected_gallery_page__gallery_images',
+                'home_blocks__content_page__selected_catalog_page',
+                'home_blocks__content_page__selected_gallery_page',
                 'faq_items',
                 'branches',
                 'display_branches',
@@ -148,10 +149,7 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
                 'selected_gallery_page__gallery_images'
             ).select_related(
                 'selected_catalog_page',
-                'selected_gallery_page',
-                'home_blocks__content_page',
-                'home_blocks__content_page__selected_catalog_page',
-                'home_blocks__content_page__selected_gallery_page'
+                'selected_gallery_page'
             ).get(slug=slug)
             
             # Логирование для отладки
