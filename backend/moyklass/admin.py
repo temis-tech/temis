@@ -481,35 +481,56 @@ class MoyKlassFieldMappingForm(forms.ModelForm):
         # Получаем integration из instance или из initial
         integration = None
         
-        # Сначала пробуем получить из instance
-        if self.instance and self.instance.pk:
-            integration = self.instance.integration
-            logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из instance.pk: {integration}')
-        elif self.instance and hasattr(self.instance, 'integration_id') and self.instance.integration_id:
-            from .models import MoyKlassIntegration
-            try:
-                integration = MoyKlassIntegration.objects.get(id=self.instance.integration_id)
-                logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из integration_id: {integration}')
-            except MoyKlassIntegration.DoesNotExist:
-                logger.warning(f'MoyKlassFieldMappingForm.__init__: integration с id={self.instance.integration_id} не найден')
-        elif self.instance and hasattr(self.instance, 'integration') and self.instance.integration:
-            # Для новых inline форм integration может быть установлен через form.instance.integration
-            integration = self.instance.integration
-            logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из instance.integration: {integration}')
+        # Сначала пробуем получить из instance (для существующих записей)
+        if self.instance:
+            # Для существующих записей с pk
+            if self.instance.pk:
+                # Пробуем получить через связь
+                if hasattr(self.instance, 'integration') and self.instance.integration:
+                    integration = self.instance.integration
+                    logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из instance.integration (pk={self.instance.pk}): {integration.id}')
+                # Если связь не загружена, пробуем через integration_id
+                elif hasattr(self.instance, 'integration_id') and self.instance.integration_id:
+                    from .models import MoyKlassIntegration
+                    try:
+                        integration = MoyKlassIntegration.objects.select_related('booking_form', 'quiz').get(id=self.instance.integration_id)
+                        logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из integration_id (pk={self.instance.pk}): {integration.id}')
+                    except MoyKlassIntegration.DoesNotExist:
+                        logger.warning(f'MoyKlassFieldMappingForm.__init__: integration с id={self.instance.integration_id} не найден')
+            # Для новых записей без pk
+            else:
+                # Пробуем получить через связь, если она установлена
+                if hasattr(self.instance, 'integration') and self.instance.integration:
+                    integration = self.instance.integration
+                    logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из instance.integration (новый): {integration.id}')
+                # Или через integration_id
+                elif hasattr(self.instance, 'integration_id') and self.instance.integration_id:
+                    from .models import MoyKlassIntegration
+                    try:
+                        integration = MoyKlassIntegration.objects.select_related('booking_form', 'quiz').get(id=self.instance.integration_id)
+                        logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из integration_id (новый): {integration.id}')
+                    except MoyKlassIntegration.DoesNotExist:
+                        logger.warning(f'MoyKlassFieldMappingForm.__init__: integration с id={self.instance.integration_id} не найден')
         
         # Если не нашли, пробуем из initial
-        if not integration:
-            if 'initial' in kwargs and 'integration' in kwargs['initial']:
-                integration_id = kwargs['initial']['integration']
+        if not integration and 'initial' in kwargs:
+            initial = kwargs.get('initial', {})
+            if 'integration' in initial:
+                integration_id = initial['integration']
                 from .models import MoyKlassIntegration
                 try:
-                    integration = MoyKlassIntegration.objects.get(id=integration_id)
-                    logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из initial: {integration}')
+                    integration = MoyKlassIntegration.objects.select_related('booking_form', 'quiz').get(id=integration_id)
+                    logger.debug(f'MoyKlassFieldMappingForm.__init__: integration из initial: {integration.id}')
                 except (MoyKlassIntegration.DoesNotExist, ValueError, TypeError) as e:
                     logger.warning(f'MoyKlassFieldMappingForm.__init__: ошибка получения integration из initial: {e}')
         
         if not integration:
-            logger.warning(f'MoyKlassFieldMappingForm.__init__: integration не найден. instance.pk={self.instance.pk if self.instance else None}, hasattr integration={hasattr(self.instance, "integration") if self.instance else False}')
+            logger.warning(
+                f'MoyKlassFieldMappingForm.__init__: integration не найден. '
+                f'instance.pk={self.instance.pk if self.instance else None}, '
+                f'hasattr integration={hasattr(self.instance, "integration") if self.instance else False}, '
+                f'integration_id={getattr(self.instance, "integration_id", None) if self.instance else None}'
+            )
         
         # Если integration есть, заполняем choices для source_field_name
         if integration:
@@ -544,7 +565,7 @@ class MoyKlassFieldMappingForm(forms.ModelForm):
             
             # Устанавливаем choices и делаем поле Select
             self.fields['source_field_name'].widget = forms.Select(choices=choices, attrs={'class': 'source-field-select'})
-            self.fields['source_field_name'].widget.attrs['data-integration-id'] = integration.id if integration else ''
+            self.fields['source_field_name'].widget.attrs['data-integration-id'] = str(integration.id) if integration else ''
         else:
             # Если integration нет, показываем пустой список
             # Но НЕ устанавливаем disabled, чтобы можно было обновить через formset
@@ -562,6 +583,11 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
     fields = ['moyklass_field', 'source_field_name', 'is_required', 'default_value', 'order']
     # Убираем source_field_label - он будет заполняться автоматически
     ordering = ['order', 'id']
+    
+    def get_queryset(self, request):
+        """Оптимизируем запросы, загружая связанные объекты"""
+        qs = super().get_queryset(request)
+        return qs.select_related('integration', 'integration__booking_form', 'integration__quiz')
     
     def get_formset(self, request, obj=None, **kwargs):
         # Сохраняем obj для использования в формах
@@ -587,9 +613,30 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
                 if parent_obj:
                     logger.debug(f'MoyKlassFieldMappingInline.get_formset: обновление choices для интеграции {parent_obj.id}, тип: {parent_obj.source_type}')
                     
+                    # Загружаем связанные объекты для parent_obj
+                    if parent_obj.source_type == 'booking_form' and parent_obj.booking_form_id:
+                        from booking.models import BookingForm
+                        try:
+                            parent_obj.booking_form = BookingForm.objects.prefetch_related('fields').get(id=parent_obj.booking_form_id)
+                        except BookingForm.DoesNotExist:
+                            logger.warning(f'MoyKlassFieldMappingInline: форма записи {parent_obj.booking_form_id} не найдена')
+                    elif parent_obj.source_type == 'quiz' and parent_obj.quiz_id:
+                        from quizzes.models import Quiz
+                        try:
+                            parent_obj.quiz = Quiz.objects.prefetch_related('questions').get(id=parent_obj.quiz_id)
+                        except Quiz.DoesNotExist:
+                            logger.warning(f'MoyKlassFieldMappingInline: анкета {parent_obj.quiz_id} не найдена')
+                    
                     # Обновляем choices для каждого поля в каждой форме
                     for idx, form in enumerate(self.forms):
                         if 'source_field_name' in form.fields:
+                            # Устанавливаем integration для формы, если его нет
+                            if hasattr(form, 'instance') and form.instance:
+                                if not hasattr(form.instance, 'integration') or not form.instance.integration:
+                                    form.instance.integration = parent_obj
+                                elif form.instance.integration_id != parent_obj.id:
+                                    form.instance.integration = parent_obj
+                            
                             choices = [('', '---------')]
                             
                             if parent_obj.source_type == 'booking_form' and parent_obj.booking_form:
@@ -617,7 +664,6 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
                                     ))
                             
                             # Обновляем choices виджета - ПРИНУДИТЕЛЬНО
-                            widget = form.fields['source_field_name'].widget
                             # Полностью пересоздаем виджет с правильными choices
                             form.fields['source_field_name'].widget = forms.Select(
                                 choices=choices,
@@ -629,13 +675,14 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
                             logger.debug(f'Форма {idx}: обновлены choices для source_field_name, всего опций: {len(choices)}')
                             
                             # Устанавливаем integration для новых форм
-                            if not form.instance.pk and hasattr(form, 'instance'):
-                                form.instance.integration = parent_obj
-                                # Также устанавливаем в initial для формы
-                                if not hasattr(form, 'initial') or form.initial is None:
-                                    form.initial = {}
-                                form.initial['integration'] = parent_obj.id
-                                logger.debug(f'Форма {idx}: установлена интеграция {parent_obj.id} для нового маппинга')
+                            if hasattr(form, 'instance') and form.instance:
+                                if not form.instance.pk:
+                                    form.instance.integration = parent_obj
+                                    # Также устанавливаем в initial для формы
+                                    if not hasattr(form, 'initial') or form.initial is None:
+                                        form.initial = {}
+                                    form.initial['integration'] = parent_obj.id
+                                    logger.debug(f'Форма {idx}: установлена интеграция {parent_obj.id} для нового маппинга')
         
         return CustomFormSet
 
