@@ -17,15 +17,28 @@ export default async function Home() {
   
   try {
     // Пробуем найти страницу с slug 'home'
+    console.log('[Home Page] Attempting to load home page...');
     const response = await contentApi.getContentPageBySlug('home').catch((err) => {
-      console.error('API Error:', err);
+      console.error('[Home Page] API Error:', err);
+      console.error('[Home Page] Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        statusText: err.response?.statusText
+      });
       errorMessage = err.response?.data || err.message || 'Unknown error';
       return null;
     });
     
+    console.log('[Home Page] API Response:', {
+      hasResponse: !!response,
+      hasData: !!response?.data,
+      status: response?.status
+    });
+    
     if (response?.data) {
       homePage = response.data;
-      console.log('Home page loaded:', {
+      console.log('[Home Page] Home page loaded:', {
         title: homePage.title,
         page_type: homePage.page_type,
         is_active: homePage.is_active,
@@ -40,21 +53,32 @@ export default async function Home() {
           description_length: b.content_page_data?.description?.length || 0,
           has_faq_items: !!b.content_page_data?.faq_items,
           faq_items_count: b.content_page_data?.faq_items?.length || 0,
+          faq_items: b.content_page_data?.faq_items,
           has_image: !!b.content_page_data?.image
         }))
       });
     } else {
-      console.warn('Home page not found or empty response');
+      console.warn('[Home Page] Home page not found or empty response');
+      console.warn('[Home Page] Response object:', response);
     }
   } catch (error: any) {
-    console.error('Error loading home page:', error);
+    console.error('[Home Page] Error loading home page:', error);
+    console.error('[Home Page] Error stack:', error.stack);
     errorMessage = error.message || 'Unknown error';
   }
 
   const hasContent = homePage && homePage.page_type === 'home' && homePage.is_active;
   
+  console.log('[Home Page] Final check:', {
+    hasHomePage: !!homePage,
+    pageType: homePage?.page_type,
+    isActive: homePage?.is_active,
+    hasContent: hasContent,
+    errorMessage: errorMessage
+  });
+  
   if (!hasContent && errorMessage) {
-    console.error('Home page content check failed:', {
+    console.error('[Home Page] Content check failed:', {
       hasHomePage: !!homePage,
       pageType: homePage?.page_type,
       isActive: homePage?.is_active,
@@ -66,18 +90,48 @@ export default async function Home() {
     <main>
       <Hero />
       <WelcomeBanners />
-      {hasContent && <ContentPage page={homePage} />}
-      {!hasContent && process.env.NODE_ENV === 'development' && (
-        <div style={{ padding: '2rem', background: '#fff3cd', border: '1px solid #ffc107', borderRadius: '4px', margin: '2rem', textAlign: 'center' }}>
-          <strong>Отладка:</strong> Главная страница не загружена или не активна.
+      {/* Всегда показываем ContentPage если страница загружена, даже если не активна - для отладки */}
+      {homePage && <ContentPage page={homePage} />}
+      {/* Отладочная информация всегда видна в development */}
+      {(process.env.NODE_ENV === 'development' || !hasContent) && (
+        <div style={{ padding: '2rem', background: hasContent ? '#d4edda' : '#fff3cd', border: `1px solid ${hasContent ? '#28a745' : '#ffc107'}`, borderRadius: '4px', margin: '2rem', textAlign: 'left', fontFamily: 'monospace', fontSize: '0.9rem' }}>
+          <strong>Отладка главной страницы:</strong>
           <br />
-          {errorMessage && <span>Ошибка: {JSON.stringify(errorMessage)}</span>}
-          <br />
-          {homePage && (
-            <span>
-              Страница найдена: {homePage.title}, тип: {homePage.page_type}, активна: {homePage.is_active ? 'да' : 'нет'}
-            </span>
-          )}
+          <div style={{ marginTop: '1rem' }}>
+            <strong>Статус:</strong> {hasContent ? '✓ Загружена и активна' : '✗ Не загружена или не активна'}
+            <br />
+            {homePage ? (
+              <>
+                <strong>Страница:</strong> {homePage.title}
+                <br />
+                <strong>Тип:</strong> {homePage.page_type}
+                <br />
+                <strong>Активна:</strong> {homePage.is_active ? 'Да' : 'НЕТ!'}
+                <br />
+                <strong>Блоков всего:</strong> {homePage.home_blocks?.length || 0}
+                <br />
+                <strong>Блоков активных:</strong> {homePage.home_blocks?.filter((b: HomePageBlock) => b.is_active).length || 0}
+                <br />
+                <strong>Детали блоков:</strong>
+                <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
+                  {homePage.home_blocks?.map((b: HomePageBlock) => (
+                    <li key={b.id}>
+                      Блок #{b.id}: активен={b.is_active ? 'да' : 'НЕТ'}, 
+                      тип={b.content_page_data?.page_type || 'нет данных'}, 
+                      название={b.content_page_data?.title || 'нет'},
+                      FAQ элементов={b.content_page_data?.faq_items?.length || 0}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <>
+                <strong>Страница не найдена</strong>
+                <br />
+                {errorMessage && <span>Ошибка: {JSON.stringify(errorMessage)}</span>}
+              </>
+            )}
+          </div>
         </div>
       )}
     </main>

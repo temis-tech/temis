@@ -127,6 +127,9 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['get'], url_path='by-slug/(?P<slug>[^/.]+)')
     def by_slug(self, request, slug=None):
+        import logging
+        logger = logging.getLogger(__name__)
+        
         try:
             # Используем базовый queryset без фильтра is_active для отладки
             # Но все равно фильтруем только активные страницы
@@ -152,18 +155,27 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
             ).get(slug=slug)
             
             # Логирование для отладки
-            import logging
-            logger = logging.getLogger(__name__)
             logger.info(f'Loading page by slug: {slug}, page_type: {page.page_type}, is_active: {page.is_active}')
-            logger.info(f'Home blocks count: {page.home_blocks.count()}, active: {page.home_blocks.filter(is_active=True).count()}')
+            all_blocks = page.home_blocks.all()
+            active_blocks = page.home_blocks.filter(is_active=True)
+            logger.info(f'Home blocks - total: {all_blocks.count()}, active: {active_blocks.count()}')
+            
+            for block in active_blocks:
+                logger.info(f'  Block {block.id}: is_active={block.is_active}, content_page={block.content_page_id}, content_page_type={block.content_page.page_type if block.content_page else None}')
+                if block.content_page and block.content_page.page_type == 'faq':
+                    faq_count = block.content_page.faq_items.filter(is_active=True).count()
+                    logger.info(f'    FAQ items active: {faq_count}')
             
             serializer = self.get_serializer(page)
-            return Response(serializer.data)
+            data = serializer.data
+            logger.info(f'Serialized data - home_blocks count: {len(data.get("home_blocks", []))}')
+            return Response(data)
         except ContentPage.DoesNotExist:
-            import logging
-            logger = logging.getLogger(__name__)
             logger.warning(f'Page not found by slug: {slug}')
             return Response({'error': 'Страница не найдена'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f'Error loading page by slug {slug}: {e}', exc_info=True)
+            return Response({'error': f'Ошибка загрузки страницы: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class WelcomeBannerViewSet(viewsets.ReadOnlyModelViewSet):

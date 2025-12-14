@@ -562,6 +562,13 @@ class GalleryImageSerializer(serializers.ModelSerializer):
         return None
 
 
+class FAQItemSerializer(serializers.ModelSerializer):
+    """Сериализатор для элементов FAQ"""
+    class Meta:
+        model = FAQItem
+        fields = ['id', 'question', 'answer', 'order', 'is_active']
+
+
 class HomePageBlockSerializer(serializers.ModelSerializer):
     content_page_data = serializers.SerializerMethodField()
     

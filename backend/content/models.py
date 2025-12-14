@@ -914,7 +914,7 @@ class MenuItem(models.Model):
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE, related_name='items',
                             verbose_name='Меню', null=True, blank=True,
                             help_text='Выберите меню, к которому относится этот пункт')
-    item_type = models.CharField('Тип пункта', max_length=20, choices=ITEM_TYPE_CHOICES, default='link',
+    item_type = models.CharField(max_length=20, choices=ITEM_TYPE_CHOICES, default='link',
                                 verbose_name='Тип пункта',
                                 help_text='Выберите тип пункта меню. "Селектор филиала" отобразит выбор филиала в меню.')
     title = models.CharField('Название (текст)', max_length=100, blank=True,
