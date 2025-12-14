@@ -477,15 +477,26 @@ class MoyKlassFieldMappingForm(forms.ModelForm):
         
         # Получаем integration из instance или из initial
         integration = None
+        
+        # Сначала пробуем получить из instance
         if self.instance and self.instance.pk:
             integration = self.instance.integration
-        elif 'initial' in kwargs and 'integration' in kwargs['initial']:
-            integration_id = kwargs['initial']['integration']
+        elif self.instance and hasattr(self.instance, 'integration_id') and self.instance.integration_id:
             from .models import MoyKlassIntegration
             try:
-                integration = MoyKlassIntegration.objects.get(id=integration_id)
+                integration = MoyKlassIntegration.objects.get(id=self.instance.integration_id)
             except MoyKlassIntegration.DoesNotExist:
                 pass
+        
+        # Если не нашли, пробуем из initial
+        if not integration:
+            if 'initial' in kwargs and 'integration' in kwargs['initial']:
+                integration_id = kwargs['initial']['integration']
+                from .models import MoyKlassIntegration
+                try:
+                    integration = MoyKlassIntegration.objects.get(id=integration_id)
+                except (MoyKlassIntegration.DoesNotExist, ValueError, TypeError):
+                    pass
         
         # Если integration есть, заполняем choices для source_field_name
         if integration:
@@ -493,11 +504,18 @@ class MoyKlassFieldMappingForm(forms.ModelForm):
             
             if integration.source_type == 'booking_form' and integration.booking_form:
                 # Поля формы записи
-                for field in integration.booking_form.fields.all().order_by('order', 'id'):
-                    choices.append((
-                        field.name,
-                        f'{field.label} ({field.name}) - {field.get_field_type_display()}'
-                    ))
+                form_fields = integration.booking_form.fields.all().order_by('order', 'id')
+                logger.debug(f'MoyKlassFieldMappingForm: форма {integration.booking_form.id}, полей найдено: {form_fields.count()}')
+                if form_fields.exists():
+                    for field in form_fields:
+                        choices.append((
+                            field.name,
+                            f'{field.label} ({field.name}) - {field.get_field_type_display()}'
+                        ))
+                    logger.debug(f'MoyKlassFieldMappingForm: добавлено {len(choices)-1} полей в choices')
+                else:
+                    choices.append(('', 'В форме нет полей. Добавьте поля в форму записи.'))
+                    logger.warning(f'MoyKlassFieldMappingForm: в форме {integration.booking_form.id} нет полей')
             elif integration.source_type == 'quiz' and integration.quiz:
                 # Поля анкеты
                 choices.append(('user_name', 'Имя пользователя (user_name)'))
@@ -541,17 +559,28 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
             def custom_init(self, *args, **kwargs):
                 original_init(self, *args, **kwargs)
                 
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.debug(f'MoyKlassFieldMappingInline.get_formset: обновление choices для интеграции {obj.id}, тип: {obj.source_type}')
+                
                 # Обновляем choices для каждого поля в каждой форме
-                for form in self.forms:
+                for idx, form in enumerate(self.forms):
                     if 'source_field_name' in form.fields:
                         choices = [('', '---------')]
                         
                         if obj.source_type == 'booking_form' and obj.booking_form:
-                            for field in obj.booking_form.fields.all().order_by('order', 'id'):
-                                choices.append((
-                                    field.name,
-                                    f'{field.label} ({field.name}) - {field.get_field_type_display()}'
-                                ))
+                            form_fields = obj.booking_form.fields.all().order_by('order', 'id')
+                            logger.debug(f'Форма {idx}: форма записи {obj.booking_form.id}, полей: {form_fields.count()}')
+                            if form_fields.exists():
+                                for field in form_fields:
+                                    choices.append((
+                                        field.name,
+                                        f'{field.label} ({field.name}) - {field.get_field_type_display()}'
+                                    ))
+                                logger.debug(f'Форма {idx}: добавлено {len(choices)-1} полей')
+                            else:
+                                choices.append(('', 'В форме нет полей. Добавьте поля в форму записи.'))
+                                logger.warning(f'Форма {idx}: в форме {obj.booking_form.id} нет полей')
                         elif obj.source_type == 'quiz' and obj.quiz:
                             choices.append(('user_name', 'Имя пользователя (user_name)'))
                             choices.append(('user_phone', 'Телефон пользователя (user_phone)'))
@@ -566,8 +595,17 @@ class MoyKlassFieldMappingInline(admin.TabularInline):
                         # Пересоздаем виджет с правильными choices
                         form.fields['source_field_name'].widget = forms.Select(
                             choices=choices,
-                            attrs={'class': 'source-field-select'}
+                            attrs={'class': 'source-field-select', 'data-integration-id': str(obj.id)}
                         )
+                        
+                        # Устанавливаем integration для новых форм
+                        if not form.instance.pk and hasattr(form, 'instance'):
+                            form.instance.integration = obj
+                            # Также устанавливаем в initial для формы
+                            if not hasattr(form, 'initial') or form.initial is None:
+                                form.initial = {}
+                            form.initial['integration'] = obj.id
+                            logger.debug(f'Форма {idx}: установлена интеграция {obj.id} для нового маппинга')
             
             formset.__init__ = custom_init
         
@@ -589,12 +627,15 @@ class MoyKlassIntegrationAdmin(admin.ModelAdmin):
             'fields': ('source_type', 'booking_form', 'quiz', 'is_active', 'order')
         }),
         ('Системная информация', {
-            'fields': ('created_at', 'updated_at'),
+            'fields': ('form_fields_display', 'created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
     )
     
-    readonly_fields = ['created_at', 'updated_at']
+    readonly_fields = ['form_fields_display', 'created_at', 'updated_at']
+    
+    class Media:
+        js = ('admin/js/moyklass_integration.js',)
     
     def source_display(self, obj):
         if obj.booking_form:
@@ -610,6 +651,64 @@ class MoyKlassIntegrationAdmin(admin.ModelAdmin):
             return format_html('<span style="color: green;">{} полей</span>', count)
         return format_html('<span style="color: orange;">Нет полей</span>')
     mappings_count.short_description = 'Маппинги'
+    
+    def form_fields_display(self, obj):
+        """Отображает список полей формы записи или вопросов анкеты"""
+        if not obj:
+            return '-'
+        
+        fields_list = []
+        
+        if obj.source_type == 'booking_form' and obj.booking_form:
+            form_fields = obj.booking_form.fields.all().order_by('order', 'id')
+            if form_fields.exists():
+                fields_list.append(format_html('<h4 style="margin-top: 0;">Поля формы записи "{}":</h4>', obj.booking_form.title))
+                fields_list.append('<ul style="margin: 0; padding-left: 20px;">')
+                for field in form_fields:
+                    field_type = field.get_field_type_display()
+                    required = ' (обязательное)' if field.is_required else ''
+                    fields_list.append(format_html(
+                        '<li><strong>{}</strong> ({}) - {}{}</li>',
+                        field.label,
+                        field.name,
+                        field_type,
+                        required
+                    ))
+                fields_list.append('</ul>')
+            else:
+                fields_list.append(format_html(
+                    '<p style="color: orange; margin: 0;">В форме "{}" нет полей. Добавьте поля в форме записи.</p>',
+                    obj.booking_form.title
+                ))
+        elif obj.source_type == 'quiz' and obj.quiz:
+            questions = obj.quiz.questions.all().order_by('order', 'id')
+            if questions.exists():
+                fields_list.append(format_html('<h4 style="margin-top: 0;">Вопросы анкеты "{}":</h4>', obj.quiz.title))
+                fields_list.append('<ul style="margin: 0; padding-left: 20px;">')
+                # Базовые поля пользователя
+                fields_list.append('<li><strong>Имя пользователя</strong> (user_name) - Текст</li>')
+                fields_list.append('<li><strong>Телефон пользователя</strong> (user_phone) - Телефон</li>')
+                fields_list.append('<li><strong>Email пользователя</strong> (user_email) - Email</li>')
+                # Вопросы анкеты
+                for question in questions:
+                    question_type = question.get_question_type_display()
+                    fields_list.append(format_html(
+                        '<li><strong>{}</strong> (question_{}) - {}</li>',
+                        question.text[:50] + ('...' if len(question.text) > 50 else ''),
+                        question.id,
+                        question_type
+                    ))
+                fields_list.append('</ul>')
+            else:
+                fields_list.append(format_html(
+                    '<p style="color: orange; margin: 0;">В анкете "{}" нет вопросов.</p>',
+                    obj.quiz.title
+                ))
+        else:
+            fields_list.append('<p style="color: gray; margin: 0;">Выберите форму записи или анкету для отображения полей.</p>')
+        
+        return format_html(''.join(fields_list))
+    form_fields_display.short_description = 'Доступные поля для маппинга'
     
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)

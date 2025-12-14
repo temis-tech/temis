@@ -302,13 +302,19 @@ class MoyKlassFieldMapping(models.Model):
         unique_together = [['integration', 'moyklass_field']]
     
     def save(self, *args, **kwargs):
+        import logging
+        logger = logging.getLogger(__name__)
+        
         # Автоматически заполняем source_field_label, если он пустой
         if not self.source_field_label and self.integration:
+            logger.debug(f'MoyKlassFieldMapping.save: определение label для поля {self.source_field_name}, интеграция {self.integration.id}')
             if self.integration.source_type == 'booking_form' and self.integration.booking_form:
                 try:
                     field = self.integration.booking_form.fields.get(name=self.source_field_name)
                     self.source_field_label = field.label
-                except:
+                    logger.debug(f'MoyKlassFieldMapping.save: найден label "{field.label}" для поля {self.source_field_name}')
+                except Exception as e:
+                    logger.warning(f'MoyKlassFieldMapping.save: не удалось найти поле {self.source_field_name} в форме {self.integration.booking_form.id}: {e}')
                     pass
             elif self.integration.source_type == 'quiz' and self.integration.quiz:
                 if self.source_field_name == 'user_name':

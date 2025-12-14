@@ -18,12 +18,14 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+  align-items: start;
 }
 
 .faqListThree {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
+  align-items: start;
 }
 
 .faqItem {
@@ -33,6 +35,11 @@
   background: rgba(255, 255, 255, 0.95);
   overflow: hidden;
   transition: box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+  contain: layout style;
+  position: relative;
 }
 
 .faqItem:hover {
@@ -106,9 +113,13 @@
 .faqAnswer {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+  transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
   opacity: 0;
   padding: 0 1.5rem;
+  visibility: hidden;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .faqAnswerOpen {
@@ -116,6 +127,7 @@
   opacity: 1;
   padding-top: 0;
   padding-bottom: 0;
+  visibility: visible;
 }
 
 .faqAnswerContent {
@@ -123,6 +135,10 @@
   color: #555;
   line-height: 1.7;
   font-size: 1rem;
+  display: block;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .faqAnswerContent :global(p) {
@@ -158,19 +174,21 @@
 }
 
 /* Анимации */
-.animationSlide .faqAnswer {
+.faqItem.animationSlide .faqAnswer {
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
               padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.3s ease;
+              opacity 0.3s ease,
+              visibility 0.3s ease;
 }
 
-.animationFade .faqAnswer {
+.faqItem.animationFade .faqAnswer {
   transition: max-height 0.3s ease,
               padding 0.3s ease,
-              opacity 0.4s ease;
+              opacity 0.4s ease,
+              visibility 0.3s ease;
 }
 
-.animationNone .faqAnswer {
+.faqItem.animationNone .faqAnswer {
   transition: none;
 }
 
