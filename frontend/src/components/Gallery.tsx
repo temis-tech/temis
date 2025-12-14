@@ -228,7 +228,9 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                 }
                 // Rutube
                 else if (image.video_embed_url?.includes('rutube.ru')) {
-                  iframeElement.contentWindow.postMessage('{"method":"pause"}', '*')
+                  // Rutube API - правильный формат
+                  const message = JSON.stringify({ type: 'player:action', action: 'pause' })
+                  iframeElement.contentWindow.postMessage(message, '*')
                 }
                 // Vimeo
                 else if (image.video_embed_url?.includes('vimeo.com')) {
@@ -409,14 +411,28 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
             <>
               <button 
                 className={styles.carouselButton} 
-                onClick={() => setCarouselIndex((carouselIndex - 1 + images.length) % images.length)}
+                onClick={() => {
+                  const newIndex = (carouselIndex - 1 + images.length) % images.length
+                  // Ставим на паузу текущее видео перед переключением
+                  if (images[carouselIndex]?.content_type === 'video') {
+                    pauseVideoByIndex(carouselIndex)
+                  }
+                  setCarouselIndex(newIndex)
+                }}
                 aria-label="Предыдущее изображение"
               >
                 ‹
               </button>
               <button 
                 className={`${styles.carouselButton} ${styles.carouselButtonRight}`}
-                onClick={() => setCarouselIndex((carouselIndex + 1) % images.length)}
+                onClick={() => {
+                  const newIndex = (carouselIndex + 1) % images.length
+                  // Ставим на паузу текущее видео перед переключением
+                  if (images[carouselIndex]?.content_type === 'video') {
+                    pauseVideoByIndex(carouselIndex)
+                  }
+                  setCarouselIndex(newIndex)
+                }}
                 aria-label="Следующее изображение"
               >
                 ›
@@ -426,7 +442,13 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                   <button
                     key={index}
                     className={`${styles.carouselIndicator} ${index === carouselIndex ? styles.active : ''}`}
-                    onClick={() => setCarouselIndex(index)}
+                    onClick={() => {
+                      // Ставим на паузу текущее видео перед переключением
+                      if (images[carouselIndex]?.content_type === 'video') {
+                        pauseVideoByIndex(carouselIndex)
+                      }
+                      setCarouselIndex(index)
+                    }}
                     aria-label={`Перейти к изображению ${index + 1}`}
                   />
                 ))}
