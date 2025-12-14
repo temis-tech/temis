@@ -3,6 +3,7 @@ import { normalizeImageUrl } from '@/lib/utils';
 import { normalizeHtmlContent } from '@/lib/htmlUtils';
 import BookingForm from '@/components/BookingForm';
 import Gallery from '@/components/Gallery';
+import GalleryDebug from '@/components/GalleryDebug';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CatalogItem, ContentPage } from '@/types';
@@ -121,7 +122,16 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
                 Галерея &quot;{item.gallery_page.title || 'Галерея'}&quot; не содержит активных элементов. Добавьте изображения или видео в админке.
               </div>
             )
-          ) : null}
+          ) : (
+            <div style={{ padding: '1rem', textAlign: 'center', color: '#999', marginBottom: '2rem', fontSize: '0.9rem' }}>
+              {/* Отладочное сообщение - можно убрать после проверки */}
+              {process.env.NODE_ENV === 'development' && (
+                <div style={{ padding: '0.5rem', background: '#f0f0f0', borderRadius: '4px', marginTop: '1rem' }}>
+                  Debug: gallery_page = {item.gallery_page ? 'exists' : 'null'}
+                </div>
+              )}
+            </div>
+          )}
           
           {item.button_type === 'booking' && item.button_booking_form_id && (
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>

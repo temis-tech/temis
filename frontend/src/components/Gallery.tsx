@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { normalizeImageUrl } from '@/lib/utils'
 import { normalizeHtmlContent } from '@/lib/htmlUtils'
@@ -26,6 +26,35 @@ function FullscreenView({
   const isVideo = item.content_type === 'video'
   const videoEmbedUrl = item.video_embed_url || (item.video_url ? null : null)
   const videoFile = item.video_file
+  const fullscreenVideoRef = React.useRef<HTMLVideoElement | null>(null)
+  const fullscreenIframeRef = React.useRef<HTMLIFrameElement | null>(null)
+
+  // Пауза видео при переключении в полноэкранном режиме
+  React.useEffect(() => {
+    // Ставим на паузу предыдущее видео
+    const prevIndex = (currentIndex - 1 + items.length) % items.length
+    const prevItem = items[prevIndex]
+    
+    if (prevItem && prevItem.content_type === 'video') {
+      // Для iframe используем postMessage
+      if (prevItem.video_embed_url) {
+        try {
+          const iframes = document.querySelectorAll('iframe')
+          iframes.forEach(iframe => {
+            if (iframe.src.includes('youtube.com')) {
+              iframe.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*')
+            } else if (iframe.src.includes('rutube.ru')) {
+              iframe.contentWindow?.postMessage('{"method":"pause"}', '*')
+            } else if (iframe.src.includes('vimeo.com')) {
+              iframe.contentWindow?.postMessage('{"method":"pause"}', '*')
+            }
+          })
+        } catch (e) {
+          console.warn('Не удалось поставить iframe видео на паузу:', e)
+        }
+      }
+    }
+  }, [currentIndex, items])
 
   return (
     <div className={styles.fullscreenOverlay} onClick={onClose}>
@@ -48,6 +77,7 @@ function FullscreenView({
           videoEmbedUrl ? (
             <div style={{ width: '100%', maxWidth: '90vw', aspectRatio: '16/9' }}>
               <iframe
+                ref={fullscreenIframeRef}
                 src={videoEmbedUrl}
                 style={{ width: '100%', height: '100%', border: 'none' }}
                 allowFullScreen
@@ -57,6 +87,7 @@ function FullscreenView({
             </div>
           ) : videoFile ? (
             <video
+              ref={fullscreenVideoRef}
               src={normalizeImageUrl(videoFile)}
               controls
               autoPlay
