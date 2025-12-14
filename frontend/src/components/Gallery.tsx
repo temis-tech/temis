@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { normalizeImageUrl } from '@/lib/utils'
 import { normalizeHtmlContent } from '@/lib/htmlUtils'
