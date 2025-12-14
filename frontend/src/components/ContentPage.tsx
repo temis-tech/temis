@@ -290,41 +290,11 @@ export default function ContentPage({ page }: ContentPageProps) {
     )
   }
 
-  console.log('[ContentPage] Rendering page:', {
-    page_type: page.page_type,
-    title: page.title,
-    is_active: page.is_active,
-    has_description: !!page.description,
-    description_length: page.description?.length || 0,
-    home_blocks_count: page.home_blocks?.length || 0
-  });
-
   if (page.page_type === 'home') {
     const activeBlocks = page.home_blocks?.filter((block) => block.is_active) || [];
     
-    console.log('[ContentPage] Home page blocks:', {
-      total_blocks: page.home_blocks?.length || 0,
-      active_blocks: activeBlocks.length,
-      blocks: activeBlocks.map(b => ({
-        id: b.id,
-        is_active: b.is_active,
-        has_content_page_data: !!b.content_page_data,
-        content_page_type: b.content_page_data?.page_type,
-        content_page_title: b.content_page_data?.title
-      }))
-    });
-    
-    console.log('[ContentPage] Rendering home page container');
-    
     return (
       <div className={styles.container}>
-        <div style={{ padding: '1rem', background: '#e7f3ff', border: '1px solid #2196F3', borderRadius: '4px', marginBottom: '1rem' }}>
-          <strong>Отладка:</strong> Компонент ContentPage рендерится для главной страницы.
-          <br />
-          Описание: {page.description ? `Есть (${page.description.length} символов)` : 'Нет'}
-          <br />
-          Блоков: {page.home_blocks?.length || 0}, активных: {activeBlocks.length}
-        </div>
         {page.description && (
           <div
             className={styles.description}
@@ -358,23 +328,6 @@ export default function ContentPage({ page }: ContentPageProps) {
           // Определяем тип страницы для правильного отображения
           const pageType = contentPage.page_type
 
-          // Отладочная информация
-          console.log('[ContentPage] Rendering home block:', {
-            block_id: block.id,
-            page_type: pageType,
-            has_description: !!contentPage.description,
-            description_length: contentPage.description?.length || 0,
-            has_faq_items: !!contentPage.faq_items,
-            faq_items_count: contentPage.faq_items?.length || 0,
-            faq_items: contentPage.faq_items,
-            has_catalog_items: !!contentPage.catalog_items,
-            catalog_items_count: contentPage.catalog_items?.length || 0,
-            has_gallery_images: !!contentPage.gallery_images,
-            gallery_images_count: contentPage.gallery_images?.length || 0,
-            content_page_id: contentPage.id,
-            content_page_title: contentPage.title,
-            content_page_is_active: contentPage.is_active,
-          });
 
           return (
             <div key={block.id} className={styles.homeBlock}>
