@@ -1,8 +1,8 @@
 import { contentApi } from '@/lib/api';
 import { normalizeImageUrl } from '@/lib/utils';
-import BookingForm from '@/components/BookingForm';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
+import BookingFormWrapper from '@/components/BookingFormWrapper';
 
 export const revalidate = 0;
 
@@ -135,7 +135,7 @@ export default async function ServicePage({ params }: { params: { slug: string }
             gap: '1.5rem',
             marginBottom: '2rem'
           }}>
-            {service.price > 0 && (
+            {service.price && typeof service.price === 'number' && service.price > 0 && (
               <div style={{ 
                 background: '#f5f5f5',
                 padding: '1.5rem',
@@ -146,7 +146,7 @@ export default async function ServicePage({ params }: { params: { slug: string }
                 <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#FF820E' }}>
                   {service.price.toLocaleString('ru-RU')} ₽
                 </div>
-                {service.price_with_abonement && service.price_with_abonement < service.price && (
+                {service.price_with_abonement && typeof service.price_with_abonement === 'number' && service.price_with_abonement < service.price && (
                   <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.5rem' }}>
                     По абонементу: {service.price_with_abonement.toLocaleString('ru-RU')} ₽
                   </div>
@@ -197,11 +197,10 @@ export default async function ServicePage({ params }: { params: { slug: string }
           
           {service.show_booking_button && service.booking_form_id && (
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-              <BookingForm
+              <BookingFormWrapper
                 formId={service.booking_form_id}
                 serviceId={service.id}
                 serviceTitle={service.title}
-                onClose={() => {}}
               />
             </div>
           )}
