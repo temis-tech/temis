@@ -181,6 +181,41 @@ CACHES = {
 }
 
 # Настройки логирования
+# Создаем директорию для логов, если её нет
+logs_dir = BASE_DIR / 'logs'
+try:
+    os.makedirs(logs_dir, exist_ok=True)
+    log_file_path = logs_dir / 'django.log'
+except (OSError, PermissionError):
+    # Если не удалось создать директорию (например, в CI/CD), используем только консоль
+    log_file_path = None
+
+# Настраиваем handlers
+handlers_config = {
+    'console': {
+        'class': 'logging.StreamHandler',
+        'formatter': 'verbose',
+    },
+}
+
+# Добавляем файловый handler только если директория создана
+if log_file_path:
+    handlers_config['file'] = {
+        'class': 'logging.FileHandler',
+        'filename': str(log_file_path),
+        'formatter': 'verbose',
+    }
+
+# Определяем, какие handlers использовать
+if log_file_path:
+    root_handlers = ['console', 'file']
+    django_handlers = ['console', 'file']
+    moyklass_handlers = ['console', 'file']
+else:
+    root_handlers = ['console']
+    django_handlers = ['console']
+    moyklass_handlers = ['console']
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -194,29 +229,19 @@ LOGGING = {
             'style': '{',
         },
     },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
-            'formatter': 'verbose',
-        },
-    },
+    'handlers': handlers_config,
     'root': {
-        'handlers': ['console', 'file'],
+        'handlers': root_handlers,
         'level': 'INFO',
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': django_handlers,
             'level': 'INFO',
             'propagate': False,
         },
         'moyklass': {
-            'handlers': ['console', 'file'],
+            'handlers': moyklass_handlers,
             'level': 'DEBUG',
             'propagate': False,
         },
