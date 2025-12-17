@@ -687,8 +687,8 @@ class ServiceAdmin(admin.ModelAdmin):
             'fields': ('title', 'slug', 'description', 'short_description')
         }),
         ('Цены (базовые)', {
-            'fields': ('price', 'price_with_abonement', 'duration', 'price_duration_position'),
-            'description': 'Базовые цены услуги. Если для филиала не указана индивидуальная цена, будет использована базовая. Выберите расположение блоков с ценой и длительностью относительно описания.'
+            'fields': ('price', 'price_is_from', 'price_with_abonement', 'price_with_abonement_is_from', 'duration', 'price_duration_position'),
+            'description': 'Базовые цены услуги. Если для филиала не указана индивидуальная цена, будет использована базовая. Выберите расположение блоков с ценой и длительностью относительно описания. Включите "Цена От" или "Цена по абонементу От", чтобы перед ценой отображалось "От" (например, "От 1000 ₽").'
         }),
         ('Изображение', {
             'fields': ('image', 'image_align', 'image_size')

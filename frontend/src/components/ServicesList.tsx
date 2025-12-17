@@ -148,13 +148,17 @@ export default function ServicesList({
                     {formattedPrice && (
                       <div className={styles.price}>
                         <span className={styles.priceLabel}>Цена:</span>
-                        <span className={styles.priceValue}>{formattedPrice} ₽</span>
+                        <span className={styles.priceValue}>
+                          {service.price_is_from ? 'От ' : ''}{formattedPrice} ₽
+                        </span>
                       </div>
                     )}
                     {formattedPriceWithAbonement && (
                       <div className={styles.priceAbonement}>
                         <span className={styles.priceLabel}>По абонементу:</span>
-                        <span className={styles.priceValue}>{formattedPriceWithAbonement} ₽</span>
+                        <span className={styles.priceValue}>
+                          {service.price_with_abonement_is_from ? 'От ' : ''}{formattedPriceWithAbonement} ₽
+                        </span>
                       </div>
                     )}
                   </div>

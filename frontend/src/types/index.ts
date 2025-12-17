@@ -250,7 +250,9 @@ export interface Service {
   description: string;
   short_description?: string;
   price: number;
+  price_is_from?: boolean;  // Показывать "От" перед ценой
   price_with_abonement?: number | null;
+  price_with_abonement_is_from?: boolean;  // Показывать "От" перед ценой по абонементу
   duration: string;
   image?: string | null;
   image_align?: 'left' | 'right' | 'center' | 'full';

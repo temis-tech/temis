@@ -14,7 +14,9 @@ interface Service {
   description: string;
   short_description?: string;
   price: number;
+  price_is_from?: boolean;
   price_with_abonement?: number;
+  price_with_abonement_is_from?: boolean;
   duration: string;
   image?: string;
   image_align?: 'left' | 'right' | 'center' | 'full';
@@ -154,11 +156,11 @@ export default async function ServicePage({ params }: { params: { slug: string }
                   }}>
                     <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>Цена</div>
                     <div style={{ fontSize: '1.5rem', fontWeight: 600, color: '#FF820E' }}>
-                      {Number(service.price).toLocaleString('ru-RU')} ₽
+                      {service.price_is_from ? 'От ' : ''}{Number(service.price).toLocaleString('ru-RU')} ₽
                     </div>
                     {service.price_with_abonement && (typeof service.price_with_abonement === 'number' || typeof service.price_with_abonement === 'string') && Number(service.price_with_abonement) < Number(service.price) && (
                       <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.5rem' }}>
-                        По абонементу: {Number(service.price_with_abonement).toLocaleString('ru-RU')} ₽
+                        По абонементу: {service.price_with_abonement_is_from ? 'От ' : ''}{Number(service.price_with_abonement).toLocaleString('ru-RU')} ₽
                       </div>
                     )}
                   </div>

@@ -74,8 +74,12 @@ class Service(models.Model):
                                help_text='Описание услуги с поддержкой форматирования текста')
     short_description = models.TextField('Краткое описание', blank=True)
     price = models.DecimalField('Цена', max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    price_is_from = models.BooleanField('Цена "От"', default=False,
+                                       help_text='Если включено, перед ценой будет отображаться "От" (например, "От 1000 ₽")')
     price_with_abonement = models.DecimalField('Цена по абонементу', max_digits=10, decimal_places=2, 
                                                 validators=[MinValueValidator(0)], blank=True, null=True)
+    price_with_abonement_is_from = models.BooleanField('Цена по абонементу "От"', default=False,
+                                                        help_text='Если включено, перед ценой по абонементу будет отображаться "От"')
     duration = models.CharField('Длительность', max_length=50, default='45 минут')
     image = models.ImageField('Изображение', upload_to='services/', blank=True, null=True)
     
