@@ -489,17 +489,42 @@ class CatalogItemSerializer(serializers.ModelSerializer):
     
     def get_gallery_page(self, obj):
         """Возвращает данные страницы галереи, если она выбрана"""
-        if obj.gallery_page:
-            # Проверяем, что страница активна
-            if not obj.gallery_page.is_active:
-                return None
+        if not obj.gallery_page:
+            return None
+        
+        # Проверяем, что страница активна
+        if not obj.gallery_page.is_active:
+            return None
+        
+        try:
             # Сериализуем страницу галереи со всеми данными
             gallery_data = ContentPageSerializer(obj.gallery_page, context=self.context).data
-            # Убеждаемся, что gallery_images присутствует
-            if not gallery_data.get('gallery_images'):
+            
+            # Убеждаемся, что gallery_images присутствует и является массивом
+            if 'gallery_images' not in gallery_data or not isinstance(gallery_data.get('gallery_images'), list):
                 gallery_data['gallery_images'] = []
+            
+            # Убеждаемся, что все обязательные поля присутствуют
+            if 'id' not in gallery_data or gallery_data['id'] is None:
+                gallery_data['id'] = obj.gallery_page.id
+            if 'title' not in gallery_data or gallery_data['title'] is None:
+                gallery_data['title'] = obj.gallery_page.title or ''
+            if 'is_active' not in gallery_data:
+                gallery_data['is_active'] = obj.gallery_page.is_active
+            if 'show_title' not in gallery_data:
+                gallery_data['show_title'] = getattr(obj.gallery_page, 'show_title', True)
+            if 'gallery_display_type' not in gallery_data:
+                gallery_data['gallery_display_type'] = getattr(obj.gallery_page, 'gallery_display_type', 'grid')
+            if 'gallery_enable_fullscreen' not in gallery_data:
+                gallery_data['gallery_enable_fullscreen'] = getattr(obj.gallery_page, 'gallery_enable_fullscreen', True)
+            
             return gallery_data
-        return None
+        except Exception as e:
+            # В случае ошибки сериализации возвращаем None
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'Ошибка сериализации gallery_page для CatalogItem {obj.id}: {str(e)}', exc_info=True)
+            return None
     
     def get_service(self, obj):
         """Возвращает данные услуги, если она выбрана"""
