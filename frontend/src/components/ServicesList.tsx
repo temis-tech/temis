@@ -182,7 +182,7 @@ export default function ServicesList({
                     )}
                     {service.has_own_page && service.url && (
                       <Link href={service.url} className={styles.link}>
-                        Подробнее →
+                        Подробнее
                       </Link>
                     )}
                   </div>
