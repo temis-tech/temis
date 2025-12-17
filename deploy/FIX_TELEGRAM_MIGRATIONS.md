@@ -2,58 +2,57 @@
 
 ## Проблема
 
-На сервере может быть применена миграция `0003_add_catalog_page_to_telegram_settings`, которая конфликтует с новой миграцией `0004_add_channel_sync_settings`.
+На сервере уже есть миграция `0003_add_catalog_page_to_telegram_settings`, которая конфликтует с новой миграцией `0004_add_channel_sync_settings`. Django видит конфликт: "multiple leaf nodes in the migration graph".
 
 ## Решение
 
-### Вариант 1: Если миграция 0003_add_catalog_page уже применена в БД
+### Шаг 1: Проверь текущее состояние миграций
 
-1. Проверь статус миграций:
 ```bash
 cd /var/www/rainbow-say/backend
 sudo -u www-data ./venv/bin/python manage.py showmigrations telegram
 ```
 
-2. Если видишь, что `0003_add_catalog_page_to_telegram_settings` уже применена (отмечена `[X]`), то:
-   - Убедись, что файл `0003_merge_0002_and_0003.py` существует в `backend/telegram/migrations/`
-   - Примени миграции:
-   ```bash
-   sudo -u www-data ./venv/bin/python manage.py migrate --noinput
-   ```
+### Шаг 2: Проверь, какие файлы миграций есть на сервере
 
-### Вариант 2: Если миграция 0003_add_catalog_page существует в файлах, но не применена
-
-1. Проверь, есть ли файл:
 ```bash
-ls -la /var/www/rainbow-say/backend/telegram/migrations/0003_add_catalog_page_to_telegram_settings.py
+ls -la /var/www/rainbow-say/backend/telegram/migrations/0003*.py
+ls -la /var/www/rainbow-say/backend/telegram/migrations/0004*.py
+ls -la /var/www/rainbow-say/backend/telegram/migrations/0005*.py
 ```
 
-2. Если файл существует, нужно либо:
-   - **Удалить его** (если он не нужен):
-   ```bash
-   rm /var/www/rainbow-say/backend/telegram/migrations/0003_add_catalog_page_to_telegram_settings.py
-   ```
-   - **Или пометить как примененную** (если изменения уже есть в БД):
-   ```bash
-   sudo -u www-data ./venv/bin/python manage.py migrate --fake telegram 0003_add_catalog_page_to_telegram_settings
-   ```
+### Шаг 3: Создай merge-миграцию на сервере (РЕКОМЕНДУЕТСЯ)
 
-3. Затем примени миграции:
-```bash
-sudo -u www-data ./venv/bin/python manage.py migrate --noinput
-```
-
-### Вариант 3: Создать merge-миграцию на сервере
-
-Если Django все еще видит конфликт, создай merge-миграцию на сервере:
+Django автоматически создаст правильную merge-миграцию с учетом всех существующих миграций:
 
 ```bash
 cd /var/www/rainbow-say/backend
 sudo -u www-data ./venv/bin/python manage.py makemigrations --merge telegram
 ```
 
-Это создаст merge-миграцию автоматически. Затем примени миграции:
+Django спросит, как назвать merge-миграцию. Нажми Enter для использования предложенного имени.
 
+### Шаг 4: Примени миграции
+
+```bash
+sudo -u www-data ./venv/bin/python manage.py migrate --noinput
+```
+
+### Альтернативный вариант: Если merge не работает автоматически
+
+Если автоматический merge не работает, нужно вручную создать merge-миграцию:
+
+1. Проверь, какие миграции конфликтуют:
+```bash
+sudo -u www-data ./venv/bin/python manage.py showmigrations telegram
+```
+
+2. Создай merge-миграцию вручную, указав обе конфликтующие миграции:
+```bash
+sudo -u www-data ./venv/bin/python manage.py makemigrations --merge telegram --name merge_0003_and_0004
+```
+
+3. Примени миграции:
 ```bash
 sudo -u www-data ./venv/bin/python manage.py migrate --noinput
 ```
@@ -73,6 +72,13 @@ sudo -u www-data ./venv/bin/python manage.py showmigrations telegram
 После исправления порядок должен быть:
 1. `0001_initial` ✅
 2. `0002_set_default_token` ✅
-3. `0003_merge_0002_and_0003` ✅ (merge-миграция)
-4. `0004_add_channel_sync_settings` ✅
-5. `0005_add_catalog_page_to_telegram_settings` ✅
+3. `0003_add_catalog_page_to_telegram_settings` ✅ (если существует на сервере)
+4. `0003_merge_0002_and_0003` ✅ (merge-миграция)
+5. `0004_add_channel_sync_settings` ✅
+6. `0005_merge_0003_and_0004` ✅ (merge-миграция, если создана на сервере)
+
+## Важно
+
+- Если на сервере уже есть `0003_add_catalog_page_to_telegram_settings`, она должна остаться
+- Поля `sync_channel_enabled`, `channel_username`, `channel_id` добавляются миграцией `0004_add_channel_sync_settings`
+- Поле `catalog_page` уже должно быть в БД, если `0003_add_catalog_page_to_telegram_settings` была применена ранее
