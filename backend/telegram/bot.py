@@ -257,8 +257,35 @@ def create_or_update_catalog_item_from_telegram_post(post_data, is_edit=False):
             text_without_hashtags = re.sub(rf'#{hashtag}\b', '', text_without_hashtags, flags=re.IGNORECASE)
         text_without_hashtags = text_without_hashtags.strip()
         
-        # Создаем заголовок из текста
-        title = text_without_hashtags[:200] if len(text_without_hashtags) > 200 else text_without_hashtags
+        # Разделяем текст на превью и полный текст
+        card_description = ''
+        full_description = text_without_hashtags
+        
+        if hashtag_mapping.preview_separator:
+            # Используем разделитель
+            parts = text_without_hashtags.split(hashtag_mapping.preview_separator, 1)
+            if len(parts) == 2:
+                card_description = parts[0].strip()
+                full_description = parts[1].strip()
+            else:
+                # Разделитель не найден - весь текст идет в полное описание
+                card_description = text_without_hashtags[:hashtag_mapping.preview_length or 200] if len(text_without_hashtags) > (hashtag_mapping.preview_length or 200) else text_without_hashtags
+        else:
+            # Используем автоматическое обрезание
+            preview_len = hashtag_mapping.preview_length or 200
+            if len(text_without_hashtags) > preview_len:
+                # Обрезаем по границе слова
+                card_description = text_without_hashtags[:preview_len]
+                last_space = card_description.rfind(' ')
+                if last_space > preview_len * 0.7:  # Если пробел не слишком далеко от конца
+                    card_description = card_description[:last_space]
+                card_description = card_description.strip() + '...'
+            else:
+                card_description = text_without_hashtags
+        
+        # Создаем заголовок из первой строки или начала текста
+        title = card_description.split('\n')[0] if card_description else text_without_hashtags.split('\n')[0]
+        title = title[:200] if len(title) > 200 else title
         # Убираем переносы строк для заголовка
         title = title.replace('\n', ' ').strip()
         if not title:
@@ -280,8 +307,8 @@ def create_or_update_catalog_item_from_telegram_post(post_data, is_edit=False):
             # Обновляем данные элемента
             catalog_item.page = catalog_page
             catalog_item.title = title
-            catalog_item.card_description = text_without_hashtags[:500] if len(text_without_hashtags) > 500 else text_without_hashtags
-            catalog_item.description = text_without_hashtags
+            catalog_item.card_description = card_description
+            catalog_item.description = full_description
             catalog_item.width = hashtag_mapping.width
             catalog_item.has_own_page = hashtag_mapping.has_own_page
             catalog_item.button_type = hashtag_mapping.button_type
@@ -321,8 +348,8 @@ def create_or_update_catalog_item_from_telegram_post(post_data, is_edit=False):
                 page=catalog_page,
                 title=title,
                 slug=slug,
-                card_description=text_without_hashtags[:500] if len(text_without_hashtags) > 500 else text_without_hashtags,
-                description=text_without_hashtags,
+                card_description=card_description,
+                description=full_description,
                 width=hashtag_mapping.width,
                 has_own_page=hashtag_mapping.has_own_page,
                 button_type=hashtag_mapping.button_type,

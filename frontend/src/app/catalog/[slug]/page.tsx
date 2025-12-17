@@ -95,7 +95,7 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
                 color: '#666',
                 marginBottom: '2rem'
               }}
-              dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(item.description) }}
+              dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(item.description || '') }}
             />
           )}
           

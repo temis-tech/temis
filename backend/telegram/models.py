@@ -110,6 +110,12 @@ class TelegramHashtagMapping(models.Model):
     order = models.IntegerField('Порядок', default=0,
                                 help_text='Порядок сортировки элементов в каталоге (0 - в конец)')
     
+    # Настройки разделения текста
+    preview_separator = models.CharField('Разделитель текста', max_length=10, blank=True, default='',
+                                        help_text='Символ или текст для разделения превью и полного текста (например, "---" или "<!--more-->"). Если указан, текст до разделителя пойдет в карточку, после - в полный текст. Если не указан, будет использовано автоматическое обрезание.')
+    preview_length = models.IntegerField('Длина превью (символов)', default=200, null=True, blank=True,
+                                        help_text='Максимальная длина текста для карточки превью. Используется только если не указан разделитель. По умолчанию: 200 символов.')
+    
     created_at = models.DateTimeField('Создан', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлен', auto_now=True)
     
