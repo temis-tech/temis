@@ -402,6 +402,36 @@ def create_or_update_catalog_item_from_telegram_post(post_data, is_edit=False):
         return None
 
 
+def deactivate_catalog_item_by_message_id(message_id, chat_id=None):
+    """
+    Деактивировать элемент каталога по message_id из Telegram
+    
+    Args:
+        message_id: ID сообщения из Telegram
+        chat_id: ID чата/канала (опционально, для проверки)
+    
+    Returns:
+        CatalogItem: Деактивированный элемент или None
+    """
+    from content.models import CatalogItem
+    
+    try:
+        catalog_item = CatalogItem.objects.get(telegram_message_id=message_id)
+        if catalog_item.is_active:
+            catalog_item.is_active = False
+            catalog_item.save(update_fields=['is_active'])
+            logger.info(f'Элемент каталога деактивирован из-за удаления поста Telegram: {catalog_item.title} (message_id: {message_id})')
+        else:
+            logger.debug(f'Элемент каталога с message_id {message_id} уже деактивирован')
+        return catalog_item
+    except CatalogItem.DoesNotExist:
+        logger.debug(f'Элемент каталога с message_id {message_id} не найден')
+        return None
+    except Exception as e:
+        logger.error(f'Ошибка деактивации элемента каталога по message_id {message_id}: {str(e)}')
+        return None
+
+
 def handle_webhook_update(update_data):
     """
     Обработать обновление от Telegram webhook
@@ -463,6 +493,76 @@ def handle_webhook_update(update_data):
                 catalog_item = create_or_update_catalog_item_from_telegram_post(edited_channel_post, is_edit=True)
                 if catalog_item:
                     logger.info(f'Обновлен элемент каталога из Telegram канала: {catalog_item.title}')
+        
+        # Обрабатываем удаленные сообщения из канала
+        # Telegram Bot API не отправляет стандартные события об удалении через webhook,
+        # но некоторые реализации или будущие версии API могут отправлять такие события.
+        # Также обрабатываем случаи, когда приходит минимальная информация о сообщении
+        # (только message_id без содержимого) - это может означать удаление.
+        
+        # Вариант 1: deleted_channel_post (если такой формат приходит)
+        deleted_channel_post = update_data.get('deleted_channel_post')
+        if deleted_channel_post and bot_settings and bot_settings.sync_channel_enabled:
+            message_id = deleted_channel_post.get('message_id')
+            if message_id:
+                chat = deleted_channel_post.get('chat', {})
+                chat_id = str(chat.get('id', ''))
+                
+                # Проверяем соответствие канала
+                channel_match = False
+                if bot_settings.channel_id and chat_id == bot_settings.channel_id:
+                    channel_match = True
+                elif bot_settings.channel_username:
+                    chat_username = chat.get('username', '')
+                    username_clean = bot_settings.channel_username.lstrip('@')
+                    if chat_username == username_clean:
+                        channel_match = True
+                
+                if channel_match:
+                    deactivate_catalog_item_by_message_id(message_id, chat_id)
+        
+        # Вариант 2: message_deleted (если такой формат приходит)
+        message_deleted = update_data.get('message_deleted')
+        if message_deleted and bot_settings and bot_settings.sync_channel_enabled:
+            chat_id = message_deleted.get('chat', {}).get('id')
+            message_ids = message_deleted.get('message_ids', [])
+            
+            # Проверяем соответствие канала
+            channel_match = False
+            if bot_settings.channel_id and str(chat_id) == bot_settings.channel_id:
+                channel_match = True
+            
+            if channel_match and message_ids:
+                for msg_id in message_ids:
+                    deactivate_catalog_item_by_message_id(msg_id, str(chat_id))
+        
+        # Вариант 3: channel_post с минимальной информацией (только message_id, без text/caption)
+        # Это может означать, что сообщение было удалено или изменено так, что не содержит контента
+        channel_post_minimal = update_data.get('channel_post')
+        if (channel_post_minimal and bot_settings and bot_settings.sync_channel_enabled and
+            channel_post_minimal.get('message_id') and
+            not channel_post_minimal.get('text') and not channel_post_minimal.get('caption')):
+            # Проверяем, что это действительно удаление, а не просто пост без текста
+            # Если есть другие поля (photo, video и т.д.), это не удаление
+            has_content = any(key in channel_post_minimal for key in ['photo', 'video', 'document', 'audio', 'voice', 'sticker'])
+            if not has_content:
+                message_id = channel_post_minimal.get('message_id')
+                chat = channel_post_minimal.get('chat', {})
+                chat_id = str(chat.get('id', ''))
+                
+                # Проверяем соответствие канала
+                channel_match = False
+                if bot_settings.channel_id and chat_id == bot_settings.channel_id:
+                    channel_match = True
+                elif bot_settings.channel_username:
+                    chat_username = chat.get('username', '')
+                    username_clean = bot_settings.channel_username.lstrip('@')
+                    if chat_username == username_clean:
+                        channel_match = True
+                
+                if channel_match:
+                    # Деактивируем элемент, если он существует
+                    deactivate_catalog_item_by_message_id(message_id, chat_id)
         
         # Обрабатываем обычные сообщения (для бота)
         message = update_data.get('message')
