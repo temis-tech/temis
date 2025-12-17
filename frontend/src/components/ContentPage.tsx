@@ -12,6 +12,7 @@ import Gallery from './Gallery'
 import FAQ from './FAQ'
 import BranchesList from './BranchesList'
 import ServicesList from './ServicesList'
+import CatalogNavigator from './CatalogNavigator'
 import { useBranch } from '@/hooks/useBranch'
 import styles from './ContentPage.module.css'
 
@@ -249,6 +250,9 @@ export default function ContentPage({ page }: ContentPageProps) {
               className={styles.description}
               dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(page.description) }}
             />
+          )}
+          {page.show_catalog_navigator && page.catalog_items && page.catalog_items.length > 0 && (
+            <CatalogNavigator items={page.catalog_items} />
           )}
           {renderCatalog()}
           {/* Галерея для страницы типа 'catalog' */}

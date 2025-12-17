@@ -22,3 +22,4 @@ class Migration(migrations.Migration):
             field=ckeditor.fields.RichTextField(blank=True, help_text='Полное описание, которое будет отображаться на странице элемента (если включен режим "Может быть открыт как страница").', verbose_name='Описание для страницы'),
         ),
     ]
+

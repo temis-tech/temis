@@ -74,3 +74,4 @@ class CustomAdminSite(admin.AdminSite):
 
 class CustomAdminConfig(AdminConfig):
     default_site = 'config.admin.CustomAdminSite'
+

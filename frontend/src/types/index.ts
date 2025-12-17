@@ -165,6 +165,7 @@ export interface ContentPage {
   gallery_display_type?: 'grid' | 'carousel' | 'masonry';  // Вид отображения галереи
   gallery_enable_fullscreen?: boolean;  // Открывать изображения на весь экран
   show_title?: boolean;
+  show_catalog_navigator?: boolean;  // Показывать рубрикатор (навигационный список)
   is_active: boolean;
   catalog_items?: CatalogItem[];
   gallery_images?: GalleryImage[];

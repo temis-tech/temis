@@ -15,3 +15,4 @@ echo "✅ Миграции применены!"
 echo ""
 echo "📊 Статус миграций:"
 sudo -u www-data ./venv/bin/python manage.py showmigrations content | tail -5
+

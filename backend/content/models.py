@@ -482,6 +482,10 @@ class ContentPage(models.Model):
     show_title = models.BooleanField('Показывать заголовок на странице', default=True,
                                      help_text='Если отключено, заголовок страницы не будет отображаться на сайте')
     
+    # Настройки рубрикатора (для типа "Каталог")
+    show_catalog_navigator = models.BooleanField('Показывать рубрикатор (навигационный список)', default=False,
+                                                  help_text='Если включено, на странице каталога будет отображаться навигационный список элементов каталога для удобной навигации по статьям')
+    
     # Выбор каталога или галереи для отображения (для типа "Описание")
     selected_catalog_page = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True,
                                               related_name='used_as_catalog_in',

@@ -35,3 +35,4 @@ class Migration(migrations.Migration):
             options={'ordering': ['order', 'created_at'], 'verbose_name': 'Элемент галереи', 'verbose_name_plural': 'Элементы галереи'},
         ),
     ]
+

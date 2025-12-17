@@ -17,3 +17,4 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(blank=True, help_text='Выберите страницу с типом "Галерея", которая будет отображаться на странице элемента каталога', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='catalog_items_with_gallery', to='content.contentpage', verbose_name='Страница галереи', limit_choices_to={'page_type': 'gallery'}),
         ),
     ]
+

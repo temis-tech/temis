@@ -36,3 +36,4 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(on_delete=models.CASCADE, related_name='gallery_images', to='content.contentpage', verbose_name='Страница'),
         ),
     ]
+

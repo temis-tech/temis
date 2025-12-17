@@ -42,3 +42,4 @@ def get_media_base_url():
     protocol = get_protocol()
     domain = get_api_domain()
     return f'{protocol}://{domain}{MEDIA_PATH}'
+

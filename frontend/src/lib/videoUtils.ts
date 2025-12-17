@@ -73,3 +73,4 @@ export function getVideoThumbnail(videoUrl: string | null | undefined, videoEmbe
 
   return null
 }
+

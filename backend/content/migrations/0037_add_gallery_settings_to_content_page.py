@@ -21,3 +21,4 @@ class Migration(migrations.Migration):
             field=models.BooleanField(default=True, help_text='Если включено, при клике на изображение оно откроется в полноэкранном режиме с возможностью перелистывания (только для типа "Галерея")', verbose_name='Открывать изображения на весь экран'),
         ),
     ]
+

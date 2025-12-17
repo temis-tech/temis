@@ -31,3 +31,4 @@ echo "🔄 Перезагружаю nginx..."
 sudo systemctl reload nginx || sudo systemctl restart nginx
 
 echo "✅ Пересборка завершена!"
+

@@ -1,0 +1,69 @@
+.container {
+  width: 100%;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1c1c1c;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.item {
+  margin: 0;
+  padding: 0;
+}
+
+.link {
+  display: block;
+  padding: 0.875rem 1.25rem;
+  color: #333;
+  text-decoration: none;
+  background: #f8f9fa;
+  border-left: 4px solid #FF820E;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.link:hover {
+  background: #fff;
+  color: #FF820E;
+  border-left-color: #e6730d;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(255, 130, 14, 0.15);
+}
+
+.link:active {
+  transform: translateX(2px);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 0;
+  }
+
+  .title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .link {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
+}

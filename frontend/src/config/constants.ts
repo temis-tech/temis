@@ -50,3 +50,4 @@ export const DOMAIN_MAPPING: Record<string, string> = {
   'logoped-spb.pro': 'api.logoped-spb.pro',
   'rainbow-say.estenomada.es': 'api.rainbow-say.estenomada.es',
 };
+

@@ -36,3 +36,4 @@ export default async function PolicyDetailPage({ params }: { params: { slug: str
     </main>
   );
 }
+
