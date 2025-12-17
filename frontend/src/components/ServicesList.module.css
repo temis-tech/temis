@@ -115,21 +115,48 @@
   color: #4a90e2;
 }
 
-.link {
-  display: inline-block;
+.buttonsContainer {
+  display: flex;
+  gap: 0.75rem;
   margin-top: 1rem;
+  align-items: center;
+}
+
+.bookingButton {
+  flex: 1;
   padding: 0.75rem 1.5rem;
   background: #FF820E;
   color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-align: center;
+}
+
+.bookingButton:hover {
+  background: #e6730d;
+}
+
+.link {
+  flex: 1;
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  color: #FF820E;
   text-decoration: none;
+  border: 2px solid #FF820E;
   border-radius: 8px;
   font-weight: 500;
   text-align: center;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .link:hover {
-  background: #e6730d;
+  background: #FF820E;
+  color: white;
 }
 
 /* Адаптивность */
@@ -159,5 +186,15 @@
 
   .description {
     font-size: 0.9rem;
+  }
+
+  .buttonsContainer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .bookingButton,
+  .link {
+    width: 100%;
   }
 }

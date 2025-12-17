@@ -210,6 +210,7 @@ export default function ContentPage({ page }: ContentPageProps) {
         <ServicesList 
           services={page.display_services} 
           filterByBranchId={selectedBranch?.id || null}
+          onBookingClick={openBookingForm}
         />
       )
     }
@@ -492,6 +493,7 @@ export default function ContentPage({ page }: ContentPageProps) {
                 <ServicesList 
                   services={contentPage.display_services} 
                   filterByBranchId={selectedBranch?.id || null}
+                  onBookingClick={openBookingForm}
                 />
               )}
 

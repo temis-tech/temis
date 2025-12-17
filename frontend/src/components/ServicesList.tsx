@@ -12,6 +12,7 @@ interface ServicesListProps {
   showTitle?: boolean;
   className?: string;
   filterByBranchId?: number | null;
+  onBookingClick?: (formId: number, serviceTitle: string, serviceId: number) => void;
 }
 
 export default function ServicesList({ 
@@ -19,7 +20,8 @@ export default function ServicesList({
   title = 'Наши услуги',
   showTitle = true,
   className = '',
-  filterByBranchId
+  filterByBranchId,
+  onBookingClick
 }: ServicesListProps) {
   if (!services || services.length === 0) {
     return null;
@@ -163,11 +165,28 @@ export default function ServicesList({
                     )}
                   </div>
                 )}
-                {service.has_own_page && service.url && (
-                  <Link href={service.url} className={styles.link}>
-                    Подробнее →
-                  </Link>
-                )}
+                {(service.show_booking_button && service.booking_form_id && onBookingClick) || (service.has_own_page && service.url) ? (
+                  <div className={styles.buttonsContainer}>
+                    {service.show_booking_button && service.booking_form_id && onBookingClick && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onBookingClick(service.booking_form_id!, service.title, service.id);
+                        }}
+                        className={styles.bookingButton}
+                      >
+                        Записаться
+                      </button>
+                    )}
+                    {service.has_own_page && service.url && (
+                      <Link href={service.url} className={styles.link}>
+                        Подробнее →
+                      </Link>
+                    )}
+                  </div>
+                ) : null}
               </div>
             </div>
           );
