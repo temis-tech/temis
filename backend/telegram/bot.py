@@ -257,39 +257,32 @@ def create_or_update_catalog_item_from_telegram_post(post_data, is_edit=False):
             text_without_hashtags = re.sub(rf'#{hashtag}\b', '', text_without_hashtags, flags=re.IGNORECASE)
         text_without_hashtags = text_without_hashtags.strip()
         
-        # Разделяем текст на превью и полный текст
-        card_description = ''
-        full_description = text_without_hashtags
-        
-        if hashtag_mapping.preview_separator:
-            # Используем разделитель
-            parts = text_without_hashtags.split(hashtag_mapping.preview_separator, 1)
-            if len(parts) == 2:
-                card_description = parts[0].strip()
-                full_description = parts[1].strip()
-            else:
-                # Разделитель не найден - весь текст идет в полное описание
-                card_description = text_without_hashtags[:hashtag_mapping.preview_length or 200] if len(text_without_hashtags) > (hashtag_mapping.preview_length or 200) else text_without_hashtags
-        else:
-            # Используем автоматическое обрезание
-            preview_len = hashtag_mapping.preview_length or 200
-            if len(text_without_hashtags) > preview_len:
-                # Обрезаем по границе слова
-                card_description = text_without_hashtags[:preview_len]
-                last_space = card_description.rfind(' ')
-                if last_space > preview_len * 0.7:  # Если пробел не слишком далеко от конца
-                    card_description = card_description[:last_space]
-                card_description = card_description.strip() + '...'
-            else:
-                card_description = text_without_hashtags
-        
         # Создаем заголовок из первой строки или начала текста
-        title = card_description.split('\n')[0] if card_description else text_without_hashtags.split('\n')[0]
+        # Берем первую строку или первые 200 символов
+        title = text_without_hashtags.split('\n')[0] if text_without_hashtags else ''
         title = title[:200] if len(title) > 200 else title
         # Убираем переносы строк для заголовка
         title = title.replace('\n', ' ').strip()
         if not title:
             title = 'Элемент из Telegram'
+        
+        # Полный текст - весь текст без хештегов
+        full_description = text_without_hashtags
+        
+        # card_description всегда берется из полного текста (description),
+        # обрезанный до длины заголовка
+        title_length = len(title)
+        if len(full_description) > title_length:
+            # Берем текст из description длиной равной длине заголовка
+            # Обрезаем по границе слова для читаемости
+            card_description_text = full_description[:title_length]
+            last_space = card_description_text.rfind(' ')
+            if last_space > title_length * 0.7:  # Если пробел не слишком далеко от конца
+                card_description = full_description[:last_space].strip()
+            else:
+                card_description = card_description_text.strip()
+        else:
+            card_description = full_description.strip()
         
         # Создаем slug
         slug_base = transliterate_slug(title) or f'telegram_post_{post_data.get("message_id", "unknown")}'
