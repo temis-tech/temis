@@ -533,7 +533,7 @@ class GalleryImageSerializer(serializers.ModelSerializer):
         return None
     
     def get_video_embed_url(self, obj):
-        """Конвертирует URL видео в embed URL для YouTube, Rutube, Vimeo"""
+        """Конвертирует URL видео в embed URL для YouTube, Rutube, Vimeo, VK"""
         if obj.content_type == 'video' and obj.video_url:
             import re
             url = obj.video_url
@@ -556,8 +556,26 @@ class GalleryImageSerializer(serializers.ModelSerializer):
             if vimeo_match:
                 return f'https://player.vimeo.com/video/{vimeo_match.group(1)}'
             
+            # VK (ВКонтакте)
+            # Формат URL: https://vk.com/...?z=video-227252503_456239169 или https://vk.com/video-227252503_456239169
+            vk_regex = r'video-(\d+)_(\d+)'
+            vk_match = re.search(vk_regex, url)
+            if vk_match:
+                owner_id = vk_match.group(1)
+                video_id = vk_match.group(2)
+                # VK требует hash для embed, но можно попробовать использовать упрощенный формат
+                # Если hash доступен в URL, извлекаем его
+                hash_match = re.search(r'hash=([a-zA-Z0-9]+)', url)
+                hash_param = hash_match.group(1) if hash_match else None
+                
+                if hash_param:
+                    return f'https://vk.com/video_ext.php?oid={owner_id}&id={video_id}&hash={hash_param}'
+                else:
+                    # Возвращаем формат для обработки на фронтенде (попытка встроить без hash)
+                    return f'https://vk.com/video-{owner_id}_{video_id}'
+            
             # Если URL уже является embed URL, возвращаем как есть
-            if '/embed/' in url or '/play/embed/' in url:
+            if '/embed/' in url or '/play/embed/' in url or '/video_ext.php' in url:
                 return url
             
         return None

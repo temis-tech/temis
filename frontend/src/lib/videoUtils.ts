@@ -3,7 +3,7 @@
  */
 
 /**
- * Конвертирует URL видео в embed URL для YouTube, Rutube, Vimeo
+ * Конвертирует URL видео в embed URL для YouTube, Rutube, Vimeo, VK
  */
 export function convertVideoUrlToEmbed(url: string | null | undefined): string | null {
   if (!url) return null
@@ -29,8 +29,27 @@ export function convertVideoUrlToEmbed(url: string | null | undefined): string |
     return `https://player.vimeo.com/video/${vimeoMatch[1]}`
   }
 
+  // VK (ВКонтакте)
+  // Формат URL: https://vk.com/...?z=video-227252503_456239169 или https://vk.com/video-227252503_456239169
+  const vkRegex = /video-(\d+)_(\d+)/
+  const vkMatch = url.match(vkRegex)
+  if (vkMatch) {
+    const ownerId = vkMatch[1]
+    const videoId = vkMatch[2]
+    // Извлекаем hash из URL, если он есть
+    const hashMatch = url.match(/hash=([a-zA-Z0-9]+)/)
+    const hash = hashMatch ? hashMatch[1] : null
+    
+    if (hash) {
+      return `https://vk.com/video_ext.php?oid=${ownerId}&id=${videoId}&hash=${hash}`
+    } else {
+      // Возвращаем упрощенный формат (может потребоваться дополнительная обработка)
+      return `https://vk.com/video-${ownerId}_${videoId}`
+    }
+  }
+
   // Если URL уже является embed URL, возвращаем как есть
-  if (url.includes('/embed/') || url.includes('/play/embed/')) {
+  if (url.includes('/embed/') || url.includes('/play/embed/') || url.includes('/video_ext.php')) {
     return url
   }
 
@@ -68,6 +87,20 @@ export function getVideoThumbnail(videoUrl: string | null | undefined, videoEmbe
   if (vimeoMatch) {
     // Vimeo требует API для получения превью
     // Пока возвращаем null, можно добавить позже
+    return null
+  }
+
+  // VK (ВКонтакте) - извлекаем параметры для получения превью
+  const vkRegex = /video-(\d+)_(\d+)/
+  const vkMatch = url.match(vkRegex)
+  if (vkMatch) {
+    const ownerId = vkMatch[1]
+    const videoId = vkMatch[2]
+    // VK предоставляет превью через API, но можно попробовать использовать прямой URL
+    // Формат: https://vk.com/video-{owner_id}_{video_id}
+    // Для превью можно использовать: https://pp.userapi.com/c{server}/{hash}/video/{owner_id}_{video_id}.jpg
+    // Но это требует дополнительных параметров, которые недоступны из обычного URL
+    // Пока возвращаем null, можно добавить позже через API
     return null
   }
 

@@ -163,6 +163,9 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
         } else if (image.video_embed_url?.includes('vimeo.com')) {
           // Vimeo API
           iframeElement.contentWindow.postMessage('{"method":"pause"}', '*')
+        } else if (image.video_embed_url?.includes('vk.com')) {
+          // VK API - VK не поддерживает стандартный postMessage для паузы
+          // Можно попробовать другие методы, но обычно VK управляется через их виджет
         }
       } catch (e) {
         console.warn('Не удалось поставить видео на паузу:', e)
