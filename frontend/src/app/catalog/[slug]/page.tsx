@@ -5,7 +5,7 @@ import BookingForm from '@/components/BookingForm';
 import Gallery from '@/components/Gallery';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { CatalogItem, ContentPage } from '@/types';
+import { CatalogItem } from '@/types';
 
 export const revalidate = 0;
 
@@ -42,6 +42,10 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
     ? galleryPage.gallery_images
     : [];
 
+  // Позиция изображения по умолчанию
+  const imagePosition = item.image_position || 'top';
+  const hasImage = !!item.image;
+
   return (
     <main style={{ 
       paddingLeft: '2rem',
@@ -60,7 +64,7 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
           </h1>
           
           {/* Изображение сверху */}
-          {item.image && item.image_position === 'top' && (
+          {hasImage && imagePosition === 'top' && (
             <div style={{ 
               width: '100%', 
               maxWidth: item.image_target_width ? `${item.image_target_width}px` : '800px',
@@ -72,10 +76,10 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
               justifyContent: 'center',
               backgroundColor: '#f5f5f5',
               height: item.image_target_height ? `${item.image_target_height}px` : 'auto',
-              minHeight: item.image_target_height ? `${item.image_target_height}px` : '400px'
+              minHeight: item.image_target_height ? `${item.image_target_height}px` : (item.image_target_width ? 'auto' : '400px')
             }}>
               <Image
-                src={normalizeImageUrl(item.image || '')}
+                src={normalizeImageUrl(item.image)}
                 alt={item.title || 'Изображение'}
                 width={item.image_target_width || 800}
                 height={item.image_target_height || 600}
@@ -93,18 +97,18 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
           
           {/* Контейнер для бокового расположения */}
           <div style={{ 
-            display: item.image && (item.image_position === 'left' || item.image_position === 'right') ? 'flex' : 'block',
-            flexDirection: item.image && item.image_position === 'left' ? 'row' : item.image && item.image_position === 'right' ? 'row-reverse' : 'column',
-            gap: item.image && (item.image_position === 'left' || item.image_position === 'right') ? '2rem' : '0',
-            alignItems: item.image && (item.image_position === 'left' || item.image_position === 'right') ? 'flex-start' : 'stretch'
+            display: hasImage && (imagePosition === 'left' || imagePosition === 'right') ? 'flex' : 'block',
+            flexDirection: hasImage && imagePosition === 'left' ? 'row' : imagePosition === 'right' ? 'row-reverse' : 'column',
+            gap: hasImage && (imagePosition === 'left' || imagePosition === 'right') ? '2rem' : '0',
+            alignItems: hasImage && (imagePosition === 'left' || imagePosition === 'right') ? 'flex-start' : 'stretch'
           }}>
             {/* Изображение слева */}
-            {item.image && item.image_position === 'left' && (
+            {hasImage && imagePosition === 'left' && (
               <div style={{ 
                 flexShrink: 0,
                 width: item.image_target_width ? `${item.image_target_width}px` : '400px',
                 height: item.image_target_height ? `${item.image_target_height}px` : 'auto',
-                minHeight: item.image_target_height ? `${item.image_target_height}px` : '300px',
+                minHeight: item.image_target_height ? `${item.image_target_height}px` : (item.image_target_width ? 'auto' : '300px'),
                 borderRadius: '12px',
                 overflow: 'hidden',
                 display: 'flex',
@@ -113,7 +117,7 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
                 backgroundColor: '#f5f5f5'
               }}>
                 <Image
-                  src={normalizeImageUrl(item.image || '')}
+                  src={normalizeImageUrl(item.image)}
                   alt={item.title || 'Изображение'}
                   width={item.image_target_width || 400}
                   height={item.image_target_height || 300}
@@ -137,19 +141,19 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
                   lineHeight: '1.7',
                   color: '#666',
                   marginBottom: '2rem',
-                  flex: item.image && (item.image_position === 'left' || item.image_position === 'right') ? '1' : 'none'
+                  flex: hasImage && (imagePosition === 'left' || imagePosition === 'right') ? '1' : 'none'
                 }}
-                dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(item.description || '') }}
+                dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(item.description) }}
               />
             )}
             
             {/* Изображение справа */}
-            {item.image && item.image_position === 'right' && (
+            {hasImage && imagePosition === 'right' && (
               <div style={{ 
                 flexShrink: 0,
                 width: item.image_target_width ? `${item.image_target_width}px` : '400px',
                 height: item.image_target_height ? `${item.image_target_height}px` : 'auto',
-                minHeight: item.image_target_height ? `${item.image_target_height}px` : '300px',
+                minHeight: item.image_target_height ? `${item.image_target_height}px` : (item.image_target_width ? 'auto' : '300px'),
                 borderRadius: '12px',
                 overflow: 'hidden',
                 display: 'flex',
@@ -158,7 +162,7 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
                 backgroundColor: '#f5f5f5'
               }}>
                 <Image
-                  src={normalizeImageUrl(item.image || '')}
+                  src={normalizeImageUrl(item.image)}
                   alt={item.title || 'Изображение'}
                   width={item.image_target_width || 400}
                   height={item.image_target_height || 300}
@@ -176,7 +180,7 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
           </div>
           
           {/* Изображение снизу */}
-          {item.image && item.image_position === 'bottom' && (
+          {hasImage && imagePosition === 'bottom' && (
             <div style={{ 
               width: '100%', 
               maxWidth: item.image_target_width ? `${item.image_target_width}px` : '800px',
@@ -188,10 +192,10 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
               justifyContent: 'center',
               backgroundColor: '#f5f5f5',
               height: item.image_target_height ? `${item.image_target_height}px` : 'auto',
-              minHeight: item.image_target_height ? `${item.image_target_height}px` : '400px'
+              minHeight: item.image_target_height ? `${item.image_target_height}px` : (item.image_target_width ? 'auto' : '400px')
             }}>
               <Image
-                src={normalizeImageUrl(item.image || '')}
+                src={normalizeImageUrl(item.image)}
                 alt={item.title || 'Изображение'}
                 width={item.image_target_width || 800}
                 height={item.image_target_height || 600}
@@ -246,7 +250,6 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
             </div>
           )}
         </div>
-      </main>
+    </main>
   );
 }
-

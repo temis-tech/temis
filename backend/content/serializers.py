@@ -476,6 +476,8 @@ class CatalogItemSerializer(serializers.ModelSerializer):
             data['card_description'] = ''
         if data.get('description') is None:
             data['description'] = ''
+        if data.get('image_position') is None:
+            data['image_position'] = 'top'
         return data
     
     def get_card_image(self, obj):
