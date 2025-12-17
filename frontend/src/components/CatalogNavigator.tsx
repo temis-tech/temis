@@ -19,8 +19,10 @@ export default function CatalogNavigator({
     return null;
   }
 
-  // Фильтруем только элементы, у которых есть своя страница
-  const navigableItems = items.filter(item => item.has_own_page && item.url);
+  // Фильтруем только элементы, у которых есть своя страница и URL
+  const navigableItems = items.filter((item): item is CatalogItem & { url: string } => 
+    !!(item.has_own_page && item.url)
+  );
 
   if (navigableItems.length === 0) {
     return null;
