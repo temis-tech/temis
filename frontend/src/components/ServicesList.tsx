@@ -131,7 +131,7 @@ export default function ServicesList({
                     width={400}
                     height={250}
                     className={styles.image}
-                    style={{ objectFit: 'cover', borderRadius: '8px' }}
+                    style={{ objectFit: 'contain', objectPosition: 'center', borderRadius: '8px' }}
                   />
                 </div>
               )}

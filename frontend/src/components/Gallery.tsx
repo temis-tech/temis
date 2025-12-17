@@ -328,12 +328,12 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                           });
                           if (thumbnail) {
                             return (
-                              <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                              <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
                                 <Image
                                   src={thumbnail}
                                   alt={image.description || 'Превью видео'}
                                   fill
-                                  style={{ objectFit: 'cover' }}
+                                  style={{ objectFit: 'contain', objectPosition: 'center' }}
                                   onError={(e) => {
                                     console.error('❌ Failed to load video thumbnail:', thumbnail);
                                     // Fallback на iframe если превью не загрузилось
@@ -525,12 +525,12 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                         const thumbnail = getVideoThumbnail(image.video_url || null, image.video_embed_url)
                         if (thumbnail) {
                           return (
-                            <div className={styles.masonryImageWrapper} style={{ position: 'relative', height: '300px' }}>
+                            <div className={styles.masonryImageWrapper} style={{ position: 'relative', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
                               <Image
                                 src={thumbnail}
                                 alt={image.description || 'Превью видео'}
                                 fill
-                                style={{ objectFit: 'cover' }}
+                                style={{ objectFit: 'contain', objectPosition: 'center' }}
                               />
                               <div style={{
                                 position: 'absolute',
@@ -571,13 +571,13 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                       })()}
                     </>
                   ) : image.video_file ? (
-                    <div className={styles.masonryImageWrapper} style={{ position: 'relative', height: '300px' }}>
+                    <div className={styles.masonryImageWrapper} style={{ position: 'relative', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
                       <video
                         ref={(el) => {
                           if (el) videoRefs.current[index] = el
                         }}
                         src={normalizeImageUrl(image.video_file)}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center' }}
                         preload="metadata"
                         onLoadedMetadata={(e) => {
                           const video = e.currentTarget
@@ -608,13 +608,13 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                   ) : null}
                 </div>
               ) : image.image ? (
-                <div className={styles.masonryImageWrapper}>
+                <div className={styles.masonryImageWrapper} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
                   <Image
                     src={normalizeImageUrl(image.image)}
                     alt={image.description || 'Изображение галереи'}
                     width={400}
                     height={300}
-                    style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+                    style={{ width: '100%', height: 'auto', objectFit: 'contain', objectPosition: 'center' }}
                   />
                 </div>
               ) : null}
@@ -666,12 +666,12 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                       const thumbnail = getVideoThumbnail(image.video_url || null, image.video_embed_url)
                       if (thumbnail) {
                         return (
-                          <div className={styles.gridImageWrapper} style={{ position: 'relative' }}>
+                          <div className={styles.gridImageWrapper} style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
                             <Image
                               src={thumbnail}
                               alt={image.description || 'Превью видео'}
                               fill
-                              style={{ objectFit: 'cover' }}
+                              style={{ objectFit: 'contain', objectPosition: 'center' }}
                             />
                             <div style={{
                               position: 'absolute',
@@ -721,13 +721,13 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
                 ) : image.video_file ? (
                   <>
                     {/* Превью для локального видео */}
-                    <div className={styles.gridImageWrapper} style={{ position: 'relative' }}>
+                    <div className={styles.gridImageWrapper} style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
                       <video
                         ref={(el) => {
                           if (el) videoRefs.current[index] = el
                         }}
                         src={normalizeImageUrl(image.video_file)}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center' }}
                         preload="metadata"
                         onLoadedMetadata={(e) => {
                           // Устанавливаем первый кадр как превью
@@ -767,13 +767,13 @@ export default function Gallery({ images, displayType = 'grid', enableFullscreen
               </div>
             ) : image.image ? (
               <>
-                <div className={styles.gridImageWrapper}>
+                <div className={styles.gridImageWrapper} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
                   <Image
                     src={normalizeImageUrl(image.image)}
                     alt={image.description || 'Изображение галереи'}
                     width={600}
                     height={400}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center' }}
                   />
                 </div>
                 {image.description && (
