@@ -138,8 +138,9 @@ export default function ContentPage({ page }: ContentPageProps) {
                     height={imageSize.height}
                     className={styles.image}
                     style={{
-                      maxWidth: item.image_size === 'full' ? '100%' : `${imageSize.width}px`,
-                      width: item.image_size === 'full' ? '100%' : 'auto',
+                      maxWidth: '100%',
+                      maxHeight: '100%',
+                      width: 'auto',
                       height: 'auto'
                     }}
                   />
