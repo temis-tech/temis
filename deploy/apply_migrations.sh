@@ -14,5 +14,9 @@ echo "✅ Миграции применены!"
 # Проверяем статус миграций
 echo ""
 echo "📊 Статус миграций:"
+echo "Content app:"
 sudo -u www-data ./venv/bin/python manage.py showmigrations content | tail -5
+echo ""
+echo "Telegram app:"
+sudo -u www-data ./venv/bin/python manage.py showmigrations telegram | tail -5
 
