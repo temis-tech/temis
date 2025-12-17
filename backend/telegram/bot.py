@@ -139,20 +139,25 @@ def download_image_from_telegram(file_id, filename=None):
     return django_file, filename
 
 
-def create_article_from_telegram_post(post_data):
+def create_catalog_item_from_telegram_post(post_data):
     """
-    Создать статью из поста Telegram
+    Создать элемент каталога из поста Telegram
     
     Args:
         post_data: Данные поста из Telegram (channel_post или message)
     
     Returns:
-        Article: Созданная статья или None
+        CatalogItem: Созданный элемент каталога или None
     """
     from content.utils.image_processing import process_uploaded_image
+    from content.models import CatalogItem
     
     bot_settings = get_bot_settings()
     if not bot_settings or not bot_settings.sync_channel_enabled:
+        return None
+    
+    if not bot_settings.catalog_page:
+        logger.warning('Не указана страница каталога для синхронизации Telegram')
         return None
     
     try:
@@ -173,50 +178,74 @@ def create_article_from_telegram_post(post_data):
             if file_id:
                 image_file, image_filename = download_image_from_telegram(file_id)
         
-        # Создаем slug из текста (первые 50 символов)
+        # Создаем заголовок из текста
         title = text[:200] if len(text) > 200 else text
         # Убираем переносы строк для заголовка
         title = title.replace('\n', ' ').strip()
         if not title:
-            title = 'Статья из Telegram'
+            title = 'Элемент из Telegram'
         
+        # Создаем slug
         slug_base = transliterate_slug(title) or f'telegram_post_{post_data.get("message_id", "unknown")}'
         
-        # Проверяем, не существует ли уже статья с таким slug
+        # Проверяем, не существует ли уже элемент с таким slug
         slug = slug_base
         counter = 1
-        while Article.objects.filter(slug=slug).exists():
+        while CatalogItem.objects.filter(slug=slug).exists():
             slug = f'{slug_base}_{counter}'
             counter += 1
         
-        # Создаем статью
-        article = Article(
+        # Определяем порядок (последний элемент + 1)
+        last_item = CatalogItem.objects.filter(page=bot_settings.catalog_page).order_by('-order').first()
+        order = (last_item.order + 1) if last_item else 0
+        
+        # Создаем элемент каталога
+        catalog_item = CatalogItem(
+            page=bot_settings.catalog_page,
             title=title,
             slug=slug,
-            content=text,
-            short_description=text[:300] if len(text) > 300 else text,
-            is_published=True
+            card_description=text[:500] if len(text) > 500 else text,  # Краткое описание для карточки
+            description=text,  # Полное описание для страницы
+            has_own_page=True,  # По умолчанию создаем страницу для элемента
+            button_type='none',  # По умолчанию без кнопки
+            button_text='',
+            order=order,
+            is_active=True
         )
         
+        # Сохраняем изображение для карточки (если есть)
         if image_file and image_filename:
-            article.image.save(
+            catalog_item.card_image.save(
+                image_filename,
+                image_file,
+                save=False
+            )
+            # Также используем это изображение для страницы элемента
+            catalog_item.image.save(
                 image_filename,
                 image_file,
                 save=False
             )
         
-        article.save()
+        catalog_item.save()
         
-        # Обрабатываем изображение после сохранения
-        if article.image and hasattr(article.image, 'file'):
+        # Обрабатываем изображения после сохранения
+        if catalog_item.card_image and hasattr(catalog_item.card_image, 'file'):
             try:
-                process_uploaded_image(article.image, image_type='general')
-                article.save(update_fields=['image'])
+                process_uploaded_image(catalog_item.card_image, image_type='general')
+                catalog_item.save(update_fields=['card_image'])
             except Exception as e:
-                logger.error(f'Ошибка обработки изображения для статьи {article.title}: {e}')
+                logger.error(f'Ошибка обработки изображения карточки для элемента {catalog_item.title}: {e}')
         
-        logger.info(f'Создана статья из Telegram поста: {article.title}')
-        return article
+        if catalog_item.image and hasattr(catalog_item.image, 'file'):
+            try:
+                process_uploaded_image(catalog_item.image, image_type='general')
+                catalog_item.save(update_fields=['image'])
+            except Exception as e:
+                logger.error(f'Ошибка обработки изображения страницы для элемента {catalog_item.title}: {e}')
+        
+        logger.info(f'Создан элемент каталога из Telegram поста: {catalog_item.title}')
+        return catalog_item
         
     except Exception as e:
         logger.error(f'Ошибка создания статьи из Telegram поста: {str(e)}')
@@ -256,10 +285,10 @@ def handle_webhook_update(update_data):
                         bot_settings.save(update_fields=['channel_id'])
             
             if channel_match:
-                # Создаем статью из поста
-                article = create_article_from_telegram_post(channel_post)
-                if article:
-                    logger.info(f'Создана статья из Telegram канала: {article.title}')
+                # Создаем элемент каталога из поста
+                catalog_item = create_catalog_item_from_telegram_post(channel_post)
+                if catalog_item:
+                    logger.info(f'Создан элемент каталога из Telegram канала: {catalog_item.title}')
         
         # Обрабатываем обычные сообщения (для бота)
         message = update_data.get('message')

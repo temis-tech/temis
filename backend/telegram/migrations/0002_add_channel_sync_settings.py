@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='telegrambotsettings',
             name='sync_channel_enabled',
-            field=models.BooleanField(default=False, help_text='Автоматически создавать статьи из постов в Telegram канале', verbose_name='Включить синхронизацию с каналом'),
+            field=models.BooleanField(default=False, help_text='Автоматически создавать элементы каталога из постов в Telegram канале', verbose_name='Включить синхронизацию с каналом'),
         ),
         migrations.AddField(
             model_name='telegrambotsettings',

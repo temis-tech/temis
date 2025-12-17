@@ -3,7 +3,7 @@ Management команда для синхронизации постов из Te
 Можно запускать периодически через cron для получения постов, которые могли быть пропущены
 """
 from django.core.management.base import BaseCommand
-from telegram.bot import get_bot_settings, get_file_from_telegram, create_article_from_telegram_post
+from telegram.bot import get_bot_settings, get_file_from_telegram, create_catalog_item_from_telegram_post
 from telegram.models import TelegramBotSettings
 import requests
 import logging
@@ -14,7 +14,7 @@ TELEGRAM_API_URL = 'https://api.telegram.org/bot{token}/{method}'
 
 
 class Command(BaseCommand):
-    help = 'Синхронизирует посты из Telegram канала и создает статьи'
+    help = 'Синхронизирует посты из Telegram канала и создает элементы каталога'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -37,6 +37,10 @@ class Command(BaseCommand):
         
         if not bot_settings.channel_username and not bot_settings.channel_id:
             self.stdout.write(self.style.ERROR('Не указан канал для синхронизации'))
+            return
+        
+        if not bot_settings.catalog_page:
+            self.stdout.write(self.style.ERROR('Не указана страница каталога для создания элементов'))
             return
         
         limit = options['limit']
@@ -82,12 +86,12 @@ class Command(BaseCommand):
                                 bot_settings.save(update_fields=['channel_id'])
                     
                     if channel_match:
-                        article = create_article_from_telegram_post(channel_post)
-                        if article:
+                        catalog_item = create_catalog_item_from_telegram_post(channel_post)
+                        if catalog_item:
                             created_count += 1
-                            self.stdout.write(self.style.SUCCESS(f'Создана статья: {article.title}'))
+                            self.stdout.write(self.style.SUCCESS(f'Создан элемент каталога: {catalog_item.title}'))
             
-            self.stdout.write(self.style.SUCCESS(f'Синхронизация завершена. Создано статей: {created_count}'))
+            self.stdout.write(self.style.SUCCESS(f'Синхронизация завершена. Создано элементов каталога: {created_count}'))
             
         except Exception as e:
             self.stdout.write(self.style.ERROR(f'Ошибка синхронизации: {str(e)}'))

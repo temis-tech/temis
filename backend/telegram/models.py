@@ -18,11 +18,16 @@ class TelegramBotSettings(models.Model):
     
     # Настройки синхронизации с каналом
     sync_channel_enabled = models.BooleanField('Включить синхронизацию с каналом', default=False,
-                                              help_text='Автоматически создавать статьи из постов в Telegram канале')
+                                              help_text='Автоматически создавать элементы каталога из постов в Telegram канале')
     channel_username = models.CharField('Username канала', max_length=200, blank=True,
                                        help_text='Username канала (например, @channel_name) или ID канала (например, -1001234567890). Бот должен быть администратором канала.')
     channel_id = models.CharField('ID канала', max_length=100, blank=True,
                                  help_text='ID канала (заполняется автоматически при первой синхронизации)')
+    catalog_page = models.ForeignKey('content.ContentPage', on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='telegram_sync_sources',
+                                     verbose_name='Страница каталога',
+                                     help_text='Страница каталога, в которую будут создаваться элементы из постов Telegram. Если не указана, элементы не будут создаваться.',
+                                     limit_choices_to={'page_type': 'catalog', 'is_active': True})
     
     webhook_url = models.CharField('URL webhook', max_length=500, blank=True,
                                   help_text='URL для webhook (заполняется автоматически)')
