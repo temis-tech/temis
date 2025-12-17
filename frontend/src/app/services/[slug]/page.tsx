@@ -48,6 +48,7 @@ export default async function ServicePage({ params }: { params: { slug: string }
 
   return (
     <main style={{ 
+      paddingTop: '2rem',
       paddingLeft: '2rem',
       paddingRight: '2rem',
       paddingBottom: '2rem'

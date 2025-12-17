@@ -26,6 +26,7 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
 
   return (
     <main style={{ 
+      paddingTop: '2rem',
       paddingLeft: '2rem',
       paddingRight: '2rem',
       paddingBottom: '2rem'
