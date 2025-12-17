@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import format_html
 from config.constants import get_api_domain, get_protocol, TELEGRAM_WEBHOOK_PATH
-from .models import TelegramBotSettings, TelegramUser
+from .models import TelegramBotSettings, TelegramUser, TelegramHashtagMapping
 from .bot import set_webhook, delete_webhook, get_bot_settings
 
 
@@ -197,3 +197,47 @@ class TelegramUserAdmin(admin.ModelAdmin):
     def get_full_name(self, obj):
         return obj.get_full_name()
     get_full_name.short_description = 'Имя'
+
+
+@admin.register(TelegramHashtagMapping)
+class TelegramHashtagMappingAdmin(admin.ModelAdmin):
+    """Админка для настроек хештегов"""
+    list_display = ('hashtag', 'catalog_page', 'width', 'button_type', 'has_own_page', 'is_active', 'order')
+    list_filter = ('is_active', 'button_type', 'width', 'catalog_page')
+    search_fields = ('hashtag', 'catalog_page__title')
+    list_editable = ('is_active', 'order')
+    ordering = ('hashtag',)
+    
+    fieldsets = (
+        ('Основные настройки', {
+            'fields': ('hashtag', 'catalog_page', 'is_active', 'order'),
+            'description': 'Хештег указывается без символа # (например, "новости" вместо "#новости"). '
+                         'Элементы каталога будут создаваться в указанную страницу каталога.'
+        }),
+        ('Настройки элемента каталога', {
+            'fields': (
+                'width',
+                'has_own_page',
+            ),
+            'description': 'Настройки внешнего вида элемента каталога'
+        }),
+        ('Настройки кнопки', {
+            'fields': (
+                'button_type',
+                'button_text',
+                'button_booking_form',
+                'button_quiz',
+                'button_external_url',
+            ),
+            'description': 'Настройки кнопки для элемента каталога. '
+                         'В зависимости от типа кнопки заполните соответствующее поле: '
+                         'форма записи для "Запись", анкета для "Анкета", внешняя ссылка для "Внешняя ссылка".'
+        }),
+        ('Даты', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_readonly_fields(self, request, obj=None):
+        return ['created_at', 'updated_at']

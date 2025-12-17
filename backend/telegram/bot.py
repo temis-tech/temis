@@ -5,6 +5,7 @@ import requests
 import logging
 import os
 import tempfile
+import re
 from io import BytesIO
 from django.conf import settings
 from django.core.files import File
@@ -139,6 +140,49 @@ def download_image_from_telegram(file_id, filename=None):
     return django_file, filename
 
 
+def extract_hashtags(text):
+    """
+    Извлечь хештеги из текста
+    
+    Args:
+        text: Текст поста
+    
+    Returns:
+        list: Список хештегов без символа #
+    """
+    # Ищем хештеги (слово после #, может содержать буквы, цифры и подчеркивания)
+    hashtags = re.findall(r'#(\w+)', text, re.UNICODE)
+    # Приводим к нижнему регистру для сравнения
+    return [tag.lower() for tag in hashtags]
+
+
+def find_hashtag_mapping(hashtags):
+    """
+    Найти настройку для хештега
+    
+    Args:
+        hashtags: Список хештегов из поста
+    
+    Returns:
+        TelegramHashtagMapping или None
+    """
+    from .models import TelegramHashtagMapping
+    
+    if not hashtags:
+        return None
+    
+    # Ищем первую активную настройку для любого из хештегов
+    for hashtag in hashtags:
+        mapping = TelegramHashtagMapping.objects.filter(
+            hashtag__iexact=hashtag,
+            is_active=True
+        ).first()
+        if mapping:
+            return mapping
+    
+    return None
+
+
 def create_catalog_item_from_telegram_post(post_data):
     """
     Создать элемент каталога из поста Telegram
@@ -156,16 +200,24 @@ def create_catalog_item_from_telegram_post(post_data):
     if not bot_settings or not bot_settings.sync_channel_enabled:
         return None
     
-    if not bot_settings.catalog_page:
-        logger.warning('Не указана страница каталога для синхронизации Telegram')
-        return None
-    
     try:
         # Извлекаем текст поста
         text = post_data.get('text') or post_data.get('caption', '')
         if not text:
             logger.debug('Пост не содержит текста, пропускаем')
             return None
+        
+        # Извлекаем хештеги из текста
+        hashtags = extract_hashtags(text)
+        
+        # Ищем настройку для хештега
+        hashtag_mapping = find_hashtag_mapping(hashtags)
+        
+        if not hashtag_mapping:
+            logger.debug(f'Не найдена настройка для хештегов: {hashtags}. Пост пропущен.')
+            return None
+        
+        catalog_page = hashtag_mapping.catalog_page
         
         # Извлекаем изображение
         image_file = None
@@ -178,8 +230,15 @@ def create_catalog_item_from_telegram_post(post_data):
             if file_id:
                 image_file, image_filename = download_image_from_telegram(file_id)
         
+        # Убираем хештеги из текста для заголовка и описания
+        text_without_hashtags = text
+        for hashtag in hashtags:
+            # Удаляем хештег из текста (с # и без)
+            text_without_hashtags = re.sub(rf'#{hashtag}\b', '', text_without_hashtags, flags=re.IGNORECASE)
+        text_without_hashtags = text_without_hashtags.strip()
+        
         # Создаем заголовок из текста
-        title = text[:200] if len(text) > 200 else text
+        title = text_without_hashtags[:200] if len(text_without_hashtags) > 200 else text_without_hashtags
         # Убираем переносы строк для заголовка
         title = title.replace('\n', ' ').strip()
         if not title:
@@ -195,20 +254,38 @@ def create_catalog_item_from_telegram_post(post_data):
             slug = f'{slug_base}_{counter}'
             counter += 1
         
-        # Определяем порядок (последний элемент + 1)
-        last_item = CatalogItem.objects.filter(page=bot_settings.catalog_page).order_by('-order').first()
-        order = (last_item.order + 1) if last_item else 0
+        # Определяем порядок
+        # Если в настройках указан order > 0, используем его как базовый
+        # Иначе берем последний элемент + 1
+        if hashtag_mapping.order > 0:
+            # Ищем последний элемент с таким же или большим order
+            last_item = CatalogItem.objects.filter(
+                page=catalog_page,
+                order__gte=hashtag_mapping.order
+            ).order_by('-order').first()
+            if last_item:
+                order = last_item.order + 1
+            else:
+                order = hashtag_mapping.order
+        else:
+            # Используем порядок по умолчанию (в конец)
+            last_item = CatalogItem.objects.filter(page=catalog_page).order_by('-order').first()
+            order = (last_item.order + 1) if last_item else 0
         
-        # Создаем элемент каталога
+        # Создаем элемент каталога с настройками из хештега
         catalog_item = CatalogItem(
-            page=bot_settings.catalog_page,
+            page=catalog_page,
             title=title,
             slug=slug,
-            card_description=text[:500] if len(text) > 500 else text,  # Краткое описание для карточки
-            description=text,  # Полное описание для страницы
-            has_own_page=True,  # По умолчанию создаем страницу для элемента
-            button_type='none',  # По умолчанию без кнопки
-            button_text='',
+            card_description=text_without_hashtags[:500] if len(text_without_hashtags) > 500 else text_without_hashtags,
+            description=text_without_hashtags,  # Полное описание для страницы
+            width=hashtag_mapping.width,
+            has_own_page=hashtag_mapping.has_own_page,
+            button_type=hashtag_mapping.button_type,
+            button_text=hashtag_mapping.button_text or '',
+            button_booking_form=hashtag_mapping.button_booking_form if hashtag_mapping.button_type == 'booking' else None,
+            button_quiz=hashtag_mapping.button_quiz if hashtag_mapping.button_type == 'quiz' else None,
+            button_external_url=hashtag_mapping.button_external_url if hashtag_mapping.button_type == 'external' else '',
             order=order,
             is_active=True
         )
@@ -244,11 +321,11 @@ def create_catalog_item_from_telegram_post(post_data):
             except Exception as e:
                 logger.error(f'Ошибка обработки изображения страницы для элемента {catalog_item.title}: {e}')
         
-        logger.info(f'Создан элемент каталога из Telegram поста: {catalog_item.title}')
+        logger.info(f'Создан элемент каталога из Telegram поста с хештегом {hashtags}: {catalog_item.title}')
         return catalog_item
         
     except Exception as e:
-        logger.error(f'Ошибка создания статьи из Telegram поста: {str(e)}')
+        logger.error(f'Ошибка создания элемента каталога из Telegram поста: {str(e)}')
         return None
 
 

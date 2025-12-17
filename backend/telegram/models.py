@@ -47,6 +47,82 @@ class TelegramBotSettings(models.Model):
         super().save(*args, **kwargs)
 
 
+class TelegramHashtagMapping(models.Model):
+    """Настройка сопоставления хештега с каталогом и параметрами элемента"""
+    # Константы для выбора (дублируем из CatalogItem, чтобы избежать циклических импортов)
+    WIDTH_CHOICES = [
+        ('narrow', 'Узкая (1/3 ширины)'),
+        ('medium', 'Средняя (1/2 ширины)'),
+        ('wide', 'Широкая (2/3 ширины)'),
+        ('full', 'На всю ширину'),
+    ]
+    
+    BUTTON_TYPES = [
+        ('booking', 'Запись'),
+        ('quiz', 'Анкета'),
+        ('external', 'Внешняя ссылка'),
+        ('none', 'Без кнопки'),
+    ]
+    
+    hashtag = models.CharField('Хештег', max_length=100, unique=True,
+                               help_text='Хештег из поста Telegram (например, новости, статья). Без символа #')
+    catalog_page = models.ForeignKey('content.ContentPage', on_delete=models.CASCADE,
+                                     related_name='hashtag_mappings',
+                                     verbose_name='Страница каталога',
+                                     help_text='Страница каталога, в которую будут создаваться элементы из постов с этим хештегом',
+                                     limit_choices_to={'page_type': 'catalog', 'is_active': True})
+    
+    # Настройки элемента каталога
+    width = models.CharField('Ширина элемента', max_length=10, 
+                            choices=WIDTH_CHOICES, 
+                            default='medium',
+                            help_text='Ширина элемента в сетке каталога')
+    
+    has_own_page = models.BooleanField('Может быть открыт как страница', default=True,
+                                      help_text='Если включено, карточка будет иметь свой URL и может быть открыта как отдельная страница')
+    
+    button_type = models.CharField('Тип кнопки', max_length=20, 
+                                   choices=BUTTON_TYPES, 
+                                   default='none',
+                                   help_text='Тип кнопки для элемента каталога')
+    
+    button_text = models.CharField('Текст кнопки', max_length=100, blank=True, default='',
+                                  help_text='Текст кнопки (если тип кнопки не "Без кнопки")')
+    
+    button_booking_form = models.ForeignKey('booking.BookingForm', on_delete=models.SET_NULL, 
+                                           null=True, blank=True,
+                                           verbose_name='Форма записи',
+                                           help_text='Выберите форму записи (если тип кнопки - "Запись")',
+                                           limit_choices_to={'is_active': True})
+    
+    button_quiz = models.ForeignKey('quizzes.Quiz', on_delete=models.SET_NULL, 
+                                   null=True, blank=True,
+                                   verbose_name='Анкета',
+                                   help_text='Выберите анкету (если тип кнопки - "Анкета")',
+                                   limit_choices_to={'is_active': True})
+    
+    button_external_url = models.URLField('Внешняя ссылка', blank=True, null=True,
+                                          help_text='Внешняя ссылка (если тип кнопки - "Внешняя ссылка")')
+    
+    is_active = models.BooleanField('Активен', default=True,
+                                    help_text='Если выключено, элементы с этим хештегом не будут создаваться')
+    
+    order = models.IntegerField('Порядок', default=0,
+                                help_text='Порядок сортировки элементов в каталоге (0 - в конец)')
+    
+    created_at = models.DateTimeField('Создан', auto_now_add=True)
+    updated_at = models.DateTimeField('Обновлен', auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Настройка хештега'
+        verbose_name_plural = 'Настройки хештегов'
+        ordering = ['hashtag']
+        app_label = 'telegram'
+    
+    def __str__(self):
+        return f'#{self.hashtag} → {self.catalog_page.title}'
+
+
 class TelegramUser(models.Model):
     """Пользователь Telegram бота"""
     telegram_id = models.BigIntegerField('Telegram ID', unique=True,
