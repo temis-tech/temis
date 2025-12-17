@@ -257,17 +257,26 @@ def create_or_update_catalog_item_from_telegram_post(post_data, is_edit=False):
             text_without_hashtags = re.sub(rf'#{hashtag}\b', '', text_without_hashtags, flags=re.IGNORECASE)
         text_without_hashtags = text_without_hashtags.strip()
         
+        # Разделяем текст на части, если указан разделитель
+        full_description = text_without_hashtags
+        if hashtag_mapping.preview_separator:
+            # Используем разделитель
+            parts = text_without_hashtags.split(hashtag_mapping.preview_separator, 1)
+            if len(parts) == 2:
+                # До разделителя - краткое описание (не используется для card_description)
+                # После разделителя - полный текст
+                full_description = parts[1].strip()
+            # Если разделитель не найден, используем весь текст как полный
+        
         # Создаем заголовок из первой строки или начала текста
-        # Берем первую строку или первые 200 символов
-        title = text_without_hashtags.split('\n')[0] if text_without_hashtags else ''
+        # Берем первую строку или первые 200 символов из исходного текста (до разделителя, если он есть)
+        title_source = text_without_hashtags.split(hashtag_mapping.preview_separator, 1)[0] if hashtag_mapping.preview_separator else text_without_hashtags
+        title = title_source.split('\n')[0] if title_source else ''
         title = title[:200] if len(title) > 200 else title
         # Убираем переносы строк для заголовка
         title = title.replace('\n', ' ').strip()
         if not title:
             title = 'Элемент из Telegram'
-        
-        # Полный текст - весь текст без хештегов
-        full_description = text_without_hashtags
         
         # card_description всегда берется из полного текста (description),
         # обрезанный до длины заголовка
