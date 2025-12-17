@@ -183,15 +183,16 @@ def find_hashtag_mapping(hashtags):
     return None
 
 
-def create_catalog_item_from_telegram_post(post_data):
+def create_or_update_catalog_item_from_telegram_post(post_data, is_edit=False):
     """
-    Создать элемент каталога из поста Telegram
+    Создать или обновить элемент каталога из поста Telegram
     
     Args:
-        post_data: Данные поста из Telegram (channel_post или message)
+        post_data: Данные поста из Telegram (channel_post, edited_channel_post или message)
+        is_edit: True если это обновление существующего поста
     
     Returns:
-        CatalogItem: Созданный элемент каталога или None
+        CatalogItem: Созданный или обновленный элемент каталога или None
     """
     from content.utils.image_processing import process_uploaded_image
     from content.models import CatalogItem
@@ -201,6 +202,19 @@ def create_catalog_item_from_telegram_post(post_data):
         return None
     
     try:
+        message_id = post_data.get('message_id')
+        if not message_id:
+            logger.debug('Пост не содержит message_id, пропускаем')
+            return None
+        
+        # Проверяем, существует ли уже элемент с таким message_id
+        existing_item = None
+        if message_id:
+            try:
+                existing_item = CatalogItem.objects.get(telegram_message_id=message_id)
+            except CatalogItem.DoesNotExist:
+                pass
+        
         # Извлекаем текст поста
         text = post_data.get('text') or post_data.get('caption', '')
         if not text:
@@ -214,7 +228,13 @@ def create_catalog_item_from_telegram_post(post_data):
         hashtag_mapping = find_hashtag_mapping(hashtags)
         
         if not hashtag_mapping:
-            logger.debug(f'Не найдена настройка для хештегов: {hashtags}. Пост пропущен.')
+            # Если это обновление и элемент уже существует, но хештег удален - удаляем элемент
+            if is_edit and existing_item:
+                logger.info(f'Хештег удален из поста {message_id}, элемент каталога будет деактивирован')
+                existing_item.is_active = False
+                existing_item.save(update_fields=['is_active'])
+            else:
+                logger.debug(f'Не найдена настройка для хештегов: {hashtags}. Пост пропущен.')
             return None
         
         catalog_page = hashtag_mapping.catalog_page
@@ -254,41 +274,63 @@ def create_catalog_item_from_telegram_post(post_data):
             slug = f'{slug_base}_{counter}'
             counter += 1
         
-        # Определяем порядок
-        # Если в настройках указан order > 0, используем его как базовый
-        # Иначе берем последний элемент + 1
-        if hashtag_mapping.order > 0:
-            # Ищем последний элемент с таким же или большим order
-            last_item = CatalogItem.objects.filter(
-                page=catalog_page,
-                order__gte=hashtag_mapping.order
-            ).order_by('-order').first()
-            if last_item:
-                order = last_item.order + 1
-            else:
-                order = hashtag_mapping.order
+        # Если элемент уже существует - обновляем его
+        if existing_item:
+            catalog_item = existing_item
+            # Обновляем данные элемента
+            catalog_item.page = catalog_page
+            catalog_item.title = title
+            catalog_item.card_description = text_without_hashtags[:500] if len(text_without_hashtags) > 500 else text_without_hashtags
+            catalog_item.description = text_without_hashtags
+            catalog_item.width = hashtag_mapping.width
+            catalog_item.has_own_page = hashtag_mapping.has_own_page
+            catalog_item.button_type = hashtag_mapping.button_type
+            catalog_item.button_text = hashtag_mapping.button_text or ''
+            catalog_item.button_booking_form = hashtag_mapping.button_booking_form if hashtag_mapping.button_type == 'booking' else None
+            catalog_item.button_quiz = hashtag_mapping.button_quiz if hashtag_mapping.button_type == 'quiz' else None
+            catalog_item.button_url = (hashtag_mapping.button_external_url or '') if hashtag_mapping.button_type == 'external' else ''
+            catalog_item.is_active = True
+            # Сохраняем message_id если еще не сохранен
+            if not catalog_item.telegram_message_id:
+                catalog_item.telegram_message_id = message_id
         else:
-            # Используем порядок по умолчанию (в конец)
-            last_item = CatalogItem.objects.filter(page=catalog_page).order_by('-order').first()
-            order = (last_item.order + 1) if last_item else 0
-        
-        # Создаем элемент каталога с настройками из хештега
-        catalog_item = CatalogItem(
-            page=catalog_page,
-            title=title,
-            slug=slug,
-            card_description=text_without_hashtags[:500] if len(text_without_hashtags) > 500 else text_without_hashtags,
-            description=text_without_hashtags,  # Полное описание для страницы
-            width=hashtag_mapping.width,
-            has_own_page=hashtag_mapping.has_own_page,
-            button_type=hashtag_mapping.button_type,
-            button_text=hashtag_mapping.button_text or '',
-            button_booking_form=hashtag_mapping.button_booking_form if hashtag_mapping.button_type == 'booking' else None,
-            button_quiz=hashtag_mapping.button_quiz if hashtag_mapping.button_type == 'quiz' else None,
-            button_external_url=hashtag_mapping.button_external_url if hashtag_mapping.button_type == 'external' else '',
-            order=order,
-            is_active=True
-        )
+            # Создаем новый элемент
+            # Определяем порядок
+            # Если в настройках указан order > 0, используем его как базовый
+            # Иначе берем последний элемент + 1
+            if hashtag_mapping.order > 0:
+                # Ищем последний элемент с таким же или большим order
+                last_item = CatalogItem.objects.filter(
+                    page=catalog_page,
+                    order__gte=hashtag_mapping.order
+                ).order_by('-order').first()
+                if last_item:
+                    order = last_item.order + 1
+                else:
+                    order = hashtag_mapping.order
+            else:
+                # Используем порядок по умолчанию (в конец)
+                last_item = CatalogItem.objects.filter(page=catalog_page).order_by('-order').first()
+                order = (last_item.order + 1) if last_item else 0
+            
+            # Создаем элемент каталога с настройками из хештега
+            catalog_item = CatalogItem(
+                page=catalog_page,
+                title=title,
+                slug=slug,
+                card_description=text_without_hashtags[:500] if len(text_without_hashtags) > 500 else text_without_hashtags,
+                description=text_without_hashtags,
+                width=hashtag_mapping.width,
+                has_own_page=hashtag_mapping.has_own_page,
+                button_type=hashtag_mapping.button_type,
+                button_text=hashtag_mapping.button_text or '',
+                button_booking_form=hashtag_mapping.button_booking_form if hashtag_mapping.button_type == 'booking' else None,
+                button_quiz=hashtag_mapping.button_quiz if hashtag_mapping.button_type == 'quiz' else None,
+                button_url=(hashtag_mapping.button_external_url or '') if hashtag_mapping.button_type == 'external' else '',
+                order=order,
+                is_active=True,
+                telegram_message_id=message_id
+            )
         
         # Сохраняем изображение для карточки (если есть)
         if image_file and image_filename:
@@ -321,7 +363,8 @@ def create_catalog_item_from_telegram_post(post_data):
             except Exception as e:
                 logger.error(f'Ошибка обработки изображения страницы для элемента {catalog_item.title}: {e}')
         
-        logger.info(f'Создан элемент каталога из Telegram поста с хештегом {hashtags}: {catalog_item.title}')
+        action = 'Обновлен' if existing_item else 'Создан'
+        logger.info(f'{action} элемент каталога из Telegram поста с хештегом {hashtags}: {catalog_item.title}')
         return catalog_item
         
     except Exception as e:
@@ -363,9 +406,33 @@ def handle_webhook_update(update_data):
             
             if channel_match:
                 # Создаем элемент каталога из поста
-                catalog_item = create_catalog_item_from_telegram_post(channel_post)
+                catalog_item = create_or_update_catalog_item_from_telegram_post(channel_post, is_edit=False)
                 if catalog_item:
                     logger.info(f'Создан элемент каталога из Telegram канала: {catalog_item.title}')
+        
+        # Обрабатываем обновленные посты из канала (edited_channel_post)
+        edited_channel_post = update_data.get('edited_channel_post')
+        if edited_channel_post and bot_settings and bot_settings.sync_channel_enabled:
+            # Проверяем, что пост из нужного канала
+            chat = edited_channel_post.get('chat', {})
+            chat_id = str(chat.get('id', ''))
+            chat_username = chat.get('username', '')
+            
+            # Проверяем соответствие канала
+            channel_match = False
+            if bot_settings.channel_id and chat_id == bot_settings.channel_id:
+                channel_match = True
+            elif bot_settings.channel_username:
+                # Убираем @ если есть
+                username_clean = bot_settings.channel_username.lstrip('@')
+                if chat_username == username_clean:
+                    channel_match = True
+            
+            if channel_match:
+                # Обновляем элемент каталога из отредактированного поста
+                catalog_item = create_or_update_catalog_item_from_telegram_post(edited_channel_post, is_edit=True)
+                if catalog_item:
+                    logger.info(f'Обновлен элемент каталога из Telegram канала: {catalog_item.title}')
         
         # Обрабатываем обычные сообщения (для бота)
         message = update_data.get('message')

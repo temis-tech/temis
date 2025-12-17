@@ -625,6 +625,10 @@ class CatalogItem(models.Model):
     order = models.IntegerField('Порядок', default=0)
     is_active = models.BooleanField('Активен', default=True)
     
+    # Связь с Telegram постом
+    telegram_message_id = models.BigIntegerField('ID сообщения Telegram', null=True, blank=True, unique=True,
+                                                help_text='ID сообщения из Telegram канала для связи с постом и обновления при редактировании')
+    
     # Настройки кнопки
     button_type = models.CharField('Тип кнопки', max_length=20, choices=BUTTON_TYPES, default='none')
     button_text = models.CharField('Текст кнопки', max_length=100, blank=True, default='Записаться')
