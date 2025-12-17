@@ -117,12 +117,12 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
             )
           ) : null}
           
-          {item.button_type === 'booking' && item.button_booking_form_id && (
+          {item.button_type === 'booking' && item.button_booking_form_id && typeof item.button_booking_form_id === 'number' && (
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
               <BookingForm
                 formId={item.button_booking_form_id}
                 serviceId={0}
-                serviceTitle={item.title}
+                serviceTitle={item.title || ''}
                 onClose={() => {}}
               />
             </div>

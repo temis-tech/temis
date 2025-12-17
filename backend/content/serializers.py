@@ -461,6 +461,22 @@ class CatalogItemSerializer(serializers.ModelSerializer):
                  'button_url', 'video_url', 'video_width', 'video_height', 'gallery_page', 
                  'service', 'service_id', 'branch', 'branch_id', 'order']
     
+    def to_representation(self, instance):
+        """Переопределяем для безопасной обработки null значений"""
+        data = super().to_representation(instance)
+        # Убеждаемся, что все строковые поля не null
+        if data.get('title') is None:
+            data['title'] = ''
+        if data.get('button_text') is None:
+            data['button_text'] = ''
+        if data.get('button_url') is None:
+            data['button_url'] = ''
+        if data.get('card_description') is None:
+            data['card_description'] = ''
+        if data.get('description') is None:
+            data['description'] = ''
+        return data
+    
     def get_card_image(self, obj):
         """Возвращает изображение для карточки (превью)"""
         # Если есть card_image, используем его, иначе используем image
