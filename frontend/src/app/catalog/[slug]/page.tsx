@@ -103,15 +103,17 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
           {item.gallery_page ? (
             item.gallery_page.gallery_images && item.gallery_page.gallery_images.length > 0 ? (
               <div style={{ marginBottom: '2rem' }}>
-                <h2 style={{ 
-                  fontSize: '2rem', 
-                  marginBottom: '1.5rem',
-                  color: '#FF820E',
-                  fontWeight: 600,
-                  textAlign: 'center'
-                }}>
-                  {item.gallery_page.title || 'Галерея'}
-                </h2>
+                {item.gallery_page.show_title !== false && (
+                  <h2 style={{ 
+                    fontSize: '2rem', 
+                    marginBottom: '1.5rem',
+                    color: '#FF820E',
+                    fontWeight: 600,
+                    textAlign: 'center'
+                  }}>
+                    {item.gallery_page.title || 'Галерея'}
+                  </h2>
+                )}
                 <Gallery
                   images={item.gallery_page.gallery_images}
                   displayType={item.gallery_page.gallery_display_type || 'grid'}
