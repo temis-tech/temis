@@ -288,7 +288,10 @@ def create_or_update_catalog_item_from_telegram_post(post_data, is_edit=False):
             catalog_item.button_text = hashtag_mapping.button_text or ''
             catalog_item.button_booking_form = hashtag_mapping.button_booking_form if hashtag_mapping.button_type == 'booking' else None
             catalog_item.button_quiz = hashtag_mapping.button_quiz if hashtag_mapping.button_type == 'quiz' else None
-            catalog_item.button_url = (hashtag_mapping.button_external_url or '') if hashtag_mapping.button_type == 'external' else ''
+            if hashtag_mapping.button_type == 'external':
+                catalog_item.button_url = str(hashtag_mapping.button_external_url) if hashtag_mapping.button_external_url else ''
+            else:
+                catalog_item.button_url = ''
             catalog_item.is_active = True
             # Сохраняем message_id если еще не сохранен
             if not catalog_item.telegram_message_id:
@@ -326,7 +329,7 @@ def create_or_update_catalog_item_from_telegram_post(post_data, is_edit=False):
                 button_text=hashtag_mapping.button_text or '',
                 button_booking_form=hashtag_mapping.button_booking_form if hashtag_mapping.button_type == 'booking' else None,
                 button_quiz=hashtag_mapping.button_quiz if hashtag_mapping.button_type == 'quiz' else None,
-                button_url=(hashtag_mapping.button_external_url or '') if hashtag_mapping.button_type == 'external' else '',
+                button_url=str(hashtag_mapping.button_external_url) if (hashtag_mapping.button_type == 'external' and hashtag_mapping.button_external_url) else '',
                 order=order,
                 is_active=True,
                 telegram_message_id=message_id
