@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('telegram', '0002_set_default_token'),
+        ('telegram', '0003_merge_0002_and_0003'),
     ]
 
     operations = [

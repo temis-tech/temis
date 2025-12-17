@@ -7,7 +7,8 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('telegram', '0003_add_channel_sync_settings'),
+        ('telegram', '0004_add_channel_sync_settings'),
+        ('telegram', '0003_merge_0002_and_0003'),  # Зависимость от merge для совместимости
         ('content', '0015_add_content_pages'),  # ContentPage создается в этой миграции
     ]
 
