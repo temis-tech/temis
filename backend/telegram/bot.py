@@ -180,7 +180,7 @@ def create_article_from_telegram_post(post_data):
         if not title:
             title = 'Статья из Telegram'
         
-        slug_base = slugify(title)[:50] or f'telegram_post_{post_data.get("message_id", "unknown")}'
+        slug_base = transliterate_slug(title) or f'telegram_post_{post_data.get("message_id", "unknown")}'
         
         # Проверяем, не существует ли уже статья с таким slug
         slug = slug_base
