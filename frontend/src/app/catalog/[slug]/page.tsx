@@ -26,12 +26,11 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
 
   return (
     <main style={{ 
-      paddingTop: '2rem',
       paddingLeft: '2rem',
       paddingRight: '2rem',
       paddingBottom: '2rem'
     }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', paddingTop: '2rem' }}>
         <h1 style={{ 
           textAlign: 'center', 
           fontSize: '2.5rem', 
