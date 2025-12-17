@@ -3,6 +3,9 @@
 # Эта merge-миграция объединяет две ветки: 
 # - 0002_set_default_token -> 0003_add_catalog_page (если существует на сервере)
 # - 0002_set_default_token -> 0004_add_channel_sync_settings (наша новая)
+# 
+# ВАЖНО: Если на сервере есть 0003_add_catalog_page_to_telegram_settings,
+# Django автоматически обнаружит её и включит в зависимости при применении миграций
 
 from django.db import migrations
 
