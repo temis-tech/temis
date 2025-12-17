@@ -3,8 +3,15 @@
 """
 import requests
 import logging
+import os
+import tempfile
+from io import BytesIO
 from django.conf import settings
+from django.core.files import File
+from django.core.files.images import ImageFile
+from django.utils.text import slugify
 from .models import TelegramBotSettings, TelegramUser
+from content.models import transliterate_slug, Article
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +76,153 @@ def send_notification_to_admins(text):
     return sent_count
 
 
+def get_file_from_telegram(file_id):
+    """
+    Получить файл из Telegram по file_id
+    
+    Args:
+        file_id: ID файла в Telegram
+    
+    Returns:
+        bytes: Содержимое файла или None
+    """
+    bot_settings = get_bot_settings()
+    if not bot_settings or not bot_settings.is_active:
+        return None
+    
+    # Сначала получаем путь к файлу
+    url = TELEGRAM_API_URL.format(token=bot_settings.token, method='getFile')
+    try:
+        response = requests.post(url, json={'file_id': file_id}, timeout=10)
+        response.raise_for_status()
+        file_data = response.json()
+        
+        if not file_data.get('ok'):
+            logger.error(f'Ошибка получения файла: {file_data}')
+            return None
+        
+        file_path = file_data['result']['file_path']
+        
+        # Скачиваем файл
+        download_url = f'https://api.telegram.org/file/bot{bot_settings.token}/{file_path}'
+        file_response = requests.get(download_url, timeout=30)
+        file_response.raise_for_status()
+        
+        return file_response.content
+    except requests.exceptions.RequestException as e:
+        logger.error(f'Ошибка получения файла из Telegram: {str(e)}')
+        return None
+
+
+def download_image_from_telegram(file_id, filename=None):
+    """
+    Скачать изображение из Telegram и вернуть как Django File
+    
+    Args:
+        file_id: ID файла в Telegram
+        filename: Имя файла (опционально)
+    
+    Returns:
+        tuple: (Django File объект, имя файла) или (None, None)
+    """
+    file_content = get_file_from_telegram(file_id)
+    if not file_content:
+        return None, None
+    
+    if not filename:
+        # Определяем расширение из содержимого или используем jpg по умолчанию
+        filename = f'telegram_image_{file_id}.jpg'
+    
+    # Создаем временный файл
+    temp_file = BytesIO(file_content)
+    django_file = ImageFile(temp_file, name=filename)
+    return django_file, filename
+
+
+def create_article_from_telegram_post(post_data):
+    """
+    Создать статью из поста Telegram
+    
+    Args:
+        post_data: Данные поста из Telegram (channel_post или message)
+    
+    Returns:
+        Article: Созданная статья или None
+    """
+    from content.utils.image_processing import process_uploaded_image
+    
+    bot_settings = get_bot_settings()
+    if not bot_settings or not bot_settings.sync_channel_enabled:
+        return None
+    
+    try:
+        # Извлекаем текст поста
+        text = post_data.get('text') or post_data.get('caption', '')
+        if not text:
+            logger.debug('Пост не содержит текста, пропускаем')
+            return None
+        
+        # Извлекаем изображение
+        image_file = None
+        image_filename = None
+        photo = post_data.get('photo')
+        if photo:
+            # Берем самое большое изображение (последнее в массиве)
+            largest_photo = photo[-1] if isinstance(photo, list) else photo
+            file_id = largest_photo.get('file_id')
+            if file_id:
+                image_file, image_filename = download_image_from_telegram(file_id)
+        
+        # Создаем slug из текста (первые 50 символов)
+        title = text[:200] if len(text) > 200 else text
+        # Убираем переносы строк для заголовка
+        title = title.replace('\n', ' ').strip()
+        if not title:
+            title = 'Статья из Telegram'
+        
+        slug_base = slugify(title)[:50] or f'telegram_post_{post_data.get("message_id", "unknown")}'
+        
+        # Проверяем, не существует ли уже статья с таким slug
+        slug = slug_base
+        counter = 1
+        while Article.objects.filter(slug=slug).exists():
+            slug = f'{slug_base}_{counter}'
+            counter += 1
+        
+        # Создаем статью
+        article = Article(
+            title=title,
+            slug=slug,
+            content=text,
+            short_description=text[:300] if len(text) > 300 else text,
+            is_published=True
+        )
+        
+        if image_file and image_filename:
+            article.image.save(
+                image_filename,
+                image_file,
+                save=False
+            )
+        
+        article.save()
+        
+        # Обрабатываем изображение после сохранения
+        if article.image and hasattr(article.image, 'file'):
+            try:
+                process_uploaded_image(article.image, image_type='general')
+                article.save(update_fields=['image'])
+            except Exception as e:
+                logger.error(f'Ошибка обработки изображения для статьи {article.title}: {e}')
+        
+        logger.info(f'Создана статья из Telegram поста: {article.title}')
+        return article
+        
+    except Exception as e:
+        logger.error(f'Ошибка создания статьи из Telegram поста: {str(e)}')
+        return None
+
+
 def handle_webhook_update(update_data):
     """
     Обработать обновление от Telegram webhook
@@ -77,6 +231,37 @@ def handle_webhook_update(update_data):
         update_data: Данные обновления от Telegram
     """
     try:
+        bot_settings = get_bot_settings()
+        
+        # Обрабатываем посты из канала (channel_post)
+        channel_post = update_data.get('channel_post')
+        if channel_post and bot_settings and bot_settings.sync_channel_enabled:
+            # Проверяем, что пост из нужного канала
+            chat = channel_post.get('chat', {})
+            chat_id = str(chat.get('id', ''))
+            chat_username = chat.get('username', '')
+            
+            # Проверяем соответствие канала
+            channel_match = False
+            if bot_settings.channel_id and chat_id == bot_settings.channel_id:
+                channel_match = True
+            elif bot_settings.channel_username:
+                # Убираем @ если есть
+                username_clean = bot_settings.channel_username.lstrip('@')
+                if chat_username == username_clean:
+                    channel_match = True
+                    # Сохраняем ID канала для будущих проверок
+                    if not bot_settings.channel_id:
+                        bot_settings.channel_id = chat_id
+                        bot_settings.save(update_fields=['channel_id'])
+            
+            if channel_match:
+                # Создаем статью из поста
+                article = create_article_from_telegram_post(channel_post)
+                if article:
+                    logger.info(f'Создана статья из Telegram канала: {article.title}')
+        
+        # Обрабатываем обычные сообщения (для бота)
         message = update_data.get('message')
         if not message:
             return

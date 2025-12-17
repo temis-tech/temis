@@ -16,6 +16,14 @@ class TelegramBotSettings(models.Model):
     notify_on_banner_start = models.BooleanField('Уведомлять при начале отображения баннера', default=True)
     notify_on_banner_end = models.BooleanField('Уведомлять при завершении отображения баннера', default=True)
     
+    # Настройки синхронизации с каналом
+    sync_channel_enabled = models.BooleanField('Включить синхронизацию с каналом', default=False,
+                                              help_text='Автоматически создавать статьи из постов в Telegram канале')
+    channel_username = models.CharField('Username канала', max_length=200, blank=True,
+                                       help_text='Username канала (например, @channel_name) или ID канала (например, -1001234567890). Бот должен быть администратором канала.')
+    channel_id = models.CharField('ID канала', max_length=100, blank=True,
+                                 help_text='ID канала (заполняется автоматически при первой синхронизации)')
+    
     webhook_url = models.CharField('URL webhook', max_length=500, blank=True,
                                   help_text='URL для webhook (заполняется автоматически)')
     created_at = models.DateTimeField('Создан', auto_now_add=True)

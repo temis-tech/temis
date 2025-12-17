@@ -75,7 +75,7 @@ class TelegramBotSettingsAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         """Делаем webhook_url и webhook_actions только для чтения"""
         readonly = list(super().get_readonly_fields(request, obj))
-        readonly.extend(['webhook_url', 'webhook_actions'])
+        readonly.extend(['webhook_url', 'webhook_actions', 'channel_id'])
         return readonly
     
     def webhook_actions(self, obj):
@@ -142,6 +142,16 @@ class TelegramBotSettingsAdmin(admin.ModelAdmin):
                 'notify_on_banner_end',
             ),
             'description': 'Выберите, какие события должны отправлять уведомления'
+        }),
+        ('Синхронизация с каналом', {
+            'fields': (
+                'sync_channel_enabled',
+                'channel_username',
+                'channel_id',
+            ),
+            'description': 'Настройки для автоматического создания статей из постов в Telegram канале. '
+                         'Бот должен быть администратором канала. Укажите username канала (например, @channel_name) '
+                         'или ID канала. ID канала будет заполнен автоматически при первой синхронизации.'
         }),
         ('Техническая информация', {
             'fields': ('webhook_url',),
