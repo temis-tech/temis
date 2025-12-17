@@ -103,6 +103,9 @@ export interface CatalogItem {
   image?: string;  // Изображение для страницы
   image_align?: 'left' | 'right' | 'center' | 'full';
   image_size?: 'small' | 'medium' | 'large' | 'full';
+  image_position?: 'top' | 'bottom' | 'left' | 'right' | 'none';
+  image_target_width?: number;
+  image_target_height?: number;
   has_own_page?: boolean;
   slug?: string;
   url?: string | null;

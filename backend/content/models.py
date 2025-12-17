@@ -614,9 +614,25 @@ class CatalogItem(models.Model):
     ]
     
     image_align = models.CharField('Выравнивание изображения', max_length=10, choices=IMAGE_ALIGN_CHOICES, default='center',
-                                   help_text='Как изображение выравнивается относительно текста')
+                                   help_text='Как изображение выравнивается относительно текста (используется для карточек в списке)')
     image_size = models.CharField('Размер изображения', max_length=10, choices=IMAGE_SIZE_CHOICES, default='medium',
-                                 help_text='Размер изображения')
+                                 help_text='Размер изображения (используется для карточек в списке)')
+    
+    # Настройки изображения на странице элемента
+    IMAGE_POSITION_CHOICES = [
+        ('top', 'Сверху'),
+        ('bottom', 'Снизу'),
+        ('left', 'Слева'),
+        ('right', 'Справа'),
+        ('none', 'Не отображать'),
+    ]
+    
+    image_position = models.CharField('Позиция изображения на странице', max_length=10, choices=IMAGE_POSITION_CHOICES, default='top',
+                                     help_text='Где отображать изображение на странице элемента: сверху, снизу, слева, справа или не отображать')
+    image_target_width = models.IntegerField('Целевая ширина изображения (px)', null=True, blank=True,
+                                             help_text='Ширина, к которой будет приведено изображение. Изображение будет вписано в этот размер с сохранением пропорций, центрировано. Если не указано, используется размер по умолчанию.')
+    image_target_height = models.IntegerField('Целевая высота изображения (px)', null=True, blank=True,
+                                              help_text='Высота, к которой будет приведено изображение. Изображение будет вписано в этот размер с сохранением пропорций, центрировано. Если не указано, используется размер по умолчанию.')
     
     has_own_page = models.BooleanField('Может быть открыт как страница', default=False,
                                       help_text='Если включено, карточка будет иметь свой URL и может быть открыта как отдельная страница')

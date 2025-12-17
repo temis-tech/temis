@@ -198,7 +198,7 @@ class CatalogItemAdmin(admin.ModelAdmin):
             'description': 'Настройки отображения карточки элемента в списке каталога. Изображение, краткое описание (с форматированием), ширина карточки и настройки кнопки.'
         }),
         ('Страница элемента', {
-            'fields': ('has_own_page', 'slug', 'description', 'image', 'page_image_preview', 'image_align', 'image_size', 'gallery_page'),
+            'fields': ('has_own_page', 'slug', 'description', 'image', 'page_image_preview', 'image_position', 'image_target_width', 'image_target_height', 'image_align', 'image_size', 'gallery_page'),
             'description': 'Настройки страницы элемента (отображается при открытии карточки, если включен режим "Может быть открыт как страница"). Здесь можно задать полное описание с форматированием, изображение и параметры отображения. Видео можно вставлять прямо в редактор описания через кнопку "Вставить видео". Можно выбрать страницу галереи, которая будет отображаться на странице элемента.'
         }),
         ('Настройки', {

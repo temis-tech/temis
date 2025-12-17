@@ -59,34 +59,152 @@ export default async function CatalogItemPage({ params }: { params: { slug: stri
             {item.title || 'Элемент каталога'}
           </h1>
           
-          {item.image && (
+          {/* Изображение сверху */}
+          {item.image && item.image_position === 'top' && (
             <div style={{ 
               width: '100%', 
-              maxWidth: '800px', 
+              maxWidth: item.image_target_width ? `${item.image_target_width}px` : '800px',
               margin: '0 auto 2rem',
               borderRadius: '12px',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#f5f5f5',
+              height: item.image_target_height ? `${item.image_target_height}px` : 'auto',
+              minHeight: item.image_target_height ? `${item.image_target_height}px` : '400px'
             }}>
               <Image
                 src={normalizeImageUrl(item.image || '')}
                 alt={item.title || 'Изображение'}
-                width={800}
-                height={600}
-                style={{ width: '100%', height: 'auto', objectFit: 'cover' }}
+                width={item.image_target_width || 800}
+                height={item.image_target_height || 600}
+                style={{ 
+                  width: item.image_target_width ? `${item.image_target_width}px` : '100%',
+                  height: item.image_target_height ? `${item.image_target_height}px` : 'auto',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  objectPosition: 'center'
+                }}
               />
             </div>
           )}
           
-          {item.description && (
-            <div 
-              style={{ 
-                fontSize: '1.1rem',
-                lineHeight: '1.7',
-                color: '#666',
-                marginBottom: '2rem'
-              }}
-              dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(item.description || '') }}
-            />
+          {/* Контейнер для бокового расположения */}
+          <div style={{ 
+            display: item.image && (item.image_position === 'left' || item.image_position === 'right') ? 'flex' : 'block',
+            flexDirection: item.image && item.image_position === 'left' ? 'row' : item.image && item.image_position === 'right' ? 'row-reverse' : 'column',
+            gap: item.image && (item.image_position === 'left' || item.image_position === 'right') ? '2rem' : '0',
+            alignItems: item.image && (item.image_position === 'left' || item.image_position === 'right') ? 'flex-start' : 'stretch'
+          }}>
+            {/* Изображение слева */}
+            {item.image && item.image_position === 'left' && (
+              <div style={{ 
+                flexShrink: 0,
+                width: item.image_target_width ? `${item.image_target_width}px` : '400px',
+                height: item.image_target_height ? `${item.image_target_height}px` : 'auto',
+                minHeight: item.image_target_height ? `${item.image_target_height}px` : '300px',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f5f5f5'
+              }}>
+                <Image
+                  src={normalizeImageUrl(item.image || '')}
+                  alt={item.title || 'Изображение'}
+                  width={item.image_target_width || 400}
+                  height={item.image_target_height || 300}
+                  style={{ 
+                    width: item.image_target_width ? `${item.image_target_width}px` : '100%',
+                    height: item.image_target_height ? `${item.image_target_height}px` : 'auto',
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    objectFit: 'contain',
+                    objectPosition: 'center'
+                  }}
+                />
+              </div>
+            )}
+            
+            {/* Описание */}
+            {item.description && (
+              <div 
+                style={{ 
+                  fontSize: '1.1rem',
+                  lineHeight: '1.7',
+                  color: '#666',
+                  marginBottom: '2rem',
+                  flex: item.image && (item.image_position === 'left' || item.image_position === 'right') ? '1' : 'none'
+                }}
+                dangerouslySetInnerHTML={{ __html: normalizeHtmlContent(item.description || '') }}
+              />
+            )}
+            
+            {/* Изображение справа */}
+            {item.image && item.image_position === 'right' && (
+              <div style={{ 
+                flexShrink: 0,
+                width: item.image_target_width ? `${item.image_target_width}px` : '400px',
+                height: item.image_target_height ? `${item.image_target_height}px` : 'auto',
+                minHeight: item.image_target_height ? `${item.image_target_height}px` : '300px',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f5f5f5'
+              }}>
+                <Image
+                  src={normalizeImageUrl(item.image || '')}
+                  alt={item.title || 'Изображение'}
+                  width={item.image_target_width || 400}
+                  height={item.image_target_height || 300}
+                  style={{ 
+                    width: item.image_target_width ? `${item.image_target_width}px` : '100%',
+                    height: item.image_target_height ? `${item.image_target_height}px` : 'auto',
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                    objectFit: 'contain',
+                    objectPosition: 'center'
+                  }}
+                />
+              </div>
+            )}
+          </div>
+          
+          {/* Изображение снизу */}
+          {item.image && item.image_position === 'bottom' && (
+            <div style={{ 
+              width: '100%', 
+              maxWidth: item.image_target_width ? `${item.image_target_width}px` : '800px',
+              margin: '2rem auto 0',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#f5f5f5',
+              height: item.image_target_height ? `${item.image_target_height}px` : 'auto',
+              minHeight: item.image_target_height ? `${item.image_target_height}px` : '400px'
+            }}>
+              <Image
+                src={normalizeImageUrl(item.image || '')}
+                alt={item.title || 'Изображение'}
+                width={item.image_target_width || 800}
+                height={item.image_target_height || 600}
+                style={{ 
+                  width: item.image_target_width ? `${item.image_target_width}px` : '100%',
+                  height: item.image_target_height ? `${item.image_target_height}px` : 'auto',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  objectPosition: 'center'
+                }}
+              />
+            </div>
           )}
           
           {/* Галерея, если выбрана страница галереи */}

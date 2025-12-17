@@ -64,6 +64,14 @@ class TelegramHashtagMapping(models.Model):
         ('none', 'Без кнопки'),
     ]
     
+    IMAGE_POSITION_CHOICES = [
+        ('top', 'Сверху'),
+        ('bottom', 'Снизу'),
+        ('left', 'Слева'),
+        ('right', 'Справа'),
+        ('none', 'Не отображать'),
+    ]
+    
     hashtag = models.CharField('Хештег', max_length=100, unique=True,
                                help_text='Хештег из поста Telegram (например, новости, статья). Без символа #')
     catalog_page = models.ForeignKey('content.ContentPage', on_delete=models.CASCADE,
@@ -115,6 +123,16 @@ class TelegramHashtagMapping(models.Model):
                                         help_text='Символ или текст для разделения превью и полного текста (например, "---" или "<!--more-->"). Если указан, текст до разделителя пойдет в карточку, после - в полный текст. Если не указан, будет использовано автоматическое обрезание.')
     preview_length = models.IntegerField('Длина превью (символов)', default=200, null=True, blank=True,
                                         help_text='Максимальная длина текста для карточки превью. Используется только если не указан разделитель. По умолчанию: 200 символов.')
+    
+    # Настройки изображения на странице элемента
+    image_position = models.CharField('Позиция изображения на странице', max_length=10, 
+                                     choices=IMAGE_POSITION_CHOICES, 
+                                     default='top',
+                                     help_text='Где отображать изображение на странице элемента: сверху, снизу, слева, справа или не отображать')
+    image_target_width = models.IntegerField('Целевая ширина изображения (px)', null=True, blank=True,
+                                             help_text='Ширина, к которой будет приведено изображение. Изображение будет вписано в этот размер с сохранением пропорций, центрировано. Если не указано, используется размер по умолчанию.')
+    image_target_height = models.IntegerField('Целевая высота изображения (px)', null=True, blank=True,
+                                              help_text='Высота, к которой будет приведено изображение. Изображение будет вписано в этот размер с сохранением пропорций, центрировано. Если не указано, используется размер по умолчанию.')
     
     created_at = models.DateTimeField('Создан', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлен', auto_now=True)

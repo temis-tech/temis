@@ -313,6 +313,9 @@ def create_or_update_catalog_item_from_telegram_post(post_data, is_edit=False):
             catalog_item.description = full_description
             catalog_item.width = hashtag_mapping.width
             catalog_item.has_own_page = hashtag_mapping.has_own_page
+            catalog_item.image_position = hashtag_mapping.image_position
+            catalog_item.image_target_width = hashtag_mapping.image_target_width
+            catalog_item.image_target_height = hashtag_mapping.image_target_height
             catalog_item.button_type = hashtag_mapping.button_type
             catalog_item.button_text = hashtag_mapping.button_text or ''
             catalog_item.button_booking_form = hashtag_mapping.button_booking_form if hashtag_mapping.button_type == 'booking' else None
@@ -354,6 +357,9 @@ def create_or_update_catalog_item_from_telegram_post(post_data, is_edit=False):
                 description=full_description,
                 width=hashtag_mapping.width,
                 has_own_page=hashtag_mapping.has_own_page,
+                image_position=hashtag_mapping.image_position,
+                image_target_width=hashtag_mapping.image_target_width,
+                image_target_height=hashtag_mapping.image_target_height,
                 button_type=hashtag_mapping.button_type,
                 button_text=hashtag_mapping.button_text or '',
                 button_booking_form=hashtag_mapping.button_booking_form if hashtag_mapping.button_type == 'booking' else None,
