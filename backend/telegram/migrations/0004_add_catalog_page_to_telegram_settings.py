@@ -7,8 +7,8 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('telegram', '0002_add_channel_sync_settings'),
-        ('content', '0049_add_price_is_from_to_service'),
+        ('telegram', '0003_add_channel_sync_settings'),
+        ('content', '0015_add_content_pages'),  # ContentPage создается в этой миграции
     ]
 
     operations = [
