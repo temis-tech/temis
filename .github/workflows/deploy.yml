@@ -222,6 +222,16 @@ jobs:
             sudo -u www-data venv/bin/python -m pip install --no-cache-dir -r requirements.txt
             echo "✅ Зависимости установлены"
             
+            # КРИТИЧНО: Создаем директорию для БД и устанавливаем права
+            echo "🗄️  Настраиваем базу данных..."
+            sudo mkdir -p $(dirname "$BACKEND_DIR/db.sqlite3")
+            sudo chown -R www-data:www-data $BACKEND_DIR
+            if [ -f "$BACKEND_DIR/db.sqlite3" ]; then
+              sudo chown www-data:www-data "$BACKEND_DIR/db.sqlite3"
+              sudo chmod 664 "$BACKEND_DIR/db.sqlite3"
+            fi
+            echo "✅ База данных настроена"
+            
             # Применяем миграции
             echo "🗄️  Применяем миграции Django..."
             set +e
