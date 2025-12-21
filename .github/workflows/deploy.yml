@@ -1,23 +1,43 @@
 name: Deploy Temis to Production
 
 on:
-  workflow_call:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
   workflow_dispatch:
 
 concurrency:
   # Группируем по ветке, чтобы деплои из разных веток не мешали друг другу
-  group: deploy-temis-${{ github.ref_name || 'default' }}
+  group: deploy-temis-${{ github.event_name == 'workflow_dispatch' && github.ref_name || github.event.workflow_run.head_branch || 'default' }}
   cancel-in-progress: false
 
 jobs:
   deploy:
     name: Deploy Temis to Production
     runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master'))
     steps:
+      - name: Verify CI success
+        if: github.event_name == 'workflow_run'
+        run: |
+          if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
+            echo "❌ CI завершился с ошибкой: ${{ github.event.workflow_run.conclusion }}"
+            exit 1
+          fi
+          if [ "${{ github.event.workflow_run.head_branch }}" != "main" ] && [ "${{ github.event.workflow_run.head_branch }}" != "master" ]; then
+            echo "❌ CI запущен не из main/master ветки: ${{ github.event.workflow_run.head_branch }}"
+            exit 1
+          fi
+          echo "✅ CI успешно завершен для ветки ${{ github.event.workflow_run.head_branch }}"
+      
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref || github.event.workflow_run.head_branch }}
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
