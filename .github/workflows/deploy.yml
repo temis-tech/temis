@@ -254,12 +254,10 @@ jobs:
               DB_PASS=$(echo "$DATABASE_URL" | sed -nE 's|mysql://[^:]+:([^@]+)@.*|\1|p')
               DB_NAME=$(echo "$DATABASE_URL" | sed -nE 's|mysql://[^/]+/([^?]+).*|\1|p')
               if [ -n "$DB_USER" ] && [ -n "$DB_NAME" ]; then
-                sudo mysql <<SQL 2>/dev/null || true
-CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASS}';
-GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'%';
-FLUSH PRIVILEGES;
-SQL
+                sudo mysql -e "CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null || true
+                sudo mysql -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASS}';" 2>/dev/null || true
+                sudo mysql -e "GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'%';" 2>/dev/null || true
+                sudo mysql -e "FLUSH PRIVILEGES;" 2>/dev/null || true
                 echo "✅ MySQL БД настроена"
               fi
             fi
