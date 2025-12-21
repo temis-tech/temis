@@ -109,17 +109,38 @@ SERVICE_EOF
     echo "   ✅ temis-frontend создан"
 fi
 
-# 5. Применяем миграции
+# 5. Создаем директорию для БД и исправляем права
+echo "🗄️  Настраиваем базу данных..."
+cd $BACKEND_DIR
+# Создаем директорию для БД если её нет
+sudo mkdir -p $(dirname "$BACKEND_DIR/db.sqlite3")
+# Устанавливаем права на директорию backend
+sudo chown -R www-data:www-data $BACKEND_DIR
+sudo chmod 755 $BACKEND_DIR
+# Если БД существует, исправляем права
+if [ -f "$BACKEND_DIR/db.sqlite3" ]; then
+    sudo chown www-data:www-data "$BACKEND_DIR/db.sqlite3"
+    sudo chmod 664 "$BACKEND_DIR/db.sqlite3"
+    echo "   ✅ Права на БД исправлены"
+fi
+
+# 6. Применяем миграции
 echo "🗄️  Применяем миграции..."
 cd $BACKEND_DIR
 if [ -d "venv" ]; then
+    # Проверяем права на исполнение gunicorn
+    if [ -f "venv/bin/gunicorn" ]; then
+        sudo chmod +x venv/bin/gunicorn
+        sudo chmod +x venv/bin/python
+        echo "   ✅ Права на исполнение установлены"
+    fi
     sudo -u www-data venv/bin/python manage.py migrate --noinput || echo "   ⚠️  Ошибка миграций"
     echo "   ✅ Миграции применены"
 else
     echo "   ⚠️  venv не найден, пропускаем миграции"
 fi
 
-# 6. Собираем статику
+# 7. Собираем статику
 echo "📦 Собираем статику Django..."
 cd $BACKEND_DIR
 if [ -d "venv" ]; then
@@ -129,8 +150,26 @@ else
     echo "   ⚠️  venv не найден, пропускаем collectstatic"
 fi
 
-# 7. Проверяем и применяем Nginx конфигурацию
+# 8. Проверяем и исправляем права на frontend
+echo "🔐 Исправляем права на frontend..."
+sudo chown -R www-data:www-data $FRONTEND_DIR
+sudo find $FRONTEND_DIR/.next -type d -exec chmod 755 {} \; 2>/dev/null || true
+sudo find $FRONTEND_DIR/.next -type f -exec chmod 644 {} \; 2>/dev/null || true
+# Проверяем права на server.js
+if [ -f "$FRONTEND_DIR/.next/standalone/server.js" ]; then
+    sudo chmod +x "$FRONTEND_DIR/.next/standalone/server.js"
+    echo "   ✅ Права на server.js исправлены"
+fi
+
+# 9. Проверяем и применяем Nginx конфигурацию
 echo "🌐 Применяем Nginx конфигурацию..."
+
+# Удаляем старые конфликтующие конфигурации
+echo "   Проверяем конфликтующие конфигурации..."
+if [ -L "/etc/nginx/sites-enabled/temis.conf" ] || [ -f "/etc/nginx/sites-enabled/temis.conf" ]; then
+    sudo rm -f /etc/nginx/sites-enabled/temis.conf
+    echo "   ✅ Старая конфигурация удалена"
+fi
 
 # Проверяем SSL сертификаты
 SSL_TEMIS_EXISTS=false
@@ -296,8 +335,18 @@ if systemctl list-unit-files | grep -q temis-frontend; then
     fi
 fi
 
-# 9. Перезапускаем Nginx
+# 11. Перезапускаем Nginx
 echo "🔄 Перезапускаем Nginx..."
+# Проверяем конфликты перед перезапуском
+echo "   Проверяем конфигурации Nginx на конфликты..."
+CONFLICTS=$(sudo nginx -T 2>&1 | grep "conflicting server name" || true)
+if [ -n "$CONFLICTS" ]; then
+    echo "   ⚠️  Обнаружены конфликты:"
+    echo "$CONFLICTS"
+    echo "   Проверяем активные конфигурации:"
+    sudo ls -la /etc/nginx/sites-enabled/ | grep -E "(temis|estenomada)" || true
+fi
+
 sudo systemctl restart nginx
 sleep 2
 if sudo systemctl is-active --quiet nginx; then
