@@ -1,3 +1,4 @@
+import re
 from rest_framework import serializers
 from django.conf import settings
 from config.constants import get_api_domain, get_protocol, get_media_base_url, MEDIA_PATH
@@ -19,7 +20,6 @@ def get_image_url(image_field, request=None):
     # Исправляем дублирование путей (например, logo/logo/logo/... -> logo/logo/)
     # Это исправляет уже сохраненные в БД неправильные пути
     # Правильный путь: /media/logo/logo/filename.jpg (два logo)
-    import re
     # Находим последовательные повторения одного сегмента (3+ раза) и заменяем на 2
     # Например: /media/logo/logo/logo/logo/logo/logo/logo/file.jpg -> /media/logo/logo/file.jpg
     pattern = r'/([^/]+)(?:/\1){2,}/'
@@ -47,7 +47,6 @@ def get_image_url(image_field, request=None):
             return image_url
         
         # Заменяем неправильные домены на правильный API домен
-        import re
         # Заменяем старые домены на api.temis.ooo
         image_url = re.sub(
             r'https?://[^/]+\.logoped-spb\.pro(' + MEDIA_PATH + r'/.*)',
@@ -56,7 +55,7 @@ def get_image_url(image_field, request=None):
         )
         # Заменяем старый домен rainbow-say.estenomada.es на api.temis.ooo
         image_url = re.sub(
-            r'https?://[^/]*rainbow-say[^/]*\.estenomada\.es(' + MEDIA_PATH + r'/.*)',
+            r'https?://[^/]*rainbow-say[^/]*\.estenomada\.es(' + re.escape(MEDIA_PATH) + r'/.*)',
             f'{protocol}://{api_domain}\\1',
             image_url
         )
@@ -79,7 +78,6 @@ def get_image_url(image_field, request=None):
             if image_url.startswith('http://'):
                 image_url = image_url.replace('http://', 'https://', 1)
             
-            import re
             # Если URL уже содержит правильный API домен, возвращаем как есть
             if api_domain in image_url:
                 return image_url
@@ -92,7 +90,7 @@ def get_image_url(image_field, request=None):
             )
             # Заменяем старый домен rainbow-say.estenomada.es на api.temis.ooo
             image_url = re.sub(
-                r'https?://[^/]*rainbow-say[^/]*\.estenomada\.es(' + MEDIA_PATH + r'/.*)',
+                r'https?://[^/]*rainbow-say[^/]*\.estenomada\.es(' + re.escape(MEDIA_PATH) + r'/.*)',
                 f'{protocol}://{api_domain}\\1',
                 image_url
             )
