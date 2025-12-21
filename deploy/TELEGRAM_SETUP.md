@@ -21,11 +21,11 @@ cd /var/www/temis/backend
 sudo -u www-data ./venv/bin/python manage.py setup_webhook
 ```
 
-Эта команда установит webhook на URL: `https://api.temis.estenomada.es/api/telegram/webhook/`
+Эта команда установит webhook на URL: `https://api.temis.ooo/api/telegram/webhook/`
 
 ### 3. Проверь настройки бота в админке
 
-1. Открой админку: `https://api.temis.estenomada.es/admin/`
+1. Открой админку: `https://api.temis.ooo/admin/`
 2. Перейди в раздел "Настройки Telegram бота"
 3. Убедись, что:
    - Токен установлен: `8576779956:AAEmqm1yQmtO06aiXdcdUfi-H4ZKqecbZBo`
@@ -87,9 +87,9 @@ tail -f /var/www/temis/backend/logs/*.log
 
 ### Webhook не устанавливается
 
-1. Проверь, что домен `api.temis.estenomada.es` доступен из интернета
+1. Проверь, что домен `api.temis.ooo` доступен из интернета
 2. Проверь, что SSL сертификат валиден
-3. Проверь, что URL доступен: `curl https://api.temis.estenomada.es/api/telegram/webhook/`
+3. Проверь, что URL доступен: `curl https://api.temis.ooo/api/telegram/webhook/`
 
 ### Уведомления не приходят
 

@@ -3,7 +3,7 @@
 ## URL админки
 
 ```
-https://api.temis.estenomada.es/admin/
+https://api.temis.ooo/admin/
 ```
 
 ## Создание суперпользователя
@@ -23,7 +23,7 @@ sudo -u www-data ./venv/bin/python manage.py createsuperuser
 
 ## Вход в админку
 
-1. Открой в браузере: `https://api.temis.estenomada.es/admin/`
+1. Открой в браузере: `https://api.temis.ooo/admin/`
 2. Введи логин и пароль суперпользователя
 3. Готово!
 

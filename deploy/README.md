@@ -21,8 +21,8 @@ deploy/
 ### Первый деплой
 
 1. **Настрой DNS** для поддомена:
-   - `temis.estenomada.es` → `85.190.102.101`
-   - `api.temis.estenomada.es` → `85.190.102.101`
+   - `temis.ooo` → `85.190.102.101`
+   - `api.temis.ooo` → `85.190.102.101`
 
 2. **Запусти скрипт деплоя:**
    ```bash
@@ -49,11 +49,11 @@ deploy/
 SERVER_USER="administrator"
 SERVER_HOST="85.190.102.101"
 SITE_NAME="temis"
-SITE_DOMAIN="temis.estenomada.es"
+SITE_DOMAIN="temis.ooo"
 SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
-API_DOMAIN="api.temis.estenomada.es"
+API_DOMAIN="api.temis.ooo"
 ```
 
 ## 📋 Чеклист безопасности

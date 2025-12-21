@@ -44,7 +44,7 @@ python manage.py test_moyklass --list-students
 
 ### Способ 1: Через форму записи на сайте
 
-1. Откройте сайт: `https://temis.estenomada.es`
+1. Откройте сайт: `https://temis.ooo`
 2. Заполните форму записи (например, на главной странице или в каталоге)
 3. Отправьте форму
 4. Проверьте в MoyKlass CRM, что лид создан
@@ -60,7 +60,7 @@ python manage.py test_moyklass --list-students
 
 ```bash
 # Отправить форму через API
-curl -X POST https://api.temis.estenomada.es/api/booking/submissions/ \
+curl -X POST https://api.temis.ooo/api/booking/submissions/ \
   -H "Content-Type: application/json" \
   -d '{
     "form_id": 1,

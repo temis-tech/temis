@@ -11,11 +11,11 @@ set -e  # Остановка при ошибке
 SERVER_USER="administrator"
 SERVER_HOST="85.190.102.101"
 SITE_NAME="temis"
-SITE_DOMAIN="temis.estenomada.es"  # Или другой поддомен
+SITE_DOMAIN="temis.ooo"  # Или другой поддомен
 SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
-API_DOMAIN="api.temis.estenomada.es"  # Поддомен для API (опционально)
+API_DOMAIN="api.temis.ooo"  # Поддомен для API (опционально)
 
 # ⚠️ КРИТИЧЕСКАЯ ПРОВЕРКА: Путь не должен совпадать с основным сайтом!
 if [ "${SITE_PATH}" = "/var/www/estenomada" ]; then

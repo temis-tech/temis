@@ -100,5 +100,5 @@ echo ""
 echo "✅ Импорт завершен!"
 echo ""
 echo "⚠️  ВАЖНО: Проверь данные в админке:"
-echo "  https://api.temis.estenomada.es/admin/"
+echo "  https://api.temis.ooo/admin/"
 

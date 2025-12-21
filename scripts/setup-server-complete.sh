@@ -12,8 +12,8 @@ SERVER_PASS="mW6iYUw2^Fv2+g"
 
 # Конфигурация
 SITE_NAME="temis"
-SITE_DOMAIN="temis.estenomada.es"
-API_DOMAIN="api.temis.estenomada.es"
+SITE_DOMAIN="temis.ooo"
+API_DOMAIN="api.temis.ooo"
 SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
@@ -74,8 +74,8 @@ SCRIPT_CONTENT=$(cat << 'REMOTE_SCRIPT'
 set -e
 
 SITE_NAME="temis"
-SITE_DOMAIN="temis.estenomada.es"
-API_DOMAIN="api.temis.estenomada.es"
+SITE_DOMAIN="temis.ooo"
+API_DOMAIN="api.temis.ooo"
 SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
@@ -207,7 +207,7 @@ cat > /etc/nginx/sites-available/${SITE_NAME} << 'NGINX_EOF'
 server {
     listen 80;
     listen [::]:80;
-    server_name temis.estenomada.es;
+    server_name temis.ooo;
 
     location / {
         proxy_pass http://localhost:3001;
@@ -222,7 +222,7 @@ server {
 server {
     listen 80;
     listen [::]:80;
-    server_name api.temis.estenomada.es;
+    server_name api.temis.ooo;
 
     location / {
         proxy_pass http://127.0.0.1:8001;

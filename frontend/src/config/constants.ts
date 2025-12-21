@@ -30,8 +30,8 @@ export function getApiHost(): string {
     return 'api.dev.logoped-spb.pro';
   } else if (hostname.includes('logoped-spb.pro') && !hostname.includes('dev.')) {
     return 'api.logoped-spb.pro';
-  } else if (hostname.includes('temis.estenomada.es')) {
-    return 'api.temis.estenomada.es';
+  } else if (hostname.includes('temis.ooo')) {
+    return 'api.temis.ooo';
   }
   
   // Дефолтный домен
@@ -48,6 +48,6 @@ export function getMediaBaseUrl(): string {
 export const DOMAIN_MAPPING: Record<string, string> = {
   'dev.logoped-spb.pro': 'api.dev.logoped-spb.pro',
   'logoped-spb.pro': 'api.logoped-spb.pro',
-  'temis.estenomada.es': 'api.temis.estenomada.es',
+  'temis.ooo': 'api.temis.ooo',
 };
 

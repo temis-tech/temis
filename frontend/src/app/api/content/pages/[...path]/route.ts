@@ -23,8 +23,8 @@ export async function GET(
   }
 
   try {
-    // API_BASE_URL = https://api.temis.estenomada.es/api
-    // Нужно: https://api.temis.estenomada.es/api/content/pages/by-slug/uslugi/
+    // API_BASE_URL = https://api.temis.ooo/api
+    // Нужно: https://api.temis.ooo/api/content/pages/by-slug/uslugi/
     const targetUrl = `${API_BASE_URL}/content/pages/${apiPath}${queryString}`;
     
     const response = await fetch(targetUrl, {

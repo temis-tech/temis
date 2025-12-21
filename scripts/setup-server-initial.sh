@@ -7,8 +7,8 @@ set -e
 
 # Конфигурация
 SITE_NAME="temis"
-SITE_DOMAIN="temis.estenomada.es"  # Измени на свой домен
-API_DOMAIN="api.temis.estenomada.es"  # Измени на свой домен
+SITE_DOMAIN="temis.ooo"  # Измени на свой домен
+API_DOMAIN="api.temis.ooo"  # Измени на свой домен
 SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"

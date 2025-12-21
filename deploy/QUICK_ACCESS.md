@@ -51,8 +51,8 @@ sudo ufw reload
 ## После настройки Nginx
 
 Когда Nginx настроен, сайт будет доступен по домену:
-- `https://temis.estenomada.es` (фронтенд)
-- `https://api.temis.estenomada.es/api/` (API)
+- `https://temis.ooo` (фронтенд)
+- `https://api.temis.ooo/api/` (API)
 
 И порты 3001 и 8001 можно закрыть в файрволе, так как Nginx будет проксировать запросы.
 

@@ -28,8 +28,8 @@ sudo bash /tmp/setup-server.sh
 После успешной настройки:
 
 ```bash
-sudo certbot --nginx -d temis.estenomada.es
-sudo certbot --nginx -d api.temis.estenomada.es
+sudo certbot --nginx -d temis.ooo
+sudo certbot --nginx -d api.temis.ooo
 sudo systemctl reload nginx
 ```
 

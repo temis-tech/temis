@@ -40,19 +40,19 @@ cat scripts/setup-server-on-server.sh | ssh root@2a03:6f01:1:2::1:f3f5 "bash"
 
 ```bash
 # Проверь DNS записи
-nslookup temis.estenomada.es
-nslookup api.temis.estenomada.es
+nslookup temis.ooo
+nslookup api.temis.ooo
 ```
 
 Если DNS не настроен, настрой его:
-- `temis.estenomada.es` → `2a03:6f01:1:2::1:f3f5`
-- `api.temis.estenomada.es` → `2a03:6f01:1:2::1:f3f5`
+- `temis.ooo` → `2a03:6f01:1:2::1:f3f5`
+- `api.temis.ooo` → `2a03:6f01:1:2::1:f3f5`
 
 ### 2. Если SSL не получен автоматически
 
 ```bash
 ssh root@2a03:6f01:1:2::1:f3f5
-certbot --nginx -d temis.estenomada.es -d api.temis.estenomada.es
+certbot --nginx -d temis.ooo -d api.temis.ooo
 ```
 
 ### 3. После деплоя через GitHub Actions
@@ -97,7 +97,7 @@ journalctl -u temis-backend -f
 ## Доступ к сайту
 
 После настройки:
-- 🌐 Frontend: `https://temis.estenomada.es`
-- 🔧 API: `https://api.temis.estenomada.es/api/`
-- 👨‍💼 Admin: `https://api.temis.estenomada.es/admin/`
+- 🌐 Frontend: `https://temis.ooo`
+- 🔧 API: `https://api.temis.ooo/api/`
+- 👨‍💼 Admin: `https://api.temis.ooo/admin/`
 

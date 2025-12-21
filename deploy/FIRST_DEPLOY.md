@@ -25,8 +25,8 @@
 ## Шаг 1: Настройка DNS
 
 Настрой DNS запись для поддомена:
-- **A запись**: `temis.estenomada.es` → `85.190.102.101`
-- **A запись**: `api.temis.estenomada.es` → `85.190.102.101` (для API)
+- **A запись**: `temis.ooo` → `85.190.102.101`
+- **A запись**: `api.temis.ooo` → `85.190.102.101` (для API)
 
 > ⏱️ DNS изменения могут занять до 24 часов, но обычно работают через несколько минут.
 
@@ -38,7 +38,7 @@
 
 ```bash
 cd frontend
-cp .env.local .env.production 2>/dev/null || echo "NEXT_PUBLIC_API_URL=https://api.temis.estenomada.es/api" > .env.production
+cp .env.local .env.production 2>/dev/null || echo "NEXT_PUBLIC_API_URL=https://api.temis.ooo/api" > .env.production
 ```
 
 ### 2.2. Проверь, что проект собирается
@@ -97,7 +97,7 @@ sudo nano /var/www/temis/backend/.env
 ```env
 SECRET_KEY=твой-секретный-ключ-для-продакшена
 DEBUG=False
-ALLOWED_HOSTS=api.temis.estenomada.es,temis.estenomada.es
+ALLOWED_HOSTS=api.temis.ooo,temis.ooo
 DATABASE_URL=sqlite:///var/www/temis/backend/db.sqlite3
 # Или для PostgreSQL:
 # DATABASE_URL=postgresql://user:password@localhost/temis_db
@@ -160,10 +160,10 @@ sudo systemctl reload nginx
 
 ```bash
 # Для фронтенда
-sudo certbot --nginx -d temis.estenomada.es
+sudo certbot --nginx -d temis.ooo
 
 # Для API
-sudo certbot --nginx -d api.temis.estenomada.es
+sudo certbot --nginx -d api.temis.ooo
 
 # Проверь автообновление
 sudo certbot renew --dry-run
@@ -201,8 +201,8 @@ curl http://localhost:3001
 curl http://localhost:8001/api/health/  # Если есть health endpoint
 
 # Извне
-curl https://temis.estenomada.es
-curl https://api.temis.estenomada.es/api/
+curl https://temis.ooo
+curl https://api.temis.ooo/api/
 ```
 
 ### 5.4. ⚠️ КРИТИЧНО: Проверь основной сайт!
@@ -266,10 +266,10 @@ sudo systemctl status temis-frontend
 
 ```bash
 # Проверь DNS запись
-dig temis.estenomada.es
+dig temis.ooo
 
 # Получи сертификат заново
-sudo certbot --nginx -d temis.estenomada.es --force-renewal
+sudo certbot --nginx -d temis.ooo --force-renewal
 ```
 
 ---
@@ -304,5 +304,5 @@ sudo certbot --nginx -d temis.estenomada.es --force-renewal
 
 ---
 
-**Готово!** 🎉 Сайт должен быть доступен по адресу `https://temis.estenomada.es`
+**Готово!** 🎉 Сайт должен быть доступен по адресу `https://temis.ooo`
 

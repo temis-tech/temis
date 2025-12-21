@@ -75,7 +75,7 @@ sudo chown -R www-data:www-data media/
 
 ## Проверка после импорта
 
-1. Открой админку: `https://api.temis.estenomada.es/admin/`
+1. Открой админку: `https://api.temis.ooo/admin/`
 2. Проверь, что все данные на месте
 3. Проверь медиа файлы на сайте
 

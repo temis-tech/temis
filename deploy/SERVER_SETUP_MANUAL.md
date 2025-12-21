@@ -75,7 +75,7 @@ SECRET_KEY=$(python3 -c 'from django.core.management.utils import get_random_sec
 cat > .env << EOF
 SECRET_KEY=${SECRET_KEY}
 DEBUG=False
-ALLOWED_HOSTS=temis.estenomada.es,api.temis.estenomada.es
+ALLOWED_HOSTS=temis.ooo,api.temis.ooo
 
 # Для SQLite (по умолчанию):
 DATABASE_URL=sqlite:///$(pwd)/db.sqlite3
@@ -160,7 +160,7 @@ cat > /etc/nginx/sites-available/temis << 'EOF'
 server {
     listen 80;
     listen [::]:80;
-    server_name temis.estenomada.es;
+    server_name temis.ooo;
 
     location / {
         proxy_pass http://localhost:3001;
@@ -175,7 +175,7 @@ server {
 server {
     listen 80;
     listen [::]:80;
-    server_name api.temis.estenomada.es;
+    server_name api.temis.ooo;
 
     location /static/ {
         alias /var/www/temis/backend/staticfiles/;
@@ -224,11 +224,11 @@ echo "y" | ufw enable
 
 ```bash
 # Проверь DNS
-nslookup temis.estenomada.es
-nslookup api.temis.estenomada.es
+nslookup temis.ooo
+nslookup api.temis.ooo
 
 # Если DNS настроен, получаем SSL
-certbot --nginx -d temis.estenomada.es -d api.temis.estenomada.es
+certbot --nginx -d temis.ooo -d api.temis.ooo
 
 # Certbot автоматически обновит конфигурацию Nginx
 ```
@@ -277,7 +277,7 @@ tail -f /var/log/nginx/temis_error.log
 ## Доступ к сайту
 
 После настройки сайт будет доступен:
-- 🌐 Frontend: `https://temis.estenomada.es`
-- 🔧 API: `https://api.temis.estenomada.es/api/`
-- 👨‍💼 Admin: `https://api.temis.estenomada.es/admin/`
+- 🌐 Frontend: `https://temis.ooo`
+- 🔧 API: `https://api.temis.ooo/api/`
+- 👨‍💼 Admin: `https://api.temis.ooo/admin/`
 

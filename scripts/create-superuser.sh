@@ -15,5 +15,5 @@ echo ""
 echo "✅ Суперпользователь создан!"
 echo ""
 echo "Теперь можешь войти в админку:"
-echo "https://api.temis.estenomada.es/admin/"
+echo "https://api.temis.ooo/admin/"
 

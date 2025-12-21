@@ -147,20 +147,17 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://temis.estenomada.es",
-    "http://temis.estenomada.es",
-    "https://dev.logoped-spb.pro",
-    "http://dev.logoped-spb.pro",
+    "https://temis.ooo",
+    "http://temis.ooo",
+   
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 # CSRF настройки для работы с HTTPS
 CSRF_TRUSTED_ORIGINS = [
-    "https://api.temis.estenomada.es",
-    "https://temis.estenomada.es",
-    "https://api.dev.logoped-spb.pro",
-    "https://dev.logoped-spb.pro",
+    "https://api.temis.ooo",
+    "https://temis.ooo",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
 ]
