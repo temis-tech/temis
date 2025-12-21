@@ -90,6 +90,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [frontend, backend]
     if: always()
+    outputs:
+      should_deploy: ${{ steps.check_results.outputs.status == 'success' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
     steps:
       - name: Check CI results
         id: check_results

@@ -1,11 +1,10 @@
 name: Deploy Temis to Production
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types:
-      - completed
+  workflow_call:
   workflow_dispatch:
+  push:
+    branches: [ main, master ]
 
 concurrency:
   # Группируем по ветке, чтобы деплои из разных веток не мешали друг другу
