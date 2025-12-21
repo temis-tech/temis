@@ -31,6 +31,11 @@ export function normalizeImageUrl(url: string | null | undefined): string {
     new RegExp(`https?://[^/]+\\.logoped-spb\\.pro(${mediaPathEscaped}/.*)`, 'g'),
     `https://${apiHost}$1`
   );
+  // Заменяем старый домен rainbow-say.estenomada.es на api.temis.ooo
+  url = url.replace(
+    new RegExp(`https?://[^/]*rainbow-say[^/]*\\.estenomada\\.es(${mediaPathEscaped}/.*)`, 'g'),
+    `https://${apiHost}$1`
+  );
   // Заменяем любые другие домены с /media/ на правильный API домен
   url = url.replace(
     new RegExp(`https?://[^/]+(${mediaPathEscaped}/.*)`, 'g'),

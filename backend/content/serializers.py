@@ -54,6 +54,12 @@ def get_image_url(image_field, request=None):
             f'{protocol}://{api_domain}\\1',
             image_url
         )
+        # Заменяем старый домен rainbow-say.estenomada.es на api.temis.ooo
+        image_url = re.sub(
+            r'https?://[^/]*rainbow-say[^/]*\.estenomada\.es(' + MEDIA_PATH + r'/.*)',
+            f'{protocol}://{api_domain}\\1',
+            image_url
+        )
         # Заменяем любые другие домены с /media/ на правильный API домен
         image_url = re.sub(
             r'https?://[^/]+(' + MEDIA_PATH + r'/.*)',
@@ -81,6 +87,12 @@ def get_image_url(image_field, request=None):
             # Заменяем старые домены на api.temis.ooo
             image_url = re.sub(
                 r'https?://[^/]+\.logoped-spb\.pro(' + MEDIA_PATH + r'/.*)',
+                f'{protocol}://{api_domain}\\1',
+                image_url
+            )
+            # Заменяем старый домен rainbow-say.estenomada.es на api.temis.ooo
+            image_url = re.sub(
+                r'https?://[^/]*rainbow-say[^/]*\.estenomada\.es(' + MEDIA_PATH + r'/.*)',
                 f'{protocol}://{api_domain}\\1',
                 image_url
             )

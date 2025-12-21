@@ -193,12 +193,19 @@ jobs:
             echo "📦 Собираем статику Django..."
             sudo -u www-data venv/bin/python manage.py collectstatic --noinput || echo "⚠️  Ошибка collectstatic"
             
-            # Frontend: проверяем наличие .next/standalone
+            # Frontend: проверяем наличие .next/standalone и .next/static
             echo "📦 Проверяем Frontend (standalone режим)..."
             cd $FRONTEND_DIR
             
             if [ ! -d ".next/standalone" ]; then
               echo "⚠️  .next/standalone директория не найдена!"
+              exit 1
+            fi
+            
+            # Проверяем наличие статических файлов
+            if [ ! -d ".next/static" ]; then
+              echo "⚠️  .next/static директория не найдена!"
+              echo "Это критично для работы сайта!"
               exit 1
             fi
             
@@ -208,7 +215,14 @@ jobs:
               echo "⚠️  server.js не найден в standalone!"
               exit 1
             fi
-            echo "✅ Frontend готов (standalone режим)"
+            
+            # Проверяем, что статические файлы доступны
+            STATIC_COUNT=$(find .next/static -type f | wc -l)
+            if [ "$STATIC_COUNT" -eq 0 ]; then
+              echo "⚠️  Статические файлы не найдены в .next/static!"
+              exit 1
+            fi
+            echo "✅ Frontend готов (standalone режим, найдено $STATIC_COUNT статических файлов)"
             
             # Перезапускаем сервисы
             echo "🔄 Перезапускаем сервисы..."
