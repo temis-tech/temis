@@ -142,6 +142,7 @@ jobs:
           debug: true
           script: |
             set -e
+            # Используем правильное экранирование для heredoc в YAML
             
             DEPLOY_DIR="/var/www/temis"
             BACKEND_DIR="$DEPLOY_DIR/backend"
@@ -254,7 +255,7 @@ jobs:
             
             if ! systemctl list-unit-files | grep -q temis-backend; then
               echo "📦 Создаем сервис temis-backend..."
-              sudo tee /etc/systemd/system/temis-backend.service > /dev/null << 'EOF'
+              cat > /tmp/temis-backend.service << 'SERVICE_EOF'
 [Unit]
 Description=Temis Django Backend
 After=network.target
@@ -281,7 +282,8 @@ RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
-EOF
+SERVICE_EOF
+              sudo mv /tmp/temis-backend.service /etc/systemd/system/temis-backend.service
               sudo systemctl daemon-reload
               sudo systemctl enable temis-backend
               echo "✅ Сервис temis-backend создан и включен"
@@ -351,7 +353,7 @@ EOF
               # Создаем временную конфигурацию без SSL если сертификатов нет
               if [ "$SSL_TEMIS_EXISTS" = false ] || [ "$SSL_API_EXISTS" = false ]; then
                 echo "📝 Создаем временную HTTP конфигурацию..."
-                sudo tee /etc/nginx/sites-available/temis.conf > /dev/null << 'NGINX_EOF'
+                cat > /tmp/temis-nginx.conf << 'NGINX_EOF'
 # HTTP конфигурация для temis.ooo (временная, до получения SSL)
 server {
     listen 80;
@@ -445,6 +447,7 @@ server {
     }
 }
 NGINX_EOF
+              sudo mv /tmp/temis-nginx.conf /etc/nginx/sites-available/temis.conf
               else
                 # Используем оригинальную конфигурацию с SSL
                 sudo cp $DEPLOY_DIR/deploy/configs/nginx/temis.conf /etc/nginx/sites-available/temis.conf
