@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // API routes работают на сервере и проксируют запросы к Django API
 // В продакшене должен быть установлен NEXT_PUBLIC_API_URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL 
-  || process.env.INTERNAL_API_URL 
+// Используем внутренний URL для запросов от сервера Next.js к Django
+const API_BASE_URL = process.env.INTERNAL_API_URL 
+  || process.env.NEXT_PUBLIC_API_URL 
   || 'http://127.0.0.1:8001/api';
 
 export async function GET(
@@ -22,11 +23,21 @@ export async function GET(
   const apiPath = path.endsWith('/') ? path : `${path}/`;
 
   try {
+    // Для внутренних запросов используем правильные заголовки
+    const isInternal = API_BASE_URL.includes('127.0.0.1') || API_BASE_URL.includes('localhost');
+    const fetchHeaders: HeadersInit = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    
+    // Если запрос к внутреннему API, добавляем заголовки для Django
+    if (isInternal) {
+      fetchHeaders['Host'] = 'api.temis.ooo';
+      fetchHeaders['X-Forwarded-Proto'] = 'https';
+    }
+    
     const response = await fetch(`${API_BASE_URL}/content/${apiPath}${queryString}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
+      headers: fetchHeaders,
       cache: 'no-store',
     });
 
