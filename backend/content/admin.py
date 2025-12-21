@@ -482,6 +482,10 @@ class HeroSettingsAdmin(admin.ModelAdmin):
             'fields': ('text_align', 'content_width', 'content_width_custom'),
             'description': 'Выберите выравнивание заголовка и подзаголовка, а также ширину полезной области для текста.'
         }),
+        ('Размеры', {
+            'fields': ('height',),
+            'description': 'Установите высоту Hero секции в пикселях. Если не указано, используется минимальная высота.'
+        }),
         ('Настройки', {
             'fields': ('is_active',)
         }),

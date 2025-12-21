@@ -26,6 +26,7 @@ interface HeroSettings {
   text_align?: string;
   content_width?: 'narrow' | 'medium' | 'wide' | 'full' | 'custom';
   content_width_custom?: number | null;
+  height?: number | null;
   is_active?: boolean;
 }
 
@@ -120,11 +121,14 @@ export default function Hero() {
     }
   };
   
+  // Определяем высоту секции
+  const heroHeight = heroSettings.height ? { minHeight: `${heroSettings.height}px`, height: `${heroSettings.height}px` } : {};
+  
   return (
     <>
       <section 
         className={styles.hero}
-        style={{ backgroundColor }}
+        style={{ backgroundColor, ...heroHeight }}
       >
         {/* На десктопе показываем как background */}
         {heroSettings.background_image && (

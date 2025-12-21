@@ -372,7 +372,7 @@ class HeroSettingsSerializer(serializers.ModelSerializer):
         fields = ['title', 'subtitle', 'button_text', 'button_url', 'button_type', 'button_quiz_slug', 
                   'button_booking_form_id', 'background_image', 'background_color',
                   'image_position', 'image_vertical_align', 'image_size', 'image_scale', 'show_overlay', 
-                  'overlay_opacity', 'text_align', 'content_width', 'content_width_custom', 'is_active']
+                  'overlay_opacity', 'text_align', 'content_width', 'content_width_custom', 'height', 'is_active']
     
     def get_background_image(self, obj):
         """Возвращает полный URL фонового изображения"""

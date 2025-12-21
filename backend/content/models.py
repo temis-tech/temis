@@ -1133,6 +1133,9 @@ class HeroSettings(models.Model):
     content_width_custom = models.IntegerField('Произвольная ширина (px)', null=True, blank=True,
                                                 validators=[MinValueValidator(300), MaxValueValidator(2000)],
                                                 help_text='Используется только если выбрана "Произвольная" ширина (от 300 до 2000px)')
+    height = models.IntegerField('Высота секции (px)', null=True, blank=True,
+                                validators=[MinValueValidator(200), MaxValueValidator(2000)],
+                                help_text='Высота Hero секции в пикселях (от 200 до 2000px). Если не указано, используется минимальная высота.')
     
     is_active = models.BooleanField('Активна', default=True)
     
