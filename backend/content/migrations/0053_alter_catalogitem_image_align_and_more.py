@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='catalogitem',
             name='page',
-            field=models.ForeignKey(blank=True, help_text='Страница контента, которая будет использоваться для отображения этого элемента (если включен режим "Может быть открыт как страница")', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='catalog_items', to='content.contentpage', verbose_name='Страница контента'),
+            field=models.ForeignKey(help_text='Каталог можно добавить на страницу любого типа', on_delete=django.db.models.deletion.CASCADE, related_name='catalog_items', to='content.contentpage', verbose_name='Страница'),
         ),
         migrations.AlterField(
             model_name='galleryimage',
@@ -54,17 +54,17 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='privacypolicy',
             name='order',
-            field=models.IntegerField(default=0, verbose_name='Порядок'),
+            field=models.IntegerField(default=0, help_text='Порядок отображения в списке', verbose_name='Порядок'),
         ),
         migrations.AlterField(
             model_name='privacypolicy',
             name='slug',
-            field=models.SlugField(max_length=200, unique=True, verbose_name='URL-адрес'),
+            field=models.SlugField(help_text='Используется в URL страницы (например: privacy, copyright)', max_length=200, unique=True, verbose_name='URL-адрес'),
         ),
         migrations.AlterField(
             model_name='privacypolicy',
             name='title',
-            field=models.CharField(max_length=200, verbose_name='Название'),
+            field=models.CharField(help_text='Например: Политика конфиденциальности, Защита авторских прав', max_length=200, verbose_name='Заголовок'),
         ),
     ]
 
