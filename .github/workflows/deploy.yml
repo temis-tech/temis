@@ -256,33 +256,33 @@ jobs:
             if ! systemctl list-unit-files | grep -q temis-backend; then
               echo "📦 Создаем сервис temis-backend..."
               sudo bash -c 'cat > /etc/systemd/system/temis-backend.service' << 'SERVICE_EOF'
-[Unit]
-Description=Temis Django Backend
-After=network.target
+            [Unit]
+            Description=Temis Django Backend
+            After=network.target
 
-[Service]
-Type=simple
-User=www-data
-WorkingDirectory=/var/www/temis/backend
-Environment="PATH=/var/www/temis/backend/venv/bin"
-EnvironmentFile=-/var/www/temis/backend/.env
-ExecStart=/var/www/temis/backend/venv/bin/gunicorn \
-    --bind 127.0.0.1:8001 \
-    --workers 1 \
-    --threads 2 \
-    --timeout 120 \
-    --worker-class gthread \
-    --max-requests 1000 \
-    --max-requests-jitter 50 \
-    --access-logfile /var/log/temis-backend-access.log \
-    --error-logfile /var/log/temis-backend-error.log \
-    config.wsgi:application
-Restart=always
-RestartSec=10
+            [Service]
+            Type=simple
+            User=www-data
+            WorkingDirectory=/var/www/temis/backend
+            Environment="PATH=/var/www/temis/backend/venv/bin"
+            EnvironmentFile=-/var/www/temis/backend/.env
+            ExecStart=/var/www/temis/backend/venv/bin/gunicorn \
+                --bind 127.0.0.1:8001 \
+                --workers 1 \
+                --threads 2 \
+                --timeout 120 \
+                --worker-class gthread \
+                --max-requests 1000 \
+                --max-requests-jitter 50 \
+                --access-logfile /var/log/temis-backend-access.log \
+                --error-logfile /var/log/temis-backend-error.log \
+                config.wsgi:application
+            Restart=always
+            RestartSec=10
 
-[Install]
-WantedBy=multi-user.target
-SERVICE_EOF
+            [Install]
+            WantedBy=multi-user.target
+            SERVICE_EOF
               sudo systemctl daemon-reload
               sudo systemctl enable temis-backend
               echo "✅ Сервис temis-backend создан и включен"
