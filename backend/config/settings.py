@@ -1,5 +1,5 @@
 """
-Django settings for rainbow_say project.
+Django settings for temis project.
 """
 import os
 from pathlib import Path
@@ -147,8 +147,8 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://rainbow-say.estenomada.es",
-    "http://rainbow-say.estenomada.es",
+    "https://temis.estenomada.es",
+    "http://temis.estenomada.es",
     "https://dev.logoped-spb.pro",
     "http://dev.logoped-spb.pro",
 ]
@@ -157,8 +157,8 @@ CORS_ALLOW_CREDENTIALS = True
 
 # CSRF настройки для работы с HTTPS
 CSRF_TRUSTED_ORIGINS = [
-    "https://api.rainbow-say.estenomada.es",
-    "https://rainbow-say.estenomada.es",
+    "https://api.temis.estenomada.es",
+    "https://temis.estenomada.es",
     "https://api.dev.logoped-spb.pro",
     "https://dev.logoped-spb.pro",
     "http://localhost:8000",

@@ -1,5 +1,5 @@
 """
-URL configuration for rainbow_say project.
+URL configuration for temis project.
 """
 from django.contrib import admin
 from django.urls import path, include

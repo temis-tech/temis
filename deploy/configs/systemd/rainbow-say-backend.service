@@ -1,14 +1,14 @@
 [Unit]
-Description=Rainbow Say Django Backend
+Description=Temis Django Backend
 After=network.target mysql.service
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/rainbow-say/backend
-Environment="PATH=/var/www/rainbow-say/backend/venv/bin"
-EnvironmentFile=/var/www/rainbow-say/backend/.env
-ExecStart=/var/www/rainbow-say/backend/venv/bin/gunicorn \
+WorkingDirectory=/var/www/temis/backend
+Environment="PATH=/var/www/temis/backend/venv/bin"
+EnvironmentFile=/var/www/temis/backend/.env
+ExecStart=/var/www/temis/backend/venv/bin/gunicorn \
     --bind 127.0.0.1:8001 \
     --workers 1 \
     --threads 2 \
@@ -16,8 +16,8 @@ ExecStart=/var/www/rainbow-say/backend/venv/bin/gunicorn \
     --worker-class gthread \
     --max-requests 1000 \
     --max-requests-jitter 50 \
-    --access-logfile /var/log/rainbow-say-backend-access.log \
-    --error-logfile /var/log/rainbow-say-backend-error.log \
+    --access-logfile /var/log/temis-backend-access.log \
+    --error-logfile /var/log/temis-backend-error.log \
     config.wsgi:application
 Restart=always
 RestartSec=10

@@ -4,10 +4,10 @@
 
 ```bash
 # Логи фронтенда
-sudo journalctl -u rainbow-say-frontend -n 50 --no-pager
+sudo journalctl -u temis-frontend -n 50 --no-pager
 
 # Логи бэкенда
-sudo journalctl -u rainbow-say-backend -n 50 --no-pager
+sudo journalctl -u temis-backend -n 50 --no-pager
 ```
 
 ## Возможные проблемы:
@@ -25,12 +25,12 @@ sudo journalctl -u rainbow-say-backend -n 50 --no-pager
 
 ```bash
 # Проверь, что Next.js собран
-ls -la /var/www/rainbow-say/frontend/.next/standalone/
+ls -la /var/www/temis/frontend/.next/standalone/
 
 # Проверь, что gunicorn установлен
-/var/www/rainbow-say/backend/venv/bin/gunicorn --version
+/var/www/temis/backend/venv/bin/gunicorn --version
 
 # Проверь .env файл
-cat /var/www/rainbow-say/backend/.env
+cat /var/www/temis/backend/.env
 ```
 

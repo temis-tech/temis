@@ -12,11 +12,11 @@ const nextConfig = {
     return config;
   },
   images: {
-    domains: ['api.rainbow-say.estenomada.es', 'api.dev.logoped-spb.pro'],
+    domains: ['api.temis.estenomada.es', 'api.dev.logoped-spb.pro'],
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'api.rainbow-say.estenomada.es',
+        hostname: 'api.temis.estenomada.es',
         pathname: '/media/**',
       },
       {

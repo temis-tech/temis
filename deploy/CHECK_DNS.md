@@ -1,6 +1,6 @@
 # 🔍 Проверка DNS и конфигурации
 
-Если `https://rainbow-say.estenomada.es/en` ведет на старый сайт, проверь:
+Если `https://temis.estenomada.es/en` ведет на старый сайт, проверь:
 
 ## 1. DNS кеш браузера
 
@@ -9,8 +9,8 @@
 ## 2. Проверь DNS
 
 ```bash
-dig rainbow-say.estenomada.es
-nslookup rainbow-say.estenomada.es
+dig temis.estenomada.es
+nslookup temis.estenomada.es
 ```
 
 Должен указывать на `85.190.102.101`
@@ -18,13 +18,13 @@ nslookup rainbow-say.estenomada.es
 ## 3. Проверь конфигурацию Nginx
 
 ```bash
-sudo nginx -T | grep -A 5 'server_name.*rainbow-say'
+sudo nginx -T | grep -A 5 'server_name.*temis'
 ```
 
 ## 4. Проверь логи
 
 ```bash
-sudo tail -f /var/log/nginx/rainbow-say_access.log
+sudo tail -f /var/log/nginx/temis_access.log
 ```
 
 При запросе к поддомену должны появляться записи в этом логе.
@@ -32,7 +32,7 @@ sudo tail -f /var/log/nginx/rainbow-say_access.log
 ## 5. Проверь напрямую
 
 ```bash
-curl -k -H 'Host: rainbow-say.estenomada.es' https://127.0.0.1/
+curl -k -H 'Host: temis.estenomada.es' https://127.0.0.1/
 ```
 
 Должен вернуть HTML нового сайта.

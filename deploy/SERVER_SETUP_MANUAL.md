@@ -33,7 +33,7 @@ apt-get install -y \
 ## Шаг 2: Создание директорий
 
 ```bash
-SITE_PATH="/var/www/rainbow-say"
+SITE_PATH="/var/www/temis"
 mkdir -p "${SITE_PATH}/frontend"
 mkdir -p "${SITE_PATH}/backend"
 mkdir -p "${SITE_PATH}/backend/media"
@@ -56,9 +56,9 @@ chmod -R 755 "${SITE_PATH}"
 ```bash
 # Создаем пользователя и БД
 sudo -u postgres psql << EOF
-CREATE USER rainbow_say WITH PASSWORD 'rainbow_say_secure_password_2024';
-CREATE DATABASE rainbow_say OWNER rainbow_say;
-GRANT ALL PRIVILEGES ON DATABASE rainbow_say TO rainbow_say;
+CREATE USER temis WITH PASSWORD 'temis_secure_password_2024';
+CREATE DATABASE temis OWNER temis;
+GRANT ALL PRIVILEGES ON DATABASE temis TO temis;
 \q
 EOF
 ```
@@ -66,7 +66,7 @@ EOF
 ## Шаг 4: Создание .env файла
 
 ```bash
-cd /var/www/rainbow-say/backend
+cd /var/www/temis/backend
 
 # Генерируем SECRET_KEY
 SECRET_KEY=$(python3 -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
@@ -75,13 +75,13 @@ SECRET_KEY=$(python3 -c 'from django.core.management.utils import get_random_sec
 cat > .env << EOF
 SECRET_KEY=${SECRET_KEY}
 DEBUG=False
-ALLOWED_HOSTS=rainbow-say.estenomada.es,api.rainbow-say.estenomada.es
+ALLOWED_HOSTS=temis.estenomada.es,api.temis.estenomada.es
 
 # Для SQLite (по умолчанию):
 DATABASE_URL=sqlite:///$(pwd)/db.sqlite3
 
 # Для PostgreSQL (раскомментируй если используешь):
-# DATABASE_URL=postgresql://rainbow_say:rainbow_say_secure_password_2024@localhost/rainbow_say
+# DATABASE_URL=postgresql://temis:temis_secure_password_2024@localhost/temis
 EOF
 
 chown www-data:www-data .env
@@ -93,18 +93,18 @@ chmod 600 .env
 ### Frontend сервис
 
 ```bash
-cat > /etc/systemd/system/rainbow-say-frontend.service << 'EOF'
+cat > /etc/systemd/system/temis-frontend.service << 'EOF'
 [Unit]
-Description=Rainbow Say Next.js Frontend
+Description=Temis Next.js Frontend
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/rainbow-say/frontend
+WorkingDirectory=/var/www/temis/frontend
 Environment=NODE_ENV=production
 Environment=PORT=3001
-ExecStart=/usr/bin/node /var/www/rainbow-say/frontend/.next/standalone/server.js
+ExecStart=/usr/bin/node /var/www/temis/frontend/.next/standalone/server.js
 Restart=always
 RestartSec=10
 
@@ -116,18 +116,18 @@ EOF
 ### Backend сервис
 
 ```bash
-cat > /etc/systemd/system/rainbow-say-backend.service << 'EOF'
+cat > /etc/systemd/system/temis-backend.service << 'EOF'
 [Unit]
-Description=Rainbow Say Django Backend
+Description=Temis Django Backend
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/rainbow-say/backend
-Environment="PATH=/var/www/rainbow-say/backend/venv/bin"
-EnvironmentFile=/var/www/rainbow-say/backend/.env
-ExecStart=/var/www/rainbow-say/backend/venv/bin/gunicorn \
+WorkingDirectory=/var/www/temis/backend
+Environment="PATH=/var/www/temis/backend/venv/bin"
+EnvironmentFile=/var/www/temis/backend/.env
+ExecStart=/var/www/temis/backend/venv/bin/gunicorn \
     --bind 127.0.0.1:8001 \
     --workers 2 \
     --threads 2 \
@@ -135,8 +135,8 @@ ExecStart=/var/www/rainbow-say/backend/venv/bin/gunicorn \
     --worker-class gthread \
     --max-requests 1000 \
     --max-requests-jitter 50 \
-    --access-logfile /var/log/rainbow-say-backend-access.log \
-    --error-logfile /var/log/rainbow-say-backend-error.log \
+    --access-logfile /var/log/temis-backend-access.log \
+    --error-logfile /var/log/temis-backend-error.log \
     config.wsgi:application
 Restart=always
 RestartSec=10
@@ -147,20 +147,20 @@ EOF
 
 # Перезагружаем systemd и включаем сервисы
 systemctl daemon-reload
-systemctl enable rainbow-say-frontend
-systemctl enable rainbow-say-backend
+systemctl enable temis-frontend
+systemctl enable temis-backend
 ```
 
 ## Шаг 6: Настройка Nginx
 
 ```bash
 # Создаем конфигурацию
-cat > /etc/nginx/sites-available/rainbow-say << 'EOF'
+cat > /etc/nginx/sites-available/temis << 'EOF'
 # HTTP конфигурация (для получения SSL)
 server {
     listen 80;
     listen [::]:80;
-    server_name rainbow-say.estenomada.es;
+    server_name temis.estenomada.es;
 
     location / {
         proxy_pass http://localhost:3001;
@@ -175,14 +175,14 @@ server {
 server {
     listen 80;
     listen [::]:80;
-    server_name api.rainbow-say.estenomada.es;
+    server_name api.temis.estenomada.es;
 
     location /static/ {
-        alias /var/www/rainbow-say/backend/staticfiles/;
+        alias /var/www/temis/backend/staticfiles/;
     }
 
     location /media/ {
-        alias /var/www/rainbow-say/backend/media/;
+        alias /var/www/temis/backend/media/;
     }
 
     location / {
@@ -197,7 +197,7 @@ server {
 EOF
 
 # Создаем симлинк
-ln -s /etc/nginx/sites-available/rainbow-say /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/temis /etc/nginx/sites-enabled/
 
 # Удаляем default если есть
 rm -f /etc/nginx/sites-enabled/default
@@ -224,11 +224,11 @@ echo "y" | ufw enable
 
 ```bash
 # Проверь DNS
-nslookup rainbow-say.estenomada.es
-nslookup api.rainbow-say.estenomada.es
+nslookup temis.estenomada.es
+nslookup api.temis.estenomada.es
 
 # Если DNS настроен, получаем SSL
-certbot --nginx -d rainbow-say.estenomada.es -d api.rainbow-say.estenomada.es
+certbot --nginx -d temis.estenomada.es -d api.temis.estenomada.es
 
 # Certbot автоматически обновит конфигурацию Nginx
 ```
@@ -238,7 +238,7 @@ certbot --nginx -d rainbow-say.estenomada.es -d api.rainbow-say.estenomada.es
 После того как код задеплоится через GitHub Actions, выполни:
 
 ```bash
-cd /var/www/rainbow-say/backend
+cd /var/www/temis/backend
 
 # Создаем виртуальное окружение (если еще не создано)
 python3 -m venv venv
@@ -256,28 +256,28 @@ python manage.py collectstatic --noinput
 python manage.py createsuperuser
 
 # Перезапускаем сервисы
-systemctl restart rainbow-say-frontend
-systemctl restart rainbow-say-backend
+systemctl restart temis-frontend
+systemctl restart temis-backend
 ```
 
 ## Проверка работы
 
 ```bash
 # Статус сервисов
-systemctl status rainbow-say-frontend
-systemctl status rainbow-say-backend
+systemctl status temis-frontend
+systemctl status temis-backend
 systemctl status nginx
 
 # Логи
-journalctl -u rainbow-say-frontend -f
-journalctl -u rainbow-say-backend -f
-tail -f /var/log/nginx/rainbow-say_error.log
+journalctl -u temis-frontend -f
+journalctl -u temis-backend -f
+tail -f /var/log/nginx/temis_error.log
 ```
 
 ## Доступ к сайту
 
 После настройки сайт будет доступен:
-- 🌐 Frontend: `https://rainbow-say.estenomada.es`
-- 🔧 API: `https://api.rainbow-say.estenomada.es/api/`
-- 👨‍💼 Admin: `https://api.rainbow-say.estenomada.es/admin/`
+- 🌐 Frontend: `https://temis.estenomada.es`
+- 🔧 API: `https://api.temis.estenomada.es/api/`
+- 👨‍💼 Admin: `https://api.temis.estenomada.es/admin/`
 

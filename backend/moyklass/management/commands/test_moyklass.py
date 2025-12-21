@@ -89,10 +89,10 @@ class Command(BaseCommand):
                 self.stdout.write('3️⃣ Создаю тестового ученика...')
                 try:
                     test_student_data = {
-                        'name': 'Тестовый Ученик (Rainbow Say)',
+                        'name': 'Тестовый Ученик (Temis)',
                         'phone': '+79000000000',
-                        'email': 'test@rainbow-say.local',
-                        'comment': 'Тестовый лид, созданный через интеграцию Rainbow Say'
+                        'email': 'test@temis.local',
+                        'comment': 'Тестовый лид, созданный через интеграцию Temis'
                     }
                     
                     result = client.create_student(test_student_data)

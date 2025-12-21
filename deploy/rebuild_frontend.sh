@@ -3,8 +3,8 @@
 
 set -e
 
-SITE_PATH="/var/www/rainbow-say"
-SITE_NAME="rainbow-say"
+SITE_PATH="/var/www/temis"
+SITE_NAME="temis"
 
 echo "🔨 Пересобираю Next.js на сервере..."
 

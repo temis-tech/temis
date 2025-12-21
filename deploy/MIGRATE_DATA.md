@@ -5,7 +5,7 @@
 На локальной машине выполни:
 
 ```bash
-cd /Users/conspiratus/Projects/rainbow-say
+cd /Users/conspiratus/Projects/temis
 ./scripts/export-data.sh
 ```
 
@@ -65,7 +65,7 @@ tar -czf media.tar.gz media/
 ### Импорт на сервере:
 
 ```bash
-cd /var/www/rainbow-say/backend
+cd /var/www/temis/backend
 sudo -u www-data ./venv/bin/python manage.py loaddata /tmp/content.json
 sudo -u www-data ./venv/bin/python manage.py loaddata /tmp/quizzes.json
 sudo -u www-data ./venv/bin/python manage.py loaddata /tmp/booking.json
@@ -75,7 +75,7 @@ sudo chown -R www-data:www-data media/
 
 ## Проверка после импорта
 
-1. Открой админку: `https://api.rainbow-say.estenomada.es/admin/`
+1. Открой админку: `https://api.temis.estenomada.es/admin/`
 2. Проверь, что все данные на месте
 3. Проверь медиа файлы на сайте
 

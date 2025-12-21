@@ -36,7 +36,7 @@ sudo bash /tmp/import-data.sh /tmp/export_data_YYYYMMDD_HHMMSS.tar.gz
 
 ## После импорта
 
-1. Проверь админку: `https://api.rainbow-say.estenomada.es/admin/`
-2. Проверь сайт: `https://rainbow-say.estenomada.es`
+1. Проверь админку: `https://api.temis.estenomada.es/admin/`
+2. Проверь сайт: `https://temis.estenomada.es`
 3. Убедись, что изображения загружаются
 

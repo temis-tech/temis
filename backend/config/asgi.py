@@ -1,5 +1,5 @@
 """
-ASGI config for rainbow_say project.
+ASGI config for temis project.
 """
 import os
 

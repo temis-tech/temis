@@ -1,4 +1,4 @@
-# 📦 Деплой Rainbow Say
+# 📦 Деплой Temis
 
 Инструкции и конфигурации для деплоя проекта на поддомен.
 
@@ -8,10 +8,10 @@
 deploy/
 ├── configs/
 │   ├── systemd/          # Systemd сервисы
-│   │   ├── rainbow-say-frontend.service
-│   │   └── rainbow-say-backend.service
+│   │   ├── temis-frontend.service
+│   │   └── temis-backend.service
 │   └── nginx/            # Nginx конфигурации
-│       └── rainbow-say.conf
+│       └── temis.conf
 ├── FIRST_DEPLOY.md       # Инструкция по первому деплою
 └── README.md            # Этот файл
 ```
@@ -21,8 +21,8 @@ deploy/
 ### Первый деплой
 
 1. **Настрой DNS** для поддомена:
-   - `rainbow-say.estenomada.es` → `85.190.102.101`
-   - `api.rainbow-say.estenomada.es` → `85.190.102.101`
+   - `temis.estenomada.es` → `85.190.102.101`
+   - `api.temis.estenomada.es` → `85.190.102.101`
 
 2. **Запусти скрипт деплоя:**
    ```bash
@@ -48,21 +48,21 @@ deploy/
 ```bash
 SERVER_USER="administrator"
 SERVER_HOST="85.190.102.101"
-SITE_NAME="rainbow-say"
-SITE_DOMAIN="rainbow-say.estenomada.es"
-SITE_PATH="/var/www/rainbow-say"
+SITE_NAME="temis"
+SITE_DOMAIN="temis.estenomada.es"
+SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
-API_DOMAIN="api.rainbow-say.estenomada.es"
+API_DOMAIN="api.temis.estenomada.es"
 ```
 
 ## 📋 Чеклист безопасности
 
 Перед деплоем убедись:
 
-- [ ] Путь нового сайта (`/var/www/rainbow-say`) отличается от основного (`/var/www/estenomada`)
+- [ ] Путь нового сайта (`/var/www/temis`) отличается от основного (`/var/www/estenomada`)
 - [ ] Порты не конфликтуют (основной: 3000/8000, новый: 3001/8001)
-- [ ] Systemd сервисы имеют уникальные имена (`rainbow-say-*`)
+- [ ] Systemd сервисы имеют уникальные имена (`temis-*`)
 - [ ] Nginx конфигурация в отдельном файле
 
 ## 🔗 Полезные ссылки

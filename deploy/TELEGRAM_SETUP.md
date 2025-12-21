@@ -17,15 +17,15 @@ ssh administrator@85.190.102.101
 ### 2. Установи webhook для бота
 
 ```bash
-cd /var/www/rainbow-say/backend
+cd /var/www/temis/backend
 sudo -u www-data ./venv/bin/python manage.py setup_webhook
 ```
 
-Эта команда установит webhook на URL: `https://api.rainbow-say.estenomada.es/api/telegram/webhook/`
+Эта команда установит webhook на URL: `https://api.temis.estenomada.es/api/telegram/webhook/`
 
 ### 3. Проверь настройки бота в админке
 
-1. Открой админку: `https://api.rainbow-say.estenomada.es/admin/`
+1. Открой админку: `https://api.temis.estenomada.es/admin/`
 2. Перейди в раздел "Настройки Telegram бота"
 3. Убедись, что:
    - Токен установлен: `8576779956:AAEmqm1yQmtO06aiXdcdUfi-H4ZKqecbZBo`
@@ -58,7 +58,7 @@ sudo crontab -e -u www-data
 Добавь строку:
 
 ```
-* * * * * cd /var/www/rainbow-say/backend && ./venv/bin/python manage.py check_banners
+* * * * * cd /var/www/temis/backend && ./venv/bin/python manage.py check_banners
 ```
 
 Это будет проверять баннеры каждую минуту и отправлять уведомления при начале/завершении отображения.
@@ -77,19 +77,19 @@ curl https://api.telegram.org/bot8576779956:AAEmqm1yQmtO06aiXdcdUfi-H4ZKqecbZBo/
 
 ```bash
 # Логи Django
-sudo journalctl -u rainbow-say-backend -f
+sudo journalctl -u temis-backend -f
 
 # Или логи в файле (если настроено)
-tail -f /var/www/rainbow-say/backend/logs/*.log
+tail -f /var/www/temis/backend/logs/*.log
 ```
 
 ## 🐛 Решение проблем
 
 ### Webhook не устанавливается
 
-1. Проверь, что домен `api.rainbow-say.estenomada.es` доступен из интернета
+1. Проверь, что домен `api.temis.estenomada.es` доступен из интернета
 2. Проверь, что SSL сертификат валиден
-3. Проверь, что URL доступен: `curl https://api.rainbow-say.estenomada.es/api/telegram/webhook/`
+3. Проверь, что URL доступен: `curl https://api.temis.estenomada.es/api/telegram/webhook/`
 
 ### Уведомления не приходят
 

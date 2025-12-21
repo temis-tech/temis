@@ -40,26 +40,26 @@ cat scripts/setup-server-on-server.sh | ssh root@2a03:6f01:1:2::1:f3f5 "bash"
 
 ```bash
 # Проверь DNS записи
-nslookup rainbow-say.estenomada.es
-nslookup api.rainbow-say.estenomada.es
+nslookup temis.estenomada.es
+nslookup api.temis.estenomada.es
 ```
 
 Если DNS не настроен, настрой его:
-- `rainbow-say.estenomada.es` → `2a03:6f01:1:2::1:f3f5`
-- `api.rainbow-say.estenomada.es` → `2a03:6f01:1:2::1:f3f5`
+- `temis.estenomada.es` → `2a03:6f01:1:2::1:f3f5`
+- `api.temis.estenomada.es` → `2a03:6f01:1:2::1:f3f5`
 
 ### 2. Если SSL не получен автоматически
 
 ```bash
 ssh root@2a03:6f01:1:2::1:f3f5
-certbot --nginx -d rainbow-say.estenomada.es -d api.rainbow-say.estenomada.es
+certbot --nginx -d temis.estenomada.es -d api.temis.estenomada.es
 ```
 
 ### 3. После деплоя через GitHub Actions
 
 ```bash
 ssh root@2a03:6f01:1:2::1:f3f5
-cd /var/www/rainbow-say/backend
+cd /var/www/temis/backend
 
 # Создай виртуальное окружение
 python3 -m venv venv
@@ -77,27 +77,27 @@ python manage.py collectstatic --noinput
 python manage.py createsuperuser
 
 # Перезапусти сервисы
-systemctl restart rainbow-say-frontend
-systemctl restart rainbow-say-backend
+systemctl restart temis-frontend
+systemctl restart temis-backend
 ```
 
 ## Проверка
 
 ```bash
 # Статус сервисов
-systemctl status rainbow-say-frontend
-systemctl status rainbow-say-backend
+systemctl status temis-frontend
+systemctl status temis-backend
 systemctl status nginx
 
 # Логи
-journalctl -u rainbow-say-frontend -f
-journalctl -u rainbow-say-backend -f
+journalctl -u temis-frontend -f
+journalctl -u temis-backend -f
 ```
 
 ## Доступ к сайту
 
 После настройки:
-- 🌐 Frontend: `https://rainbow-say.estenomada.es`
-- 🔧 API: `https://api.rainbow-say.estenomada.es/api/`
-- 👨‍💼 Admin: `https://api.rainbow-say.estenomada.es/admin/`
+- 🌐 Frontend: `https://temis.estenomada.es`
+- 🔧 API: `https://api.temis.estenomada.es/api/`
+- 👨‍💼 Admin: `https://api.temis.estenomada.es/admin/`
 

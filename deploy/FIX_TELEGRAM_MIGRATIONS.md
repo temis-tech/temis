@@ -9,16 +9,16 @@
 ### Шаг 1: Проверь текущее состояние миграций
 
 ```bash
-cd /var/www/rainbow-say/backend
+cd /var/www/temis/backend
 sudo -u www-data ./venv/bin/python manage.py showmigrations telegram
 ```
 
 ### Шаг 2: Проверь, какие файлы миграций есть на сервере
 
 ```bash
-ls -la /var/www/rainbow-say/backend/telegram/migrations/0003*.py
-ls -la /var/www/rainbow-say/backend/telegram/migrations/0004*.py
-ls -la /var/www/rainbow-say/backend/telegram/migrations/0005*.py
+ls -la /var/www/temis/backend/telegram/migrations/0003*.py
+ls -la /var/www/temis/backend/telegram/migrations/0004*.py
+ls -la /var/www/temis/backend/telegram/migrations/0005*.py
 ```
 
 ### Шаг 3: Создай merge-миграцию на сервере (РЕКОМЕНДУЕТСЯ)
@@ -26,7 +26,7 @@ ls -la /var/www/rainbow-say/backend/telegram/migrations/0005*.py
 Django автоматически создаст правильную merge-миграцию с учетом всех существующих миграций:
 
 ```bash
-cd /var/www/rainbow-say/backend
+cd /var/www/temis/backend
 sudo -u www-data ./venv/bin/python manage.py makemigrations --merge telegram
 ```
 

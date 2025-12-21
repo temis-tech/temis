@@ -7,7 +7,7 @@
 На локальной машине создай SSH ключ специально для деплоя:
 
 ```bash
-ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/rainbow_say_deploy
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/temis_deploy
 ```
 
 **Важно:** Не устанавливай пароль на ключ (просто нажми Enter).
@@ -18,16 +18,16 @@ ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/rainbow_say_deploy
 
 ```bash
 # Вариант 1: Используя ssh-copy-id (если установлен)
-ssh-copy-id -i ~/.ssh/rainbow_say_deploy.pub root@2a03:6f01:1:2::1:f3f5
+ssh-copy-id -i ~/.ssh/temis_deploy.pub root@2a03:6f01:1:2::1:f3f5
 
 # Вариант 2: Вручную
-cat ~/.ssh/rainbow_say_deploy.pub | ssh root@2a03:6f01:1:2::1:f3f5 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+cat ~/.ssh/temis_deploy.pub | ssh root@2a03:6f01:1:2::1:f3f5 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
 ```
 
 Проверь подключение:
 
 ```bash
-ssh -i ~/.ssh/rainbow_say_deploy root@2a03:6f01:1:2::1:f3f5 "echo 'SSH работает!'"
+ssh -i ~/.ssh/temis_deploy root@2a03:6f01:1:2::1:f3f5 "echo 'SSH работает!'"
 ```
 
 ## Шаг 3: Настройка GitHub Secrets
@@ -40,7 +40,7 @@ ssh -i ~/.ssh/rainbow_say_deploy root@2a03:6f01:1:2::1:f3f5 "echo 'SSH рабо�
 ### `SSH_PRIVATE_KEY`
 Содержимое приватного ключа:
 ```bash
-cat ~/.ssh/rainbow_say_deploy
+cat ~/.ssh/temis_deploy
 ```
 Скопируй весь вывод (включая `-----BEGIN OPENSSH PRIVATE KEY-----` и `-----END OPENSSH PRIVATE KEY-----`)
 
@@ -65,7 +65,7 @@ root
 ssh root@2a03:6f01:1:2::1:f3f5
 
 # Запусти скрипт первоначальной настройки
-bash <(curl -s https://raw.githubusercontent.com/ваш-username/rainbow-say/master/scripts/setup-server-initial.sh)
+bash <(curl -s https://raw.githubusercontent.com/ваш-username/temis/master/scripts/setup-server-initial.sh)
 ```
 
 Или вручную:
@@ -76,12 +76,12 @@ apt-get update
 apt-get install -y python3 python3-pip python3-venv nodejs npm nginx git
 
 # 2. Создай директорию для проекта
-mkdir -p /var/www/rainbow-say
-chown -R www-data:www-data /var/www/rainbow-say
+mkdir -p /var/www/temis
+chown -R www-data:www-data /var/www/temis
 
 # 3. Создай systemd сервисы (см. deploy/configs/systemd/)
 # 4. Создай nginx конфигурацию (см. deploy/configs/nginx/)
-# 5. Создай .env файл для бэкенда в /var/www/rainbow-say/backend/.env
+# 5. Создай .env файл для бэкенда в /var/www/temis/backend/.env
 ```
 
 ## Шаг 5: Проверка деплоя
@@ -114,8 +114,8 @@ GitHub Actions workflow выполняет следующие шаги:
 - Проверь, что `SERVER_HOST` и `SERVER_USER` указаны правильно
 
 ### Ошибка деплоя на сервере
-- Проверь логи на сервере: `journalctl -u rainbow-say-backend -f`
-- Проверь права доступа: `ls -la /var/www/rainbow-say`
+- Проверь логи на сервере: `journalctl -u temis-backend -f`
+- Проверь права доступа: `ls -la /var/www/temis`
 - Убедись, что systemd сервисы созданы
 
 ### Проблемы с портами
@@ -131,7 +131,7 @@ sudo ufw allow 22/tcp
 
 ### Переменные окружения для бэкенда
 
-Создай файл `/var/www/rainbow-say/backend/.env` на сервере:
+Создай файл `/var/www/temis/backend/.env` на сервере:
 
 ```env
 SECRET_KEY=твой-секретный-ключ

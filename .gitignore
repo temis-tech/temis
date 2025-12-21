@@ -127,7 +127,7 @@ Desktop.ini
 # ============================================
 # Deployment and archives
 # ============================================
-rainbow-say-deploy-*.tar.gz
+temis-deploy-*.tar.gz
 *.tar.gz
 export_data_*.tar.gz
 export_data_fixed_*.tar.gz

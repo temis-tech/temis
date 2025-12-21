@@ -8,7 +8,7 @@ set -e
 # Конфигурация
 SERVER_USER="administrator"
 SERVER_HOST="85.190.102.101"
-SITE_PATH="/var/www/rainbow-say"
+SITE_PATH="/var/www/temis"
 
 # Цвета для вывода
 RED='\033[0;31m'
@@ -20,9 +20,9 @@ echo -e "${YELLOW}🗑️  Запуск очистки старых данных
 
 # Используем SSH ключ, если он существует
 SSH_KEY_OPTION=""
-if [ -f ~/.ssh/rainbow_say_deploy ]; then
-    SSH_KEY_OPTION="-i ~/.ssh/rainbow_say_deploy"
-    echo "Используется ключ: ~/.ssh/rainbow_say_deploy"
+if [ -f ~/.ssh/temis_deploy ]; then
+    SSH_KEY_OPTION="-i ~/.ssh/temis_deploy"
+    echo "Используется ключ: ~/.ssh/temis_deploy"
 elif [ -f ~/.ssh/id_rsa ]; then
     SSH_KEY_OPTION="-i ~/.ssh/id_rsa"
     echo "Используется ключ: ~/.ssh/id_rsa"

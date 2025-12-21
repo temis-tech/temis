@@ -1,14 +1,14 @@
 [Unit]
-Description=Rainbow Say Next.js Frontend
+Description=Temis Next.js Frontend
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/rainbow-say/frontend
+WorkingDirectory=/var/www/temis/frontend
 Environment=NODE_ENV=production
 Environment=PORT=3001
-ExecStart=/usr/bin/node /var/www/rainbow-say/frontend/.next/standalone/server.js
+ExecStart=/usr/bin/node /var/www/temis/frontend/.next/standalone/server.js
 Restart=always
 RestartSec=10
 

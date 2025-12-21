@@ -7,8 +7,8 @@ set -e
 SERVER_USER="${SERVER_USER:-root}"
 SERVER_HOST="${SERVER_HOST:-91.107.120.219}"
 SSH_KEY="${SSH_KEY:-$HOME/.ssh/logoped_spb_deploy}"
-SITE_PATH="/var/www/rainbow-say"
-SITE_NAME="rainbow-say"
+SITE_PATH="/var/www/temis"
+SITE_NAME="temis"
 LOCK_FILE="/tmp/deploy-${SITE_NAME}.lock"
 MAX_WAIT=300
 WAIT_INTERVAL=10
@@ -112,8 +112,8 @@ echo -e "${GREEN}🔧 Выполняю деплой на сервере...${NC}"
 ssh ${SSH_OPTS} ${SERVER_USER}@${SERVER_HOST} << 'ENDSSH'
   set -e
   
-  SITE_PATH="/var/www/rainbow-say"
-  SITE_NAME="rainbow-say"
+  SITE_PATH="/var/www/temis"
+  SITE_NAME="temis"
   
   echo "📦 Распаковываю архив..."
   cd /tmp

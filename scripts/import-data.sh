@@ -11,7 +11,7 @@ if [ -z "$1" ]; then
 fi
 
 EXPORT_ARCHIVE="$1"
-SITE_PATH="/var/www/rainbow-say"
+SITE_PATH="/var/www/temis"
 
 echo "📥 Импорт данных на продакшн сервер..."
 echo ""
@@ -100,5 +100,5 @@ echo ""
 echo "✅ Импорт завершен!"
 echo ""
 echo "⚠️  ВАЖНО: Проверь данные в админке:"
-echo "  https://api.rainbow-say.estenomada.es/admin/"
+echo "  https://api.temis.estenomada.es/admin/"
 

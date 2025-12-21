@@ -5,10 +5,10 @@
 
 set -e
 
-SITE_NAME="rainbow-say"
-SITE_DOMAIN="rainbow-say.estenomada.es"
-API_DOMAIN="api.rainbow-say.estenomada.es"
-SITE_PATH="/var/www/rainbow-say"
+SITE_NAME="temis"
+SITE_DOMAIN="temis.estenomada.es"
+API_DOMAIN="api.temis.estenomada.es"
+SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
 
@@ -18,7 +18,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo -e "${BLUE}🚀 Настройка сервера Rainbow Say${NC}"
+echo -e "${BLUE}🚀 Настройка сервера Temis${NC}"
 echo ""
 
 if [ "$EUID" -ne 0 ]; then 
@@ -57,9 +57,9 @@ chmod -R 755 "${SITE_PATH}"
 
 # ШАГ 3: Настройка PostgreSQL
 echo -e "${GREEN}🗄️  Настройка PostgreSQL...${NC}"
-sudo -u postgres psql -c "CREATE USER rainbow_say WITH PASSWORD 'rainbow_say_secure_password_2024';" 2>/dev/null || echo "Пользователь уже существует"
-sudo -u postgres psql -c "CREATE DATABASE rainbow_say OWNER rainbow_say;" 2>/dev/null || echo "БД уже существует"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE rainbow_say TO rainbow_say;" 2>/dev/null || true
+sudo -u postgres psql -c "CREATE USER temis WITH PASSWORD 'temis_secure_password_2024';" 2>/dev/null || echo "Пользователь уже существует"
+sudo -u postgres psql -c "CREATE DATABASE temis OWNER temis;" 2>/dev/null || echo "БД уже существует"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE temis TO temis;" 2>/dev/null || true
 
 # ШАГ 4: Создание .env файла
 echo -e "${GREEN}📝 Создание .env файла...${NC}"
@@ -72,7 +72,7 @@ ALLOWED_HOSTS=${SITE_DOMAIN},${API_DOMAIN}
 # SQLite (по умолчанию)
 DATABASE_URL=sqlite:///${SITE_PATH}/backend/db.sqlite3
 # PostgreSQL (раскомментируй для использования):
-# DATABASE_URL=postgresql://rainbow_say:rainbow_say_secure_password_2024@localhost/rainbow_say
+# DATABASE_URL=postgresql://temis:temis_secure_password_2024@localhost/temis
 EOF
     chown www-data:www-data "${SITE_PATH}/backend/.env"
     chmod 600 "${SITE_PATH}/backend/.env"
@@ -86,16 +86,16 @@ echo -e "${GREEN}⚙️  Создание systemd сервисов...${NC}"
 
 cat > /etc/systemd/system/${SITE_NAME}-frontend.service << 'FRONTEND_EOF'
 [Unit]
-Description=Rainbow Say Next.js Frontend
+Description=Temis Next.js Frontend
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/rainbow-say/frontend
+WorkingDirectory=/var/www/temis/frontend
 Environment=NODE_ENV=production
 Environment=PORT=3001
-ExecStart=/usr/bin/node /var/www/rainbow-say/frontend/.next/standalone/server.js
+ExecStart=/usr/bin/node /var/www/temis/frontend/.next/standalone/server.js
 Restart=always
 RestartSec=10
 
@@ -105,16 +105,16 @@ FRONTEND_EOF
 
 cat > /etc/systemd/system/${SITE_NAME}-backend.service << 'BACKEND_EOF'
 [Unit]
-Description=Rainbow Say Django Backend
+Description=Temis Django Backend
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/rainbow-say/backend
-Environment="PATH=/var/www/rainbow-say/backend/venv/bin"
-EnvironmentFile=/var/www/rainbow-say/backend/.env
-ExecStart=/var/www/rainbow-say/backend/venv/bin/gunicorn \
+WorkingDirectory=/var/www/temis/backend
+Environment="PATH=/var/www/temis/backend/venv/bin"
+EnvironmentFile=/var/www/temis/backend/.env
+ExecStart=/var/www/temis/backend/venv/bin/gunicorn \
     --bind 127.0.0.1:8001 \
     --workers 2 \
     --threads 2 \
@@ -122,8 +122,8 @@ ExecStart=/var/www/rainbow-say/backend/venv/bin/gunicorn \
     --worker-class gthread \
     --max-requests 1000 \
     --max-requests-jitter 50 \
-    --access-logfile /var/log/rainbow-say-backend-access.log \
-    --error-logfile /var/log/rainbow-say-backend-error.log \
+    --access-logfile /var/log/temis-backend-access.log \
+    --error-logfile /var/log/temis-backend-error.log \
     config.wsgi:application
 Restart=always
 RestartSec=10
@@ -143,7 +143,7 @@ cat > /etc/nginx/sites-available/${SITE_NAME} << 'NGINX_EOF'
 server {
     listen 80;
     listen [::]:80;
-    server_name rainbow-say.estenomada.es;
+    server_name temis.estenomada.es;
 
     location / {
         proxy_pass http://localhost:3001;
@@ -158,14 +158,14 @@ server {
 server {
     listen 80;
     listen [::]:80;
-    server_name api.rainbow-say.estenomada.es;
+    server_name api.temis.estenomada.es;
 
     location /static/ {
-        alias /var/www/rainbow-say/backend/staticfiles/;
+        alias /var/www/temis/backend/staticfiles/;
     }
 
     location /media/ {
-        alias /var/www/rainbow-say/backend/media/;
+        alias /var/www/temis/backend/media/;
     }
 
     location / {

@@ -1,5 +1,5 @@
 """
-WSGI config for rainbow_say project.
+WSGI config for temis project.
 """
 import os
 

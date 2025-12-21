@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Скрипт деплоя Rainbow Say на поддомен
+# Скрипт деплоя Temis на поддомен
 # Использование: ./scripts/deploy.sh
 
 set -e  # Остановка при ошибке
@@ -10,12 +10,12 @@ set -e  # Остановка при ошибке
 # ============================================
 SERVER_USER="administrator"
 SERVER_HOST="85.190.102.101"
-SITE_NAME="rainbow-say"
-SITE_DOMAIN="rainbow-say.estenomada.es"  # Или другой поддомен
-SITE_PATH="/var/www/rainbow-say"
+SITE_NAME="temis"
+SITE_DOMAIN="temis.estenomada.es"  # Или другой поддомен
+SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
-API_DOMAIN="api.rainbow-say.estenomada.es"  # Поддомен для API (опционально)
+API_DOMAIN="api.temis.estenomada.es"  # Поддомен для API (опционально)
 
 # ⚠️ КРИТИЧЕСКАЯ ПРОВЕРКА: Путь не должен совпадать с основным сайтом!
 if [ "${SITE_PATH}" = "/var/www/estenomada" ]; then
@@ -29,7 +29,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}🚀 Начинаю деплой Rainbow Say на поддомен${NC}"
+echo -e "${GREEN}🚀 Начинаю деплой Temis на поддомен${NC}"
 echo -e "${YELLOW}Поддомен: ${SITE_DOMAIN}${NC}"
 echo -e "${YELLOW}Путь на сервере: ${SITE_PATH}${NC}"
 echo -e "${YELLOW}Порты: Frontend=${FRONTEND_PORT}, Backend=${BACKEND_PORT}${NC}"
@@ -80,7 +80,7 @@ cd ..
 # ============================================
 echo -e "${GREEN}📦 Создаю архив для деплоя...${NC}"
 
-DEPLOY_ARCHIVE="rainbow-say-deploy-$(date +%Y%m%d_%H%M%S).tar.gz"
+DEPLOY_ARCHIVE="temis-deploy-$(date +%Y%m%d_%H%M%S).tar.gz"
 TEMP_DIR=$(mktemp -d)
 
 # Копируем файлы во временную директорию с правильной структурой
@@ -124,9 +124,9 @@ echo -e "${GREEN}📤 Загружаю на сервер...${NC}"
 # Используем SSH ключ, если он существует
 # Пробуем разные ключи по порядку
 SSH_KEY_OPTION=""
-if [ -f ~/.ssh/rainbow_say_deploy ]; then
-    SSH_KEY_OPTION="-i ~/.ssh/rainbow_say_deploy"
-    echo "Используется ключ: ~/.ssh/rainbow_say_deploy"
+if [ -f ~/.ssh/temis_deploy ]; then
+    SSH_KEY_OPTION="-i ~/.ssh/temis_deploy"
+    echo "Используется ключ: ~/.ssh/temis_deploy"
 elif [ -f ~/.ssh/id_rsa ]; then
     SSH_KEY_OPTION="-i ~/.ssh/id_rsa"
     echo "Используется ключ: ~/.ssh/id_rsa"

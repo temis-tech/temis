@@ -4,10 +4,10 @@
 
 ### 1. ✅ Сервер настроен
 - Установлены все пакеты (Python, Node.js, Nginx, PostgreSQL, Certbot)
-- Созданы директории `/var/www/rainbow-say`
-- Настроен PostgreSQL (БД: `rainbow_say`, пользователь: `rainbow_say`)
+- Созданы директории `/var/www/temis`
+- Настроен PostgreSQL (БД: `temis`, пользователь: `temis`)
 - Создан `.env` файл с SECRET_KEY
-- Настроены systemd сервисы (`rainbow-say-frontend`, `rainbow-say-backend`)
+- Настроены systemd сервисы (`temis-frontend`, `temis-backend`)
 - Настроен Nginx для обоих доменов
 - Настроен файрвол (порты 22, 80, 443 открыты)
 
@@ -69,7 +69,7 @@ GitHub Actions автоматически задеплоит проект на �
 
 ```bash
 ssh root@91.107.120.219
-cd /var/www/rainbow-say/backend
+cd /var/www/temis/backend
 
 # Миграции уже выполнены через CI/CD, но можно проверить
 source venv/bin/activate
@@ -79,8 +79,8 @@ python manage.py migrate
 python manage.py createsuperuser
 
 # Проверить статус сервисов
-systemctl status rainbow-say-frontend
-systemctl status rainbow-say-backend
+systemctl status temis-frontend
+systemctl status temis-backend
 ```
 
 ## Доступ к сайту
@@ -95,19 +95,19 @@ systemctl status rainbow-say-backend
 
 ```bash
 # Статус сервисов
-systemctl status rainbow-say-frontend
-systemctl status rainbow-say-backend
+systemctl status temis-frontend
+systemctl status temis-backend
 systemctl status nginx
 systemctl status postgresql
 
 # Логи
-journalctl -u rainbow-say-frontend -f
-journalctl -u rainbow-say-backend -f
-tail -f /var/log/nginx/rainbow-say_error.log
+journalctl -u temis-frontend -f
+journalctl -u temis-backend -f
+tail -f /var/log/nginx/temis_error.log
 
 # Перезапуск сервисов
-systemctl restart rainbow-say-frontend
-systemctl restart rainbow-say-backend
+systemctl restart temis-frontend
+systemctl restart temis-backend
 systemctl reload nginx
 ```
 

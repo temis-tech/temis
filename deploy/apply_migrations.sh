@@ -1,7 +1,7 @@
 #!/bin/bash
 # Скрипт для применения миграций на сервере
 
-SITE_PATH="/var/www/rainbow-say"
+SITE_PATH="/var/www/temis"
 cd "${SITE_PATH}/backend"
 
 echo "🗄️  Применяю миграции..."

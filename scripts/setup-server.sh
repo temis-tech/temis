@@ -6,10 +6,10 @@
 set -e
 
 # Конфигурация
-SITE_NAME="rainbow-say"
-SITE_DOMAIN="rainbow-say.estenomada.es"
-API_DOMAIN="api.rainbow-say.estenomada.es"
-SITE_PATH="/var/www/rainbow-say"
+SITE_NAME="temis"
+SITE_DOMAIN="temis.estenomada.es"
+API_DOMAIN="api.temis.estenomada.es"
+SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
 
@@ -19,7 +19,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-echo -e "${GREEN}🚀 Настройка сервера для Rainbow Say${NC}"
+echo -e "${GREEN}🚀 Настройка сервера для Temis${NC}"
 echo ""
 
 # Проверка, что скрипт запущен на сервере
@@ -37,7 +37,7 @@ echo -e "${GREEN}📦 Шаг 1: Создание systemd сервисов...${NC
 # Frontend сервис
 cat > /tmp/${SITE_NAME}-frontend.service << EOF
 [Unit]
-Description=Rainbow Say Next.js Frontend
+Description=Temis Next.js Frontend
 After=network.target
 
 [Service]
@@ -59,7 +59,7 @@ EOF
 # Backend сервис
 cat > /tmp/${SITE_NAME}-backend.service << EOF
 [Unit]
-Description=Rainbow Say Django Backend
+Description=Temis Django Backend
 After=network.target mysql.service
 
 [Service]

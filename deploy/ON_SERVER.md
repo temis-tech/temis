@@ -5,7 +5,7 @@
 ## Шаг 1: Проверь, что файлы деплоя загружены
 
 ```bash
-ls -la /var/www/rainbow-say
+ls -la /var/www/temis
 ```
 
 Если директория пустая или не существует, сначала нужно загрузить файлы через `deploy.sh`.
@@ -28,8 +28,8 @@ sudo bash /tmp/setup-server.sh
 После успешной настройки:
 
 ```bash
-sudo certbot --nginx -d rainbow-say.estenomada.es
-sudo certbot --nginx -d api.rainbow-say.estenomada.es
+sudo certbot --nginx -d temis.estenomada.es
+sudo certbot --nginx -d api.temis.estenomada.es
 sudo systemctl reload nginx
 ```
 
@@ -37,20 +37,20 @@ sudo systemctl reload nginx
 
 ```bash
 # Статус сервисов
-sudo systemctl status rainbow-say-frontend
-sudo systemctl status rainbow-say-backend
+sudo systemctl status temis-frontend
+sudo systemctl status temis-backend
 
 # Логи
-sudo journalctl -u rainbow-say-frontend -f
-sudo journalctl -u rainbow-say-backend -f
+sudo journalctl -u temis-frontend -f
+sudo journalctl -u temis-backend -f
 ```
 
 ## Если что-то пошло не так
 
 Проверь логи:
 ```bash
-sudo journalctl -u rainbow-say-frontend -n 50
-sudo journalctl -u rainbow-say-backend -n 50
-sudo tail -f /var/log/nginx/rainbow-say_error.log
+sudo journalctl -u temis-frontend -n 50
+sudo journalctl -u temis-backend -n 50
+sudo tail -f /var/log/nginx/temis_error.log
 ```
 

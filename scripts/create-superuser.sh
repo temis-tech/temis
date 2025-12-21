@@ -1,7 +1,7 @@
 #!/bin/bash
 # Скрипт для создания суперпользователя Django на сервере
 
-SITE_PATH="/var/www/rainbow-say"
+SITE_PATH="/var/www/temis"
 
 echo "🔐 Создание суперпользователя Django"
 echo ""
@@ -15,5 +15,5 @@ echo ""
 echo "✅ Суперпользователь создан!"
 echo ""
 echo "Теперь можешь войти в админку:"
-echo "https://api.rainbow-say.estenomada.es/admin/"
+echo "https://api.temis.estenomada.es/admin/"
 

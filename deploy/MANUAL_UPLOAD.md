@@ -7,7 +7,7 @@
 Архив создан автоматически при попытке деплоя. Найди его:
 
 ```bash
-ls -lh rainbow-say-deploy-*.tar.gz
+ls -lh temis-deploy-*.tar.gz
 ```
 
 ## Шаг 2: Загрузи архив на сервер
@@ -15,7 +15,7 @@ ls -lh rainbow-say-deploy-*.tar.gz
 ### Вариант 1: Через SCP (если есть доступ)
 
 ```bash
-scp rainbow-say-deploy-*.tar.gz administrator@85.190.102.101:/tmp/
+scp temis-deploy-*.tar.gz administrator@85.190.102.101:/tmp/
 ```
 
 ### Вариант 2: Через веб-интерфейс или другой способ
@@ -34,8 +34,8 @@ ssh administrator@85.190.102.101
 
 ```bash
 # Переменные
-SITE_PATH="/var/www/rainbow-say"
-DEPLOY_ARCHIVE="rainbow-say-deploy-*.tar.gz"  # Замени на реальное имя файла
+SITE_PATH="/var/www/temis"
+DEPLOY_ARCHIVE="temis-deploy-*.tar.gz"  # Замени на реальное имя файла
 
 # Создание директорий
 sudo mkdir -p ${SITE_PATH}/frontend

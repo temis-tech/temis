@@ -10,7 +10,7 @@
 
 1. Перейди на GitHub и создай новый репозиторий
 2. **НЕ** создавай README, .gitignore или лицензию (у нас уже есть)
-3. Скопируй URL репозитория (например: `git@github.com:username/rainbow-say.git`)
+3. Скопируй URL репозитория (например: `git@github.com:username/temis.git`)
 
 ## Шаг 2: Настройка git remote
 
@@ -18,25 +18,25 @@
 
 ```bash
 # Используй скрипт для настройки нового remote
-./scripts/setup-new-repo.sh git@github.com:твой-username/rainbow-say.git
+./scripts/setup-new-repo.sh git@github.com:твой-username/temis.git
 
 # Или вручную:
 git remote remove origin  # если есть старый origin
-git remote add origin git@github.com:твой-username/rainbow-say.git
+git remote add origin git@github.com:твой-username/temis.git
 ```
 
 ## Шаг 3: Создание SSH ключа для деплоя
 
 ```bash
 # Создай SSH ключ
-ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/rainbow_say_deploy
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/temis_deploy
 # Нажми Enter при запросе пароля (без пароля)
 
 # Добавь публичный ключ на сервер
-cat ~/.ssh/rainbow_say_deploy.pub | ssh root@2a03:6f01:1:2::1:f3f5 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
+cat ~/.ssh/temis_deploy.pub | ssh root@2a03:6f01:1:2::1:f3f5 "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
 
 # Проверь подключение
-ssh -i ~/.ssh/rainbow_say_deploy root@2a03:6f01:1:2::1:f3f5 "echo 'SSH работает!'"
+ssh -i ~/.ssh/temis_deploy root@2a03:6f01:1:2::1:f3f5 "echo 'SSH работает!'"
 ```
 
 ## Шаг 4: Настройка GitHub Secrets
@@ -47,7 +47,7 @@ ssh -i ~/.ssh/rainbow_say_deploy root@2a03:6f01:1:2::1:f3f5 "echo 'SSH рабо�
 ### `SSH_PRIVATE_KEY`
 ```bash
 # Скопируй содержимое приватного ключа:
-cat ~/.ssh/rainbow_say_deploy
+cat ~/.ssh/temis_deploy
 ```
 Вставь весь вывод (включая `-----BEGIN OPENSSH PRIVATE KEY-----`)
 
@@ -115,12 +115,12 @@ sudo systemctl reload nginx
 
 ```bash
 # Статус сервисов
-sudo systemctl status rainbow-say-frontend
-sudo systemctl status rainbow-say-backend
+sudo systemctl status temis-frontend
+sudo systemctl status temis-backend
 
 # Логи
-sudo journalctl -u rainbow-say-frontend -f
-sudo journalctl -u rainbow-say-backend -f
+sudo journalctl -u temis-frontend -f
+sudo journalctl -u temis-backend -f
 ```
 
 ## Важные замечания
@@ -128,7 +128,7 @@ sudo journalctl -u rainbow-say-backend -f
 1. **IPv6 адрес:** Убедись, что твой интернет-провайдер поддерживает IPv6
 2. **Порты:** Порты 53413, 2525, 25, 3389, 389, 587, 465 закрыты. Если нужно открыть другие - сообщи
 3. **Домен:** Не забудь настроить DNS записи перед получением SSL
-4. **.env файл:** После первого деплоя проверь и настрой `/var/www/rainbow-say/backend/.env`
+4. **.env файл:** После первого деплоя проверь и настрой `/var/www/temis/backend/.env`
 
 ## Полезные файлы
 

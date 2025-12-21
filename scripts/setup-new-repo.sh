@@ -13,7 +13,7 @@ NC='\033[0m'
 if [ -z "$1" ]; then
     echo -e "${RED}❌ Ошибка: Укажи URL нового репозитория${NC}"
     echo "Использование: ./scripts/setup-new-repo.sh <github-repo-url>"
-    echo "Пример: ./scripts/setup-new-repo.sh git@github.com:username/rainbow-say.git"
+    echo "Пример: ./scripts/setup-new-repo.sh git@github.com:username/temis.git"
     exit 1
 fi
 

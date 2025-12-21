@@ -33,10 +33,15 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('Синхронизация с каналом отключена'))
             return
         
-        if not bot_settings.channel_id and not bot_settings.channel_username:
+        chat_id = bot_settings.channel_id or bot_settings.channel_username
+        if not chat_id:
             self.stdout.write(self.style.ERROR('Не указан канал для проверки'))
             return
         
+        # Если это username, убеждаемся, что он начинается с @
+        if isinstance(chat_id, str) and not chat_id.startswith('-') and not chat_id.startswith('@'):
+            chat_id = f'@{chat_id}'
+
         check_limit = options['check_limit']
         
         try:
@@ -58,43 +63,45 @@ class Command(BaseCommand):
             for item in active_items:
                 checked_count += 1
                 message_id = item.telegram_message_id
-                chat_id = bot_settings.channel_id
                 
-                if not chat_id:
-                    self.stdout.write(self.style.WARNING('ID канала не указан, пропускаю проверку'))
-                    break
-                
-                # Пытаемся получить информацию о сообщении через Telegram API
-                # Если сообщение удалено, API вернет ошибку
+                # Используем forwardMessage для проверки существования сообщения
+                # Мы пересылаем сообщение самому себе (в тот же канал), но в "тихом" режиме
+                # Это надежный способ проверить, существует ли сообщение в Bot API
                 try:
-                    url = TELEGRAM_API_URL.format(token=bot_settings.token, method='getChatMember')
-                    # Используем getUpdates для проверки существования сообщения
-                    # К сожалению, прямого метода проверки сообщения нет,
-                    # но можно попробовать получить обновления и проверить наличие message_id
+                    # Мы используем copyMessage с параметрами, которые не приведут к реальному копированию
+                    # или просто проверяем ответ API. На самом деле самый простой способ - это
+                    # вызвать editMessageCaption с тем же текстом, но это может вызвать уведомление.
                     
-                    # Альтернативный подход: проверяем через forwardMessage или просто деактивируем
-                    # если сообщение не найдено в последних обновлениях
-                    # Но это не очень надежно, так как старые сообщения могут не быть в getUpdates
+                    # Лучший способ для Bot API - попробовать переслать сообщение.
+                    # Если оно удалено, API вернет 400 Bad Request
+                    url = TELEGRAM_API_URL.format(token=bot_settings.token, method='forwardMessage')
+                    data = {
+                        'chat_id': chat_id, # Пересылаем в тот же чат (но сообщение не будет создано, если не указать from_chat_id правильно)
+                        'from_chat_id': chat_id,
+                        'message_id': message_id,
+                        'disable_notification': True
+                    }
                     
-                    # Для простоты, если элемент существует и активен, но мы не можем проверить,
-                    # оставляем его активным. Реальная проверка требует более сложной логики.
+                    # Мы делаем запрос, но нам не важно, перешлется ли оно на самом деле
+                    # Нам важно, вернет ли API ошибку "Message to forward not found"
+                    response = requests.post(url, data=data, timeout=10)
+                    result = response.json()
                     
-                    # В реальности, лучше использовать MTProto или другой подход
-                    # Но для базовой функциональности можно добавить ручную деактивацию
-                    # через админку или API
-                    
+                    if not result.get('ok'):
+                        error_desc = result.get('description', '')
+                        if 'message to forward not found' in error_desc.lower() or 'message not found' in error_desc.lower():
+                            self.stdout.write(self.style.WARNING(f'Пост {message_id} не найден в Telegram. Деактивирую...'))
+                            deactivate_catalog_item_by_message_id(message_id)
+                            deactivated_count += 1
+                        else:
+                            logger.debug(f'Telegram API error for message {message_id}: {error_desc}')
+                            
                 except Exception as e:
-                    logger.debug(f'Ошибка проверки сообщения {message_id}: {str(e)}')
+                    logger.error(f'Ошибка при проверке сообщения {message_id}: {str(e)}')
             
             self.stdout.write(self.style.SUCCESS(
                 f'Проверка завершена. Проверено элементов: {checked_count}, '
-                f'деактивировано: {deactivated_count}'
-            ))
-            
-            self.stdout.write(self.style.WARNING(
-                'Примечание: Telegram Bot API не предоставляет прямой способ проверки удаленных сообщений. '
-                'Для надежной проверки рекомендуется использовать MTProto (Telethon) или '
-                'деактивировать элементы вручную через админку.'
+                f'деактивировано (удалено в TG): {deactivated_count}'
             ))
             
         except Exception as e:

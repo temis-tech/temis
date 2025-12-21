@@ -6,10 +6,10 @@
 set -e
 
 # Конфигурация
-SITE_NAME="rainbow-say"
-SITE_DOMAIN="rainbow-say.estenomada.es"  # Измени на свой домен
-API_DOMAIN="api.rainbow-say.estenomada.es"  # Измени на свой домен
-SITE_PATH="/var/www/rainbow-say"
+SITE_NAME="temis"
+SITE_DOMAIN="temis.estenomada.es"  # Измени на свой домен
+API_DOMAIN="api.temis.estenomada.es"  # Измени на свой домен
+SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
 
@@ -19,7 +19,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-echo -e "${GREEN}🚀 Первоначальная настройка сервера для Rainbow Say${NC}"
+echo -e "${GREEN}🚀 Первоначальная настройка сервера для Temis${NC}"
 echo ""
 
 # Проверка, что скрипт запущен от root
@@ -75,7 +75,7 @@ echo -e "${GREEN}⚙️  Шаг 3: Создание systemd сервисов...$
 # Frontend сервис
 cat > /etc/systemd/system/${SITE_NAME}-frontend.service << EOF
 [Unit]
-Description=Rainbow Say Next.js Frontend
+Description=Temis Next.js Frontend
 After=network.target
 
 [Service]
@@ -95,7 +95,7 @@ EOF
 # Backend сервис
 cat > /etc/systemd/system/${SITE_NAME}-backend.service << EOF
 [Unit]
-Description=Rainbow Say Django Backend
+Description=Temis Django Backend
 After=network.target
 
 [Service]
@@ -174,8 +174,8 @@ server {
     # ssl_certificate /etc/letsencrypt/live/.../fullchain.pem;
     # ssl_certificate_key /etc/letsencrypt/live/.../privkey.pem;
 
-    access_log /var/log/nginx/rainbow-say_access.log;
-    error_log /var/log/nginx/rainbow-say_error.log;
+    access_log /var/log/nginx/temis_access.log;
+    error_log /var/log/nginx/temis_error.log;
 
     client_max_body_size 20M;
 
@@ -194,7 +194,7 @@ server {
     }
 
     location /_next/static/ {
-        alias /var/www/rainbow-say/frontend/.next/static/;
+        alias /var/www/temis/frontend/.next/static/;
         expires 1y;
         add_header Cache-Control "public, max-age=31536000, immutable";
         access_log off;
@@ -207,19 +207,19 @@ server {
     listen [::]:443 ssl http2;
     server_name _;
 
-    access_log /var/log/nginx/rainbow-say-api_access.log;
-    error_log /var/log/nginx/rainbow-say-api_error.log;
+    access_log /var/log/nginx/temis-api_access.log;
+    error_log /var/log/nginx/temis-api_error.log;
 
     client_max_body_size 20M;
 
     location /static/ {
-        alias /var/www/rainbow-say/backend/staticfiles/;
+        alias /var/www/temis/backend/staticfiles/;
         expires 30d;
         add_header Cache-Control "public";
     }
 
     location /media/ {
-        alias /var/www/rainbow-say/backend/media/;
+        alias /var/www/temis/backend/media/;
         expires 30d;
         add_header Cache-Control "public";
     }

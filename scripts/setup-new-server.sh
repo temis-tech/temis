@@ -11,15 +11,15 @@ SERVER_USER="root"
 SERVER_PASS="c4icpNV7KDbAZPXi"
 
 # Конфигурация
-SITE_NAME="rainbow-say"
+SITE_NAME="temis"
 SITE_DOMAIN="dev.logoped-spb.pro"
 API_DOMAIN="api.dev.logoped-spb.pro"
-SITE_PATH="/var/www/rainbow-say"
+SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
-DB_NAME="rainbow_say"
-DB_USER="rainbow_say"
-DB_PASS="rainbow_say_secure_2024"
+DB_NAME="temis"
+DB_USER="temis"
+DB_PASS="temis_secure_2024"
 
 # Цвета
 RED='\033[0;31m'
@@ -60,15 +60,15 @@ REMOTE_SCRIPT=$(cat << 'REMOTE_SCRIPT_EOF'
 #!/bin/bash
 set -e
 
-SITE_NAME="rainbow-say"
+SITE_NAME="temis"
 SITE_DOMAIN="dev.logoped-spb.pro"
 API_DOMAIN="api.dev.logoped-spb.pro"
-SITE_PATH="/var/www/rainbow-say"
+SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
-DB_NAME="rainbow_say"
-DB_USER="rainbow_say"
-DB_PASS="rainbow_say_secure_2024"
+DB_NAME="temis"
+DB_USER="temis"
+DB_PASS="temis_secure_2024"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -128,17 +128,17 @@ echo -e "${GREEN}⚙️  Создание systemd сервисов...${NC}"
 
 cat > /etc/systemd/system/${SITE_NAME}-frontend.service << 'FRONTEND_EOF'
 [Unit]
-Description=Rainbow Say Next.js Frontend
+Description=Temis Next.js Frontend
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/rainbow-say/frontend
+WorkingDirectory=/var/www/temis/frontend
 Environment=NODE_ENV=production
 Environment=PORT=3001
 Environment=NEXT_PUBLIC_API_URL=https://api.dev.logoped-spb.pro/api
-ExecStart=/usr/bin/node /var/www/rainbow-say/frontend/.next/standalone/server.js
+ExecStart=/usr/bin/node /var/www/temis/frontend/.next/standalone/server.js
 Restart=always
 RestartSec=10
 
@@ -148,16 +148,16 @@ FRONTEND_EOF
 
 cat > /etc/systemd/system/${SITE_NAME}-backend.service << 'BACKEND_EOF'
 [Unit]
-Description=Rainbow Say Django Backend
+Description=Temis Django Backend
 After=network.target postgresql.service
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/rainbow-say/backend
-Environment="PATH=/var/www/rainbow-say/backend/venv/bin"
-EnvironmentFile=/var/www/rainbow-say/backend/.env
-ExecStart=/var/www/rainbow-say/backend/venv/bin/gunicorn \
+WorkingDirectory=/var/www/temis/backend
+Environment="PATH=/var/www/temis/backend/venv/bin"
+EnvironmentFile=/var/www/temis/backend/.env
+ExecStart=/var/www/temis/backend/venv/bin/gunicorn \
     --bind 127.0.0.1:8001 \
     --workers 2 \
     --threads 2 \
@@ -165,8 +165,8 @@ ExecStart=/var/www/rainbow-say/backend/venv/bin/gunicorn \
     --worker-class gthread \
     --max-requests 1000 \
     --max-requests-jitter 50 \
-    --access-logfile /var/log/rainbow-say-backend-access.log \
-    --error-logfile /var/log/rainbow-say-backend-error.log \
+    --access-logfile /var/log/temis-backend-access.log \
+    --error-logfile /var/log/temis-backend-error.log \
     config.wsgi:application
 Restart=always
 RestartSec=10
@@ -210,8 +210,8 @@ server {
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
-    access_log /var/log/nginx/rainbow-say_access.log;
-    error_log /var/log/nginx/rainbow-say_error.log;
+    access_log /var/log/nginx/temis_access.log;
+    error_log /var/log/nginx/temis_error.log;
 
     client_max_body_size 20M;
 
@@ -249,8 +249,8 @@ server {
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
-    access_log /var/log/nginx/rainbow-say-api_access.log;
-    error_log /var/log/nginx/rainbow-say-api_error.log;
+    access_log /var/log/nginx/temis-api_access.log;
+    error_log /var/log/nginx/temis-api_error.log;
 
     client_max_body_size 20M;
 
@@ -368,8 +368,8 @@ server {
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
-    access_log /var/log/nginx/rainbow-say_access.log;
-    error_log /var/log/nginx/rainbow-say_error.log;
+    access_log /var/log/nginx/temis_access.log;
+    error_log /var/log/nginx/temis_error.log;
 
     client_max_body_size 20M;
 
@@ -406,8 +406,8 @@ server {
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
-    access_log /var/log/nginx/rainbow-say-api_access.log;
-    error_log /var/log/nginx/rainbow-say-api_error.log;
+    access_log /var/log/nginx/temis-api_access.log;
+    error_log /var/log/nginx/temis-api_error.log;
 
     client_max_body_size 20M;
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Полная настройка сервера для Rainbow Say
+# Полная настройка сервера для Temis
 # Использование: ./scripts/setup-server-complete.sh
 
 set -e
@@ -11,10 +11,10 @@ SERVER_USER="root"
 SERVER_PASS="mW6iYUw2^Fv2+g"
 
 # Конфигурация
-SITE_NAME="rainbow-say"
-SITE_DOMAIN="rainbow-say.estenomada.es"
-API_DOMAIN="api.rainbow-say.estenomada.es"
-SITE_PATH="/var/www/rainbow-say"
+SITE_NAME="temis"
+SITE_DOMAIN="temis.estenomada.es"
+API_DOMAIN="api.temis.estenomada.es"
+SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
 
@@ -25,11 +25,11 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo -e "${BLUE}🚀 Полная настройка сервера для Rainbow Say${NC}"
+echo -e "${BLUE}🚀 Полная настройка сервера для Temis${NC}"
 echo ""
 
 # Проверка SSH ключа
-if [ ! -f ~/.ssh/id_ed25519_github ] && [ ! -f ~/.ssh/rainbow_say_deploy ]; then
+if [ ! -f ~/.ssh/id_ed25519_github ] && [ ! -f ~/.ssh/temis_deploy ]; then
     echo -e "${YELLOW}⚠️  SSH ключ не найден. Буду использовать пароль.${NC}"
     USE_PASSWORD=true
 else
@@ -37,7 +37,7 @@ else
     if [ -f ~/.ssh/id_ed25519_github ]; then
         SSH_KEY="~/.ssh/id_ed25519_github"
     else
-        SSH_KEY="~/.ssh/rainbow_say_deploy"
+        SSH_KEY="~/.ssh/temis_deploy"
     fi
 fi
 
@@ -73,10 +73,10 @@ SCRIPT_CONTENT=$(cat << 'REMOTE_SCRIPT'
 #!/bin/bash
 set -e
 
-SITE_NAME="rainbow-say"
-SITE_DOMAIN="rainbow-say.estenomada.es"
-API_DOMAIN="api.rainbow-say.estenomada.es"
-SITE_PATH="/var/www/rainbow-say"
+SITE_NAME="temis"
+SITE_DOMAIN="temis.estenomada.es"
+API_DOMAIN="api.temis.estenomada.es"
+SITE_PATH="/var/www/temis"
 FRONTEND_PORT="3001"
 BACKEND_PORT="8001"
 
@@ -117,9 +117,9 @@ chmod -R 755 "${SITE_PATH}"
 # ШАГ 3: Настройка PostgreSQL (опционально, можно использовать SQLite)
 echo -e "${GREEN}🗄️  Настройка базы данных...${NC}"
 # Создаем пользователя и БД для PostgreSQL
-sudo -u postgres psql -c "CREATE USER rainbow_say WITH PASSWORD 'rainbow_say_secure_password_2024';" 2>/dev/null || echo "Пользователь уже существует"
-sudo -u postgres psql -c "CREATE DATABASE rainbow_say OWNER rainbow_say;" 2>/dev/null || echo "БД уже существует"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE rainbow_say TO rainbow_say;" 2>/dev/null || true
+sudo -u postgres psql -c "CREATE USER temis WITH PASSWORD 'temis_secure_password_2024';" 2>/dev/null || echo "Пользователь уже существует"
+sudo -u postgres psql -c "CREATE DATABASE temis OWNER temis;" 2>/dev/null || echo "БД уже существует"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE temis TO temis;" 2>/dev/null || true
 
 # ШАГ 4: Создание .env файла
 echo -e "${GREEN}📝 Создание .env файла...${NC}"
@@ -132,7 +132,7 @@ ALLOWED_HOSTS=${SITE_DOMAIN},${API_DOMAIN}
 # Используем SQLite для простоты (можно переключиться на PostgreSQL)
 DATABASE_URL=sqlite:///${SITE_PATH}/backend/db.sqlite3
 # Для PostgreSQL раскомментируй:
-# DATABASE_URL=postgresql://rainbow_say:rainbow_say_secure_password_2024@localhost/rainbow_say
+# DATABASE_URL=postgresql://temis:temis_secure_password_2024@localhost/temis
 EOF
     chown www-data:www-data "${SITE_PATH}/backend/.env"
     chmod 600 "${SITE_PATH}/backend/.env"
@@ -147,16 +147,16 @@ echo -e "${GREEN}⚙️  Создание systemd сервисов...${NC}"
 # Frontend
 cat > /etc/systemd/system/${SITE_NAME}-frontend.service << 'FRONTEND_EOF'
 [Unit]
-Description=Rainbow Say Next.js Frontend
+Description=Temis Next.js Frontend
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/rainbow-say/frontend
+WorkingDirectory=/var/www/temis/frontend
 Environment=NODE_ENV=production
 Environment=PORT=3001
-ExecStart=/usr/bin/node /var/www/rainbow-say/frontend/.next/standalone/server.js
+ExecStart=/usr/bin/node /var/www/temis/frontend/.next/standalone/server.js
 Restart=always
 RestartSec=10
 
@@ -167,16 +167,16 @@ FRONTEND_EOF
 # Backend
 cat > /etc/systemd/system/${SITE_NAME}-backend.service << 'BACKEND_EOF'
 [Unit]
-Description=Rainbow Say Django Backend
+Description=Temis Django Backend
 After=network.target
 
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/rainbow-say/backend
-Environment="PATH=/var/www/rainbow-say/backend/venv/bin"
-EnvironmentFile=/var/www/rainbow-say/backend/.env
-ExecStart=/var/www/rainbow-say/backend/venv/bin/gunicorn \
+WorkingDirectory=/var/www/temis/backend
+Environment="PATH=/var/www/temis/backend/venv/bin"
+EnvironmentFile=/var/www/temis/backend/.env
+ExecStart=/var/www/temis/backend/venv/bin/gunicorn \
     --bind 127.0.0.1:8001 \
     --workers 2 \
     --threads 2 \
@@ -184,8 +184,8 @@ ExecStart=/var/www/rainbow-say/backend/venv/bin/gunicorn \
     --worker-class gthread \
     --max-requests 1000 \
     --max-requests-jitter 50 \
-    --access-logfile /var/log/rainbow-say-backend-access.log \
-    --error-logfile /var/log/rainbow-say-backend-error.log \
+    --access-logfile /var/log/temis-backend-access.log \
+    --error-logfile /var/log/temis-backend-error.log \
     config.wsgi:application
 Restart=always
 RestartSec=10
@@ -207,7 +207,7 @@ cat > /etc/nginx/sites-available/${SITE_NAME} << 'NGINX_EOF'
 server {
     listen 80;
     listen [::]:80;
-    server_name rainbow-say.estenomada.es;
+    server_name temis.estenomada.es;
 
     location / {
         proxy_pass http://localhost:3001;
@@ -222,7 +222,7 @@ server {
 server {
     listen 80;
     listen [::]:80;
-    server_name api.rainbow-say.estenomada.es;
+    server_name api.temis.estenomada.es;
 
     location / {
         proxy_pass http://127.0.0.1:8001;

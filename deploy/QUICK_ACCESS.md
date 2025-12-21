@@ -22,8 +22,8 @@ http://85.190.102.101:8001/api/
 ssh administrator@85.190.102.101
 
 # Проверь, что сервисы запущены
-sudo systemctl status rainbow-say-frontend
-sudo systemctl status rainbow-say-backend
+sudo systemctl status temis-frontend
+sudo systemctl status temis-backend
 
 # Проверь, что порты открыты
 sudo netstat -tlnp | grep -E ':(3001|8001)'
@@ -51,8 +51,8 @@ sudo ufw reload
 ## После настройки Nginx
 
 Когда Nginx настроен, сайт будет доступен по домену:
-- `https://rainbow-say.estenomada.es` (фронтенд)
-- `https://api.rainbow-say.estenomada.es/api/` (API)
+- `https://temis.estenomada.es` (фронтенд)
+- `https://api.temis.estenomada.es/api/` (API)
 
 И порты 3001 и 8001 можно закрыть в файрволе, так как Nginx будет проксировать запросы.
 

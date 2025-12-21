@@ -16,7 +16,7 @@
 
 ```bash
 # На сервере
-cd /var/www/rainbow-say/backend
+cd /var/www/temis/backend
 source venv/bin/activate
 python manage.py test_moyklass
 ```
@@ -44,7 +44,7 @@ python manage.py test_moyklass --list-students
 
 ### Способ 1: Через форму записи на сайте
 
-1. Откройте сайт: `https://rainbow-say.estenomada.es`
+1. Откройте сайт: `https://temis.estenomada.es`
 2. Заполните форму записи (например, на главной странице или в каталоге)
 3. Отправьте форму
 4. Проверьте в MoyKlass CRM, что лид создан
@@ -60,7 +60,7 @@ python manage.py test_moyklass --list-students
 
 ```bash
 # Отправить форму через API
-curl -X POST https://api.rainbow-say.estenomada.es/api/booking/submissions/ \
+curl -X POST https://api.temis.estenomada.es/api/booking/submissions/ \
   -H "Content-Type: application/json" \
   -d '{
     "form_id": 1,
@@ -86,10 +86,10 @@ curl -X POST https://api.rainbow-say.estenomada.es/api/booking/submissions/ \
 
 ```bash
 # Логи Django (если настроено логирование)
-tail -f /var/log/rainbow-say-backend-error.log
+tail -f /var/log/temis-backend-error.log
 
 # Логи systemd
-sudo journalctl -u rainbow-say-backend -f
+sudo journalctl -u temis-backend -f
 ```
 
 ## Что проверить после создания лида

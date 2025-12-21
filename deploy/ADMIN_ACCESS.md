@@ -3,7 +3,7 @@
 ## URL админки
 
 ```
-https://api.rainbow-say.estenomada.es/admin/
+https://api.temis.estenomada.es/admin/
 ```
 
 ## Создание суперпользователя
@@ -12,7 +12,7 @@ https://api.rainbow-say.estenomada.es/admin/
 
 ```bash
 ssh administrator@85.190.102.101
-cd /var/www/rainbow-say/backend
+cd /var/www/temis/backend
 sudo -u www-data ./venv/bin/python manage.py createsuperuser
 ```
 
@@ -23,7 +23,7 @@ sudo -u www-data ./venv/bin/python manage.py createsuperuser
 
 ## Вход в админку
 
-1. Открой в браузере: `https://api.rainbow-say.estenomada.es/admin/`
+1. Открой в браузере: `https://api.temis.estenomada.es/admin/`
 2. Введи логин и пароль суперпользователя
 3. Готово!
 
@@ -32,7 +32,7 @@ sudo -u www-data ./venv/bin/python manage.py createsuperuser
 Сбрось пароль:
 
 ```bash
-cd /var/www/rainbow-say/backend
+cd /var/www/temis/backend
 sudo -u www-data ./venv/bin/python manage.py changepassword <username>
 ```
 
