@@ -665,6 +665,15 @@ jobs:
             fi
             
             echo "✅ Деплой Temis завершен!"
+            
+            # Запускаем скрипт быстрого исправления
+            echo "🔧 Запускаем скрипт быстрого исправления..."
+            if [ -f "$DEPLOY_DIR/deploy/fix-server.sh" ]; then
+              sudo bash $DEPLOY_DIR/deploy/fix-server.sh
+              echo "✅ Скрипт исправления выполнен"
+            else
+              echo "⚠️  Скрипт fix-server.sh не найден, пропускаем"
+            fi
       
       - name: Send Telegram notification on success
         if: success()
