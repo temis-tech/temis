@@ -332,21 +332,60 @@ jobs:
               echo "📋 Копируем конфигурацию Nginx..."
               
               # Проверяем наличие SSL сертификатов
+              echo "🔍 Проверяем SSL сертификаты на сервере..."
+              
+              # Проверяем, существует ли директория letsencrypt
+              if [ -d "/etc/letsencrypt/live" ]; then
+                echo "📁 Директория /etc/letsencrypt/live существует"
+                echo "📋 Содержимое /etc/letsencrypt/live:"
+                sudo ls -la /etc/letsencrypt/live/ || true
+              else
+                echo "⚠️  Директория /etc/letsencrypt/live не существует"
+              fi
+              
               SSL_TEMIS_EXISTS=false
               SSL_API_EXISTS=false
               
+              # Проверяем temis.ooo
               if [ -f "/etc/letsencrypt/live/temis.ooo/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/temis.ooo/privkey.pem" ]; then
                 SSL_TEMIS_EXISTS=true
                 echo "✅ SSL сертификат для temis.ooo найден"
+                echo "   fullchain.pem: $(sudo ls -lh /etc/letsencrypt/live/temis.ooo/fullchain.pem | awk '{print $5, $6, $7, $8}')"
+                echo "   privkey.pem: $(sudo ls -lh /etc/letsencrypt/live/temis.ooo/privkey.pem | awk '{print $5, $6, $7, $8}')"
               else
-                echo "⚠️  SSL сертификат для temis.ooo не найден, будет использоваться HTTP"
+                echo "⚠️  SSL сертификат для temis.ooo не найден"
+                if [ -d "/etc/letsencrypt/live/temis.ooo" ]; then
+                  echo "   Директория существует, но файлы отсутствуют:"
+                  sudo ls -la /etc/letsencrypt/live/temis.ooo/ || true
+                else
+                  echo "   Директория /etc/letsencrypt/live/temis.ooo не существует"
+                fi
+                echo "   Будет использоваться HTTP конфигурация"
               fi
               
+              # Проверяем api.temis.ooo
               if [ -f "/etc/letsencrypt/live/api.temis.ooo/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/api.temis.ooo/privkey.pem" ]; then
                 SSL_API_EXISTS=true
                 echo "✅ SSL сертификат для api.temis.ooo найден"
+                echo "   fullchain.pem: $(sudo ls -lh /etc/letsencrypt/live/api.temis.ooo/fullchain.pem | awk '{print $5, $6, $7, $8}')"
+                echo "   privkey.pem: $(sudo ls -lh /etc/letsencrypt/live/api.temis.ooo/privkey.pem | awk '{print $5, $6, $7, $8}')"
               else
-                echo "⚠️  SSL сертификат для api.temis.ooo не найден, будет использоваться HTTP"
+                echo "⚠️  SSL сертификат для api.temis.ooo не найден"
+                if [ -d "/etc/letsencrypt/live/api.temis.ooo" ]; then
+                  echo "   Директория существует, но файлы отсутствуют:"
+                  sudo ls -la /etc/letsencrypt/live/api.temis.ooo/ || true
+                else
+                  echo "   Директория /etc/letsencrypt/live/api.temis.ooo не существует"
+                fi
+                echo "   Будет использоваться HTTP конфигурация"
+              fi
+              
+              # Проверяем, установлен ли certbot
+              if command -v certbot >/dev/null 2>&1; then
+                echo "✅ certbot установлен: $(certbot --version)"
+              else
+                echo "⚠️  certbot не установлен. Для получения SSL сертификатов установите certbot:"
+                echo "   sudo apt-get update && sudo apt-get install -y certbot python3-certbot-nginx"
               fi
               
               # Создаем временную конфигурацию без SSL если сертификатов нет
