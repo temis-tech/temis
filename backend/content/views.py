@@ -92,7 +92,7 @@ class SiteSettingsView(APIView):
         settings = SiteSettings.objects.first()
         if not settings:
             settings = SiteSettings.objects.create()
-        serializer = SiteSettingsSerializer(settings)
+        serializer = SiteSettingsSerializer(settings, context={'request': request})
         return Response(serializer.data)
 
 

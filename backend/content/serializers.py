@@ -448,10 +448,20 @@ class PrivacyPolicySerializer(serializers.ModelSerializer):
 
 
 class SiteSettingsSerializer(serializers.ModelSerializer):
+    favicon = serializers.SerializerMethodField()
+    
     class Meta:
         model = SiteSettings
-        fields = ['primary_color', 'gradient_start', 'gradient_end', 'secondary_color', 
-                 'text_color', 'background_color']
+        fields = ['site_name', 'page_title', 'favicon', 'primary_color', 'gradient_start', 
+                 'gradient_end', 'secondary_color', 'text_color', 'background_color']
+    
+    def get_favicon(self, obj):
+        if obj.favicon:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.favicon.url)
+            return obj.favicon.url
+        return None
 
 
 class CatalogItemSerializer(serializers.ModelSerializer):

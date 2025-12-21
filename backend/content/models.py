@@ -1253,6 +1253,12 @@ class PrivacyPolicy(models.Model):
 
 class SiteSettings(models.Model):
     """Глобальные настройки сайта"""
+    site_name = models.CharField('Название сайта', max_length=200, default='Радуга слов',
+                                help_text='Название сайта, отображаемое в шапке и других местах')
+    page_title = models.CharField('Заголовок страницы', max_length=200, default='Логопедический центр',
+                                help_text='Заголовок страницы (title), отображаемый во вкладке браузера')
+    favicon = models.ImageField('Фавикон', upload_to='site/', blank=True, null=True,
+                              help_text='Иконка сайта, отображаемая во вкладке браузера (рекомендуемый размер: 32x32 или 16x16 пикселей)')
     primary_color = models.CharField('Основной цвет', max_length=7, default='#667eea',
                                     help_text='Основной цвет сайта (HEX)')
     gradient_start = models.CharField('Начало градиента', max_length=7, default='#667eea',
@@ -1267,11 +1273,11 @@ class SiteSettings(models.Model):
                                        help_text='Цвет фона страницы (HEX)')
     
     class Meta:
-        verbose_name = 'Настройки цвета сайта'
-        verbose_name_plural = 'Настройки цвета сайта'
+        verbose_name = 'Настройки сайта'
+        verbose_name_plural = 'Настройки сайта'
 
     def __str__(self):
-        return 'Настройки цвета сайта'
+        return 'Настройки сайта'
     
     def save(self, *args, **kwargs):
         # Разрешаем только одну запись

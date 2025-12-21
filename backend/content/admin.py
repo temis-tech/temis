@@ -592,8 +592,12 @@ class FooterSettingsAdmin(admin.ModelAdmin):
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ['primary_color', 'gradient_start', 'gradient_end', 'color_preview']
+    list_display = ['site_name', 'page_title', 'primary_color', 'gradient_start', 'gradient_end', 'color_preview']
     fieldsets = (
+        ('Основная информация', {
+            'fields': ('site_name', 'page_title', 'favicon', 'favicon_preview'),
+            'description': 'Название сайта, заголовок страницы и фавикон'
+        }),
         ('Цвета', {
             'fields': ('primary_color', 'secondary_color', 'text_color', 'background_color')
         }),
@@ -601,7 +605,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             'fields': ('gradient_start', 'gradient_end', 'gradient_preview')
         }),
     )
-    readonly_fields = ['color_preview', 'gradient_preview']
+    readonly_fields = ['color_preview', 'gradient_preview', 'favicon_preview']
     
     class Media:
         css = {
@@ -648,6 +652,15 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             )
         return "Нет настроек"
     gradient_preview.short_description = 'Превью градиента'
+    
+    def favicon_preview(self, obj):
+        if obj and obj.favicon:
+            return format_html(
+                '<img src="{}" style="max-width: 32px; max-height: 32px; margin-top: 0.5rem; border: 1px solid #ddd; border-radius: 4px;" />',
+                obj.favicon.url
+            )
+        return "Фавикон не загружен"
+    favicon_preview.short_description = 'Превью фавикона'
     
     def has_add_permission(self, request):
         return not SiteSettings.objects.exists()
