@@ -95,7 +95,8 @@ jobs:
           tar -czf backend-deploy.tar.gz \
             backend \
             deploy/configs \
-            deploy/apply-nginx-config.sh
+            deploy/apply-nginx-config.sh \
+            deploy/fix-server.sh
           
           # Создаем финальный архив
           tar -czf deploy.tar.gz frontend-deploy.tar.gz backend-deploy.tar.gz
