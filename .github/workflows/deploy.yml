@@ -255,7 +255,7 @@ jobs:
             
             if ! systemctl list-unit-files | grep -q temis-backend; then
               echo "📦 Создаем сервис temis-backend..."
-              cat > /tmp/temis-backend.service << 'SERVICE_EOF'
+              sudo bash -c 'cat > /etc/systemd/system/temis-backend.service' << 'SERVICE_EOF'
 [Unit]
 Description=Temis Django Backend
 After=network.target
@@ -283,7 +283,6 @@ RestartSec=10
 [Install]
 WantedBy=multi-user.target
 SERVICE_EOF
-              sudo mv /tmp/temis-backend.service /etc/systemd/system/temis-backend.service
               sudo systemctl daemon-reload
               sudo systemctl enable temis-backend
               echo "✅ Сервис temis-backend создан и включен"
@@ -291,7 +290,7 @@ SERVICE_EOF
             
             if ! systemctl list-unit-files | grep -q temis-frontend; then
               echo "📦 Создаем сервис temis-frontend..."
-              cat > /tmp/temis-frontend.service << 'SERVICE_EOF'
+              sudo bash -c 'cat > /etc/systemd/system/temis-frontend.service' << 'SERVICE_EOF'
 [Unit]
 Description=Temis Next.js Frontend
 After=network.target
@@ -309,7 +308,6 @@ RestartSec=10
 [Install]
 WantedBy=multi-user.target
 SERVICE_EOF
-              sudo mv /tmp/temis-frontend.service /etc/systemd/system/temis-frontend.service
               sudo systemctl daemon-reload
               sudo systemctl enable temis-frontend
               echo "✅ Сервис temis-frontend создан и включен"
@@ -354,7 +352,7 @@ SERVICE_EOF
               # Создаем временную конфигурацию без SSL если сертификатов нет
               if [ "$SSL_TEMIS_EXISTS" = false ] || [ "$SSL_API_EXISTS" = false ]; then
                 echo "📝 Создаем временную HTTP конфигурацию..."
-                cat > /tmp/temis-nginx.conf << 'NGINX_EOF'
+                sudo bash -c 'cat > /etc/nginx/sites-available/temis.conf' << 'NGINX_EOF'
 # HTTP конфигурация для temis.ooo (временная, до получения SSL)
 server {
     listen 80;
@@ -448,7 +446,6 @@ server {
     }
 }
 NGINX_EOF
-              sudo mv /tmp/temis-nginx.conf /etc/nginx/sites-available/temis.conf
               else
                 # Используем оригинальную конфигурацию с SSL
                 sudo cp $DEPLOY_DIR/deploy/configs/nginx/temis.conf /etc/nginx/sites-available/temis.conf
