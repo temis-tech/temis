@@ -1,0 +1,43 @@
+name: Fix Server Issues
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix:
+    name: Fix Server Issues
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fix server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_SERVER_HOST }}
+          username: ${{ secrets.PROD_SERVER_USER }}
+          password: ${{ secrets.PROD_SERVER_PASSWORD }}
+          port: 22
+          timeout: 300s
+          script: |
+            if [ -f "/var/www/temis/deploy/fix-server.sh" ]; then
+              echo "🚀 Запускаем скрипт исправления..."
+              sudo bash /var/www/temis/deploy/fix-server.sh
+            else
+              echo "❌ Скрипт fix-server.sh не найден!"
+              echo "Выполняем базовые исправления вручную..."
+              
+              DEPLOY_DIR="/var/www/temis"
+              BACKEND_DIR="$DEPLOY_DIR/backend"
+              FRONTEND_DIR="$DEPLOY_DIR/frontend"
+              
+              # Права доступа
+              sudo chown -R www-data:www-data $DEPLOY_DIR
+              sudo find $DEPLOY_DIR -type d -exec chmod 755 {} \;
+              sudo find $DEPLOY_DIR -type f -exec chmod 644 {} \;
+              
+              # Перезапускаем сервисы
+              sudo systemctl restart temis-frontend || true
+              sudo systemctl restart temis-backend || true
+              sudo systemctl restart nginx || true
+              
+              echo "✅ Базовые исправления выполнены"
+            fi
+
