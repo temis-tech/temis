@@ -228,9 +228,32 @@ jobs:
             fi
             set -e
             
+            # Применяем конфигурацию Nginx
+            echo "🌐 Применяем конфигурацию Nginx..."
+            if [ -f "$DEPLOY_DIR/deploy/configs/nginx/temis.conf" ]; then
+              echo "📋 Копируем конфигурацию Nginx..."
+              sudo cp $DEPLOY_DIR/deploy/configs/nginx/temis.conf /etc/nginx/sites-available/temis.conf
+              
+              # Создаем симлинк если его нет
+              if [ ! -L /etc/nginx/sites-enabled/temis.conf ]; then
+                echo "🔗 Создаем симлинк для temis.conf..."
+                sudo ln -s /etc/nginx/sites-available/temis.conf /etc/nginx/sites-enabled/temis.conf
+              fi
+              
+              # Проверяем конфигурацию
+              if sudo nginx -t; then
+                echo "✅ Конфигурация Nginx проверена"
+              else
+                echo "❌ Ошибка в конфигурации Nginx!"
+                exit 1
+              fi
+            else
+              echo "⚠️  Конфигурация Nginx не найдена, пропускаем"
+            fi
+            
             # Перезагружаем Nginx
             echo "🔄 Перезагружаем Nginx..."
-            sudo nginx -t && sudo systemctl reload nginx
+            sudo systemctl reload nginx
             echo "✅ Nginx перезагружен"
             
             # Проверяем статус
