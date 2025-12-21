@@ -249,6 +249,13 @@ jobs:
             fi
             echo "✅ Frontend готов (standalone режим, найдено $STATIC_COUNT статических файлов)"
             
+            # Проверяем права доступа к статическим файлам
+            echo "🔐 Проверяем права доступа к статическим файлам..."
+            sudo chown -R www-data:www-data .next/static
+            sudo find .next/static -type d -exec chmod 755 {} \;
+            sudo find .next/static -type f -exec chmod 644 {} \;
+            echo "✅ Права доступа установлены"
+            
             # Создаем systemd сервисы если их нет
             echo "⚙️  Создаем systemd сервисы..."
             set +e
@@ -543,6 +550,61 @@ jobs:
               echo "❌ Ошибка при перезапуске Nginx!"
               sudo systemctl status nginx --no-pager -l | head -20
               exit 1
+            fi
+            
+            # Проверяем, что frontend сервис запущен и слушает порт 3001
+            echo "🔍 Проверяем статус temis-frontend..."
+            if systemctl is-active --quiet temis-frontend; then
+              echo "   ✅ temis-frontend запущен"
+              # Проверяем порт
+              if sudo netstat -tlnp 2>/dev/null | grep -q ":3001" || sudo ss -tlnp 2>/dev/null | grep -q ":3001"; then
+                echo "   ✅ Порт 3001 слушается"
+                sudo netstat -tlnp 2>/dev/null | grep ":3001" || sudo ss -tlnp 2>/dev/null | grep ":3001"
+              else
+                echo "   ⚠️  Порт 3001 не слушается!"
+                echo "   Перезапускаем temis-frontend..."
+                sudo systemctl restart temis-frontend
+                sleep 3
+                if sudo netstat -tlnp 2>/dev/null | grep -q ":3001" || sudo ss -tlnp 2>/dev/null | grep -q ":3001"; then
+                  echo "   ✅ Порт 3001 теперь слушается"
+                else
+                  echo "   ❌ Порт 3001 все еще не слушается!"
+                  sudo systemctl status temis-frontend --no-pager -l | head -20
+                fi
+              fi
+            else
+              echo "   ❌ temis-frontend НЕ запущен!"
+              echo "   Пытаемся запустить..."
+              sudo systemctl start temis-frontend
+              sleep 3
+              if systemctl is-active --quiet temis-frontend; then
+                echo "   ✅ temis-frontend запущен"
+              else
+                echo "   ❌ Не удалось запустить temis-frontend!"
+                sudo systemctl status temis-frontend --no-pager -l | head -20
+              fi
+            fi
+            
+            # ФИНАЛЬНАЯ ПРОВЕРКА: Проверяем доступность статических файлов
+            echo "🔍 ФИНАЛЬНАЯ ПРОВЕРКА: Проверяем доступность статических файлов..."
+            if [ -d "$FRONTEND_DIR/.next/static" ]; then
+              STATIC_FILES=$(find $FRONTEND_DIR/.next/static -type f | head -5)
+              echo "   Найдено статических файлов (первые 5):"
+              for file in $STATIC_FILES; do
+                echo "   - $file ($(sudo ls -lh "$file" 2>/dev/null | awk '{print $5}' || echo 'недоступен'))"
+              done
+            else
+              echo "   ❌ Директория .next/static не найдена!"
+            fi
+            
+            # Проверяем, что frontend отвечает на порту 3001
+            echo "Проверяем доступность frontend на порту 3001:"
+            if curl -s -o /dev/null -w "%{http_code}" http://localhost:3001/_next/static/css/ 2>/dev/null | grep -qE "200|404|403"; then
+              echo "   ✅ Frontend отвечает на порту 3001"
+            else
+              echo "   ⚠️  Frontend не отвечает на порту 3001 или недоступен"
+              echo "   Проверяем логи temis-frontend..."
+              sudo journalctl -u temis-frontend -n 20 --no-pager || true
             fi
             
             # КРИТИЧНО: Проверяем, что api.temis.ooo НЕ проксируется на старый порт
