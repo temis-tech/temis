@@ -7,7 +7,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('booking', '0003_add_source_page_to_booking_submission'),
-        ('booking', '0003_alter_bookingform_default_quiz_and_more'),
     ]
 
     operations = [
