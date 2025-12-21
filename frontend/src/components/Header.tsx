@@ -8,6 +8,10 @@ export default async function Header() {
     return null;
   });
 
+  // Получаем настройки сайта для названия сайта
+  const siteSettings = await contentApi.getSiteSettings().then(res => res.data).catch(() => null);
+  const siteName = siteSettings?.site_name || 'Temis';
+
   // Получаем меню из настроек шапки (может быть выбрано конкретное меню)
   const menuItems = headerSettings?.menu?.items || [];
   const safeMenuItems = Array.isArray(menuItems) ? menuItems : [];
@@ -24,7 +28,7 @@ export default async function Header() {
   return (
     <>
       <HeaderClient 
-        logoText={headerSettings?.logo_text || 'Радуга слов'}
+        logoText={headerSettings?.logo_text || siteName}
         logoImage={headerSettings?.logo_image || undefined}
         logoUrl={headerSettings?.logo_url || '/'}
         logoHeight={headerSettings?.logo_height || 100}

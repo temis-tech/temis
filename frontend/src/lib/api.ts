@@ -30,6 +30,7 @@ export const contentApi = {
   getBranches: () => api.get('/content/branches/'),
   // Настройки сайта
   getMenu: () => api.get('/content/menu/'),
+  getSiteSettings: () => api.get('/content/settings/site/'),
   getHeaderSettings: () => api.get('/content/settings/header/'),
   getHeroSettings: () => api.get('/content/settings/hero/'),
   getFooterSettings: () => api.get('/content/settings/footer/'),

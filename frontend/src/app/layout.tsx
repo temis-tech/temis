@@ -4,12 +4,29 @@ import { contentApi } from '@/lib/api'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 
-export const metadata: Metadata = {
-  title: 'Логопедический центр "Радуга слов" - СПб',
-  description: 'Детский логопед в Санкт-Петербурге. Занятия с опытным логопедом, запуск речи, постановка звуков.',
-  icons: {
-    icon: '/favicon.ico',
-  },
+// Metadata будет динамически генерироваться в generateMetadata
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const siteSettings = await contentApi.getSiteSettings().then(res => res.data).catch(() => null);
+    const siteName = siteSettings?.site_name || 'Temis';
+    const pageTitle = siteSettings?.page_title || 'Temis';
+    
+    return {
+      title: pageTitle,
+      description: 'Детский логопед в Санкт-Петербурге. Занятия с опытным логопедом, запуск речи, постановка звуков.',
+      icons: {
+        icon: siteSettings?.favicon || '/favicon.ico',
+      },
+    };
+  } catch {
+    return {
+      title: 'Temis',
+      description: 'Детский логопед в Санкт-Петербурге. Занятия с опытным логопедом, запуск речи, постановка звуков.',
+      icons: {
+        icon: '/favicon.ico',
+      },
+    };
+  }
 }
 
 // Отключаем кэширование для layout, чтобы настройки шапки всегда были актуальными
