@@ -291,23 +291,23 @@ jobs:
             if ! systemctl list-unit-files | grep -q temis-frontend; then
               echo "📦 Создаем сервис temis-frontend..."
               sudo bash -c 'cat > /etc/systemd/system/temis-frontend.service' << 'SERVICE_EOF'
-[Unit]
-Description=Temis Next.js Frontend
-After=network.target
+            [Unit]
+            Description=Temis Next.js Frontend
+            After=network.target
 
-[Service]
-Type=simple
-User=www-data
-WorkingDirectory=/var/www/temis/frontend
-Environment=NODE_ENV=production
-Environment=PORT=3001
-ExecStart=/usr/bin/node /var/www/temis/frontend/.next/standalone/server.js
-Restart=always
-RestartSec=10
+            [Service]
+            Type=simple
+            User=www-data
+            WorkingDirectory=/var/www/temis/frontend
+            Environment=NODE_ENV=production
+            Environment=PORT=3001
+            ExecStart=/usr/bin/node /var/www/temis/frontend/.next/standalone/server.js
+            Restart=always
+            RestartSec=10
 
-[Install]
-WantedBy=multi-user.target
-SERVICE_EOF
+            [Install]
+            WantedBy=multi-user.target
+            SERVICE_EOF
               sudo systemctl daemon-reload
               sudo systemctl enable temis-frontend
               echo "✅ Сервис temis-frontend создан и включен"
@@ -353,99 +353,99 @@ SERVICE_EOF
               if [ "$SSL_TEMIS_EXISTS" = false ] || [ "$SSL_API_EXISTS" = false ]; then
                 echo "📝 Создаем временную HTTP конфигурацию..."
                 sudo bash -c 'cat > /etc/nginx/sites-available/temis.conf' << 'NGINX_EOF'
-# HTTP конфигурация для temis.ooo (временная, до получения SSL)
-server {
-    listen 80;
-    listen [::]:80;
-    server_name temis.ooo;
+            # HTTP конфигурация для temis.ooo (временная, до получения SSL)
+            server {
+                listen 80;
+                listen [::]:80;
+                server_name temis.ooo;
 
-    # Логи
-    access_log /var/log/nginx/temis_access.log;
-    error_log /var/log/nginx/temis_error.log;
+                # Логи
+                access_log /var/log/nginx/temis_access.log;
+                error_log /var/log/nginx/temis_error.log;
 
-    # Максимальный размер загружаемых файлов
-    client_max_body_size 20M;
+                # Максимальный размер загружаемых файлов
+                client_max_body_size 20M;
 
-    # Проксирование на Next.js
-    location / {
-        proxy_pass http://localhost:3001;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        proxy_read_timeout 300s;
-        proxy_connect_timeout 75s;
-    }
+                # Проксирование на Next.js
+                location / {
+                    proxy_pass http://localhost:3001;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                    proxy_cache_bypass $http_upgrade;
+                    proxy_read_timeout 300s;
+                    proxy_connect_timeout 75s;
+                }
 
-    # Статические файлы Next.js
-    location /_next/ {
-        proxy_pass http://localhost:3001;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        expires 1y;
-        add_header Cache-Control "public, max-age=31536000, immutable";
-    }
-    
-    # Проксирование медиа файлов на API (напрямую на backend)
-    location /media/ {
-        proxy_pass http://127.0.0.1:8001/media/;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        expires 30d;
-        add_header Cache-Control "public";
-    }
-}
+                # Статические файлы Next.js
+                location /_next/ {
+                    proxy_pass http://localhost:3001;
+                    proxy_http_version 1.1;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                    expires 1y;
+                    add_header Cache-Control "public, max-age=31536000, immutable";
+                }
+                
+                # Проксирование медиа файлов на API (напрямую на backend)
+                location /media/ {
+                    proxy_pass http://127.0.0.1:8001/media/;
+                    proxy_http_version 1.1;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                    expires 30d;
+                    add_header Cache-Control "public";
+                }
+            }
 
-# HTTP конфигурация для api.temis.ooo (временная, до получения SSL)
-server {
-    listen 80;
-    listen [::]:80;
-    server_name api.temis.ooo;
+            # HTTP конфигурация для api.temis.ooo (временная, до получения SSL)
+            server {
+                listen 80;
+                listen [::]:80;
+                server_name api.temis.ooo;
 
-    # Логи
-    access_log /var/log/nginx/temis-api_access.log;
-    error_log /var/log/nginx/temis-api_error.log;
+                # Логи
+                access_log /var/log/nginx/temis-api_access.log;
+                error_log /var/log/nginx/temis-api_error.log;
 
-    # Максимальный размер загружаемых файлов
-    client_max_body_size 20M;
+                # Максимальный размер загружаемых файлов
+                client_max_body_size 20M;
 
-    # Статические файлы Django
-    location /static/ {
-        alias /var/www/temis/backend/staticfiles/;
-        expires 30d;
-        add_header Cache-Control "public";
-    }
+                # Статические файлы Django
+                location /static/ {
+                    alias /var/www/temis/backend/staticfiles/;
+                    expires 30d;
+                    add_header Cache-Control "public";
+                }
 
-    # Медиа файлы Django
-    location /media/ {
-        alias /var/www/temis/backend/media/;
-        expires 30d;
-        add_header Cache-Control "public";
-    }
+                # Медиа файлы Django
+                location /media/ {
+                    alias /var/www/temis/backend/media/;
+                    expires 30d;
+                    add_header Cache-Control "public";
+                }
 
-    # Проксирование на Django
-    location / {
-        proxy_pass http://127.0.0.1:8001;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_read_timeout 300s;
-        proxy_connect_timeout 75s;
-    }
-}
-NGINX_EOF
+                # Проксирование на Django
+                location / {
+                    proxy_pass http://127.0.0.1:8001;
+                    proxy_http_version 1.1;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                    proxy_read_timeout 300s;
+                    proxy_connect_timeout 75s;
+                }
+            }
+            NGINX_EOF
               else
                 # Используем оригинальную конфигурацию с SSL
                 sudo cp $DEPLOY_DIR/deploy/configs/nginx/temis.conf /etc/nginx/sites-available/temis.conf
