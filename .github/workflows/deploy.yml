@@ -8,7 +8,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy-temis-production
+  # Группируем по ветке, чтобы деплои из разных веток не мешали друг другу
+  group: deploy-temis-${{ github.event_name == 'workflow_dispatch' && github.ref_name || github.event.workflow_run.head_branch || 'default' }}
   cancel-in-progress: false
 
 jobs:
