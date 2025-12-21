@@ -844,8 +844,8 @@ class PrivacyPolicyAdmin(admin.ModelAdmin):
 
 
 # Группировка в админке
-admin.site.site_header = 'Администрирование сайта "Радуга слов"'
-admin.site.site_title = 'Радуга слов'
+admin.site.site_header = 'Администрирование сайта'
+admin.site.site_title = 'Temis'
 admin.site.index_title = 'Панель управления'
 
 # Кастомная группировка моделей через переопределение get_app_list
