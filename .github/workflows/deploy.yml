@@ -222,40 +222,51 @@ jobs:
             sudo -u www-data venv/bin/python -m pip install --no-cache-dir -r requirements.txt
             echo "✅ Зависимости установлены"
             
-            # КРИТИЧНО: Создаем .env файл если его нет (до fix-server.sh)
+            # Освобождаем порты перед запуском сервисов
+            echo "🧹 Освобождаем порты 3001/8001..."
+            PIDS=$(sudo ss -ltnp 2>/dev/null | awk '/:3001|:8001/ {print $0}' | sed -nE 's/.*pid=([0-9]+).*/\1/p' | sort -u)
+            if [ -n "$PIDS" ]; then
+              echo "$PIDS" | xargs sudo kill -9 2>/dev/null || true
+            fi
+            sleep 1
+            
+            # Настраиваем .env файл
+            echo "📝 Настраиваем .env файл..."
             if [ ! -f "$BACKEND_DIR/.env" ]; then
-              echo "📝 Создаем .env файл..."
               SECRET_KEY=$(sudo -u www-data venv/bin/python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
               sudo -u www-data bash -c "printf 'SECRET_KEY=%s\nDEBUG=False\nALLOWED_HOSTS=temis.ooo,api.temis.ooo,localhost,127.0.0.1\nDATABASE_URL=mysql://temis:temis_password@127.0.0.1:3306/temisdb\nUSE_SQLITE=False\n' \"\$SECRET_KEY\" > $BACKEND_DIR/.env" SECRET_KEY="$SECRET_KEY"
               sudo chmod 600 $BACKEND_DIR/.env
-              echo "✅ .env файл создан (с MySQL по умолчанию)"
+              echo "✅ .env создан (MySQL)"
+            elif grep -q "DATABASE_URL.*sqlite" "$BACKEND_DIR/.env" 2>/dev/null; then
+              OLD_SECRET=$(grep "^SECRET_KEY=" "$BACKEND_DIR/.env" | cut -d= -f2- | sed "s/^['\"]//;s/['\"]$//")
+              [ -z "$OLD_SECRET" ] && OLD_SECRET=$(sudo -u www-data venv/bin/python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
+              sudo -u www-data bash -c "printf 'SECRET_KEY=%s\nDEBUG=False\nALLOWED_HOSTS=temis.ooo,api.temis.ooo,localhost,127.0.0.1\nDATABASE_URL=mysql://temis:temis_password@127.0.0.1:3306/temisdb\nUSE_SQLITE=False\n' \"\$OLD_SECRET\" > $BACKEND_DIR/.env" OLD_SECRET="$OLD_SECRET"
+              echo "✅ .env обновлён на MySQL"
             else
-              echo "✅ .env файл уже существует"
+              echo "✅ .env уже настроен"
             fi
             
-            # КРИТИЧНО: Запускаем fix-server.sh ДО миграций (создаст MySQL БД если нужно)
-            echo "🔧 Запускаем fix-server.sh для настройки БД и исправления проблем..."
-            if [ -f "$DEPLOY_DIR/deploy/fix-server.sh" ]; then
-              sudo bash $DEPLOY_DIR/deploy/fix-server.sh || echo "⚠️  fix-server.sh завершился с предупреждениями"
-            else
-              echo "⚠️  Скрипт fix-server.sh не найден, пропускаем"
+            # Создаём MySQL БД если нужно
+            DATABASE_URL=$(grep "^DATABASE_URL=" "$BACKEND_DIR/.env" | cut -d= -f2- | sed "s/^['\"]//;s/['\"]$//")
+            if echo "$DATABASE_URL" | grep -q "^mysql" && command -v mysql >/dev/null 2>&1; then
+              echo "🐬 Настраиваем MySQL БД..."
+              DB_USER=$(echo "$DATABASE_URL" | sed -nE 's|mysql://([^:]+):.*|\1|p')
+              DB_PASS=$(echo "$DATABASE_URL" | sed -nE 's|mysql://[^:]+:([^@]+)@.*|\1|p')
+              DB_NAME=$(echo "$DATABASE_URL" | sed -nE 's|mysql://[^/]+/([^?]+).*|\1|p')
+              if [ -n "$DB_USER" ] && [ -n "$DB_NAME" ]; then
+                sudo mysql <<SQL 2>/dev/null || true
+CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASS}';
+GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'%';
+FLUSH PRIVILEGES;
+SQL
+                echo "✅ MySQL БД настроена"
+              fi
             fi
             
-            # КРИТИЧНО: Создаем директорию для БД и устанавливаем права (fallback для SQLite)
-            echo "🗄️  Настраиваем базу данных..."
-            sudo mkdir -p $(dirname "$BACKEND_DIR/db.sqlite3")
-            sudo chown -R www-data:www-data $BACKEND_DIR
-            if [ -f "$BACKEND_DIR/db.sqlite3" ]; then
-              sudo chown www-data:www-data "$BACKEND_DIR/db.sqlite3"
-              sudo chmod 664 "$BACKEND_DIR/db.sqlite3"
-            fi
-            echo "✅ База данных настроена"
-            
-            # Применяем миграции (после fix-server.sh, который создал БД)
-            echo "🗄️  Применяем миграции Django..."
-            set +e
-            sudo -u www-data venv/bin/python manage.py migrate --noinput 2>&1 || echo "⚠️  Ошибка миграций"
-            set -e
+            # Применяем миграции
+            echo "🗄️  Применяем миграции..."
+            sudo -u www-data venv/bin/python manage.py migrate --noinput || echo "⚠️  Ошибка миграций"
             
             # Собираем статику
             echo "📦 Собираем статику Django..."
