@@ -176,6 +176,54 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
         except Exception as e:
             logger.error(f'Error loading page by slug {slug}: {e}', exc_info=True)
             return Response({'error': f'Ошибка загрузки страницы: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=False, methods=['get'], url_path='home')
+    def home_page(self, request):
+        """Получить главную страницу по типу 'home'"""
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        try:
+            page = ContentPage.objects.filter(
+                is_active=True,
+                page_type='home'
+            ).prefetch_related(
+                'catalog_items',
+                'gallery_images',
+                'home_blocks__content_page__catalog_items',
+                'home_blocks__content_page__gallery_images',
+                'home_blocks__content_page__faq_items',
+                'home_blocks__content_page__selected_catalog_page__catalog_items',
+                'home_blocks__content_page__selected_gallery_page__gallery_images',
+                'home_blocks__content_page__selected_catalog_page',
+                'home_blocks__content_page__selected_gallery_page',
+                'faq_items',
+                'branches',
+                'display_branches',
+                'display_services__service_branches__branch',
+                'selected_catalog_page__catalog_items',
+                'selected_gallery_page__gallery_images'
+            ).select_related(
+                'selected_catalog_page',
+                'selected_gallery_page'
+            ).first()
+            
+            if not page:
+                logger.warning('Home page not found')
+                return Response({'error': 'Главная страница не найдена'}, status=status.HTTP_404_NOT_FOUND)
+            
+            logger.info(f'Loading home page: id={page.id}, slug={page.slug}, is_active={page.is_active}')
+            all_blocks = page.home_blocks.all()
+            active_blocks = page.home_blocks.filter(is_active=True)
+            logger.info(f'Home blocks - total: {all_blocks.count()}, active: {active_blocks.count()}')
+            
+            serializer = self.get_serializer(page)
+            data = serializer.data
+            logger.info(f'Serialized data - home_blocks count: {len(data.get("home_blocks", []))}')
+            return Response(data)
+        except Exception as e:
+            logger.error(f'Error loading home page: {e}', exc_info=True)
+            return Response({'error': f'Ошибка загрузки главной страницы: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class WelcomeBannerViewSet(viewsets.ReadOnlyModelViewSet):

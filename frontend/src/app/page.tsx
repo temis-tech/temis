@@ -16,9 +16,9 @@ export default async function Home() {
   let errorMessage = null;
   
   try {
-    // Пробуем найти страницу с slug 'home'
+    // Пробуем найти главную страницу по типу 'home'
     console.log('[Home Page] Attempting to load home page...');
-    const response = await contentApi.getContentPageBySlug('home').catch((err) => {
+    const response = await contentApi.getHomePage().catch((err) => {
       console.error('[Home Page] API Error:', err);
       console.error('[Home Page] Error details:', {
         message: err.message,

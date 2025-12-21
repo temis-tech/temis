@@ -43,6 +43,7 @@ export const contentApi = {
   submitBookingWithQuiz: (data: any) => api.post('/booking/submissions/submit_with_quiz/', data),
   // Универсальные страницы контента (конструктор)
   getContentPageBySlug: (slug: string) => api.get(`/content/pages/by-slug/${slug}/`),
+  getHomePage: () => api.get('/content/pages/home/'),
   // Элементы каталога
   getCatalogItemBySlug: (slug: string) => api.get(`/content/catalog-items/by-slug/${slug}/`),
   // Услуги
