@@ -6,7 +6,7 @@ from content.models import Branch, Service, Specialist, Review, Promotion, Artic
 
 
 class Command(BaseCommand):
-    help = 'Импортирует контент с сайта logoped-spb.pro'
+    help = 'Импортирует контент с сайта temis.ooo'
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Начинаю импорт контента...'))

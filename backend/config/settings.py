@@ -132,7 +132,7 @@ CKEDITOR_CONFIGS = {
 }
 
 # Домен API для замены localhost в URL изображений
-API_DOMAIN = config('API_DOMAIN', default='api.dev.logoped-spb.pro')
+API_DOMAIN = config('API_DOMAIN', default='api.temis.ooo')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

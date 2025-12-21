@@ -9,7 +9,7 @@ import os
 
 
 class Command(BaseCommand):
-    help = 'Скачивает изображения с сайта logoped-spb.pro'
+    help = 'Скачивает изображения с сайта temis.ooo'
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Начинаю скачивание изображений...'))

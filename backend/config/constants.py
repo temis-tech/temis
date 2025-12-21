@@ -14,7 +14,7 @@ MOYKLASS_WEBHOOK_PATH = f'{API_PREFIX}/moyklass/webhook/'
 # Получить домен API из настроек
 def get_api_domain():
     """Возвращает домен API из настроек"""
-    return getattr(settings, 'API_DOMAIN', 'api.dev.logoped-spb.pro')
+    return getattr(settings, 'API_DOMAIN', 'api.temis.ooo')
 
 # Получить протокол (https/http) в зависимости от DEBUG
 def get_protocol():
@@ -24,7 +24,7 @@ def get_protocol():
     if getattr(settings, 'DEBUG', False):
         # Проверяем, не продакшен ли это (по домену)
         api_domain = get_api_domain()
-        if 'dev.logoped-spb.pro' in api_domain or 'logoped-spb.pro' in api_domain:
+        if 'temis.ooo' in api_domain:
             return 'https'  # Даже на dev используем HTTPS
         return 'http'  # Только для localhost
     return 'https'  # Продакшен всегда HTTPS

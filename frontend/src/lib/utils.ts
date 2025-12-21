@@ -25,10 +25,10 @@ export function normalizeImageUrl(url: string | null | undefined): string {
   }
   
   // Заменяем неправильные домены на правильный
-  // Заменяем dev.logoped-spb.pro на api.dev.logoped-spb.pro
+  // Заменяем старые домены на api.temis.ooo
   const mediaPathEscaped = MEDIA_PATH.replace(/\//g, '\\/');
   url = url.replace(
-    new RegExp(`https?://dev\\.logoped-spb\\.pro(${mediaPathEscaped}/.*)`, 'g'),
+    new RegExp(`https?://[^/]+\\.logoped-spb\\.pro(${mediaPathEscaped}/.*)`, 'g'),
     `https://${apiHost}$1`
   );
   // Заменяем любые другие домены с /media/ на правильный API домен

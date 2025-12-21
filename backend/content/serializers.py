@@ -48,9 +48,9 @@ def get_image_url(image_field, request=None):
         
         # Заменяем неправильные домены на правильный API домен
         import re
-        # Заменяем dev.logoped-spb.pro на api.dev.logoped-spb.pro
+        # Заменяем старые домены на api.temis.ooo
         image_url = re.sub(
-            r'https?://dev\.logoped-spb\.pro(' + MEDIA_PATH + r'/.*)',
+            r'https?://[^/]+\.logoped-spb\.pro(' + MEDIA_PATH + r'/.*)',
             f'{protocol}://{api_domain}\\1',
             image_url
         )
@@ -78,9 +78,9 @@ def get_image_url(image_field, request=None):
             if api_domain in image_url:
                 return image_url
             
-            # Заменяем dev.logoped-spb.pro на api.dev.logoped-spb.pro
+            # Заменяем старые домены на api.temis.ooo
             image_url = re.sub(
-                r'https?://dev\.logoped-spb\.pro(' + MEDIA_PATH + r'/.*)',
+                r'https?://[^/]+\.logoped-spb\.pro(' + MEDIA_PATH + r'/.*)',
                 f'{protocol}://{api_domain}\\1',
                 image_url
             )

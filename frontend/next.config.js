@@ -12,16 +12,11 @@ const nextConfig = {
     return config;
   },
   images: {
-    domains: ['api.temis.ooo', 'api.dev.logoped-spb.pro'],
+    domains: ['api.temis.ooo'],
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'api.temis.ooo',
-        pathname: '/media/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'api.dev.logoped-spb.pro',
         pathname: '/media/**',
       },
     ],
