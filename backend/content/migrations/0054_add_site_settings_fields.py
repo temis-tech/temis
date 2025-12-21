@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='sitesettings',
             name='page_title',
-            field=models.CharField(default='Логопедический центр', help_text='Заголовок страницы (title), отображаемый во вкладке браузера', max_length=200, verbose_name='Заголовок страницы'),
+            field=models.CharField(default='Temis', help_text='Заголовок страницы (title), отображаемый во вкладке браузера', max_length=200, verbose_name='Заголовок страницы'),
         ),
         migrations.AddField(
             model_name='sitesettings',

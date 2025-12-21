@@ -1258,7 +1258,7 @@ class SiteSettings(models.Model):
     """Глобальные настройки сайта"""
     site_name = models.CharField('Название сайта', max_length=200, default='Радуга слов',
                                 help_text='Название сайта, отображаемое в шапке и других местах')
-    page_title = models.CharField('Заголовок страницы', max_length=200, default='Логопедический центр',
+    page_title = models.CharField('Заголовок страницы', max_length=200, default='Temis',
                                 help_text='Заголовок страницы (title), отображаемый во вкладке браузера')
     favicon = models.ImageField('Фавикон', upload_to='site/', blank=True, null=True,
                               help_text='Иконка сайта, отображаемая во вкладке браузера (рекомендуемый размер: 32x32 или 16x16 пикселей)')
