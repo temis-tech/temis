@@ -216,6 +216,11 @@ jobs:
             sudo chmod +x venv/bin/* 2>/dev/null || true
             sudo chown -R www-data:www-data venv
             
+            # Устанавливаем системные зависимости для MySQL (нужны для mysqlclient)
+            echo "📦 Устанавливаем системные зависимости для MySQL..."
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq default-libmysqlclient-dev pkg-config || echo "⚠️  Не удалось установить системные зависимости MySQL"
+            
             # Устанавливаем зависимости
             echo "Устанавливаю зависимости..."
             sudo -u www-data venv/bin/python -m pip install --upgrade pip
