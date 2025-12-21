@@ -137,3 +137,11 @@ jobs:
             -d text="${MESSAGE}" \
             -d parse_mode="HTML" \
             -d disable_web_page_preview=true || true
+  
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [ci-success]
+    if: needs.ci-success.outputs.should_deploy == 'true'
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit
