@@ -150,6 +150,10 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+# Убеждаемся, что CORS заголовки добавляются даже при ошибках
+CORS_ALLOW_ALL_ORIGINS = False  # Используем явный список для безопасности
+CORS_PREFLIGHT_MAX_AGE = 86400
+
 # CSRF настройки для работы с HTTPS
 CSRF_TRUSTED_ORIGINS = [
     "https://api.temis.ooo",
