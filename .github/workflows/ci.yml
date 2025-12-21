@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main, master ]
 
+concurrency:
+  # Для main/master - одна группа (последовательная обработка коммитов)
+  # Для PR - отдельная группа для каждого PR (параллельная обработка PR)
+  group: ci-temis-${{ github.ref == 'refs/heads/main' && 'main' || github.ref == 'refs/heads/master' && 'main' || github.ref }}
+  cancel-in-progress: false
+
 jobs:
   frontend:
     name: Frontend (Next.js)
