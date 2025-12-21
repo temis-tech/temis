@@ -102,9 +102,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # CKEditor настройки
 CKEDITOR_UPLOAD_PATH = 'uploads/'
-# Используем CDN для CKEditor 4.25.1-lts (последняя безопасная версия)
-# Примечание: django-ckeditor 6.7.3 поставляется с CKEditor 4.22.1, но мы можем переопределить через CDN
-CKEDITOR_CDN_URL = 'https://cdn.ckeditor.com/4.25.1-lts/standard-all/'
+# Используем локальные статические файлы вместо CDN для большей надежности
+# CKEDITOR_CDN_URL = 'https://cdn.ckeditor.com/4.25.1-lts/standard-all/'
 CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': 'full',
