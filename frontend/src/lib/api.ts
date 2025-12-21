@@ -1,21 +1,18 @@
 import axios from 'axios';
 
 // В продакшене должен быть установлен NEXT_PUBLIC_API_URL
-// На сервере (SSR) всегда используем переменную окружения
-// На клиенте используем относительный путь через API routes
+// На сервере (SSR) используем внутренний URL для прямых запросов к Django
+// На клиенте используем прямой URL к api.temis.ooo
 const getApiBaseUrl = () => {
-  // На сервере (SSR) всегда используем переменную окружения
-  // Это предотвратит запросы к localhost
+  // На сервере (SSR) используем внутренний URL для прямых запросов к Django
   if (typeof window === 'undefined') {
-    // Основной публичный адрес API, fallback на внутренний адрес (systemd backend слушает 127.0.0.1:8001)
-    return process.env.NEXT_PUBLIC_API_URL 
-      || process.env.INTERNAL_API_URL 
+    return process.env.INTERNAL_API_URL 
+      || process.env.NEXT_PUBLIC_API_URL 
       || 'http://127.0.0.1:8001/api';
   }
   
-  // На клиенте используем относительный путь через API routes
-  // Это не вызовет запросы к localhost, так как запросы идут к Next.js API routes
-  return '/api';
+  // На клиенте используем прямой URL к api.temis.ooo
+  return process.env.NEXT_PUBLIC_API_URL || 'https://api.temis.ooo/api';
 };
 
 const api = axios.create({
