@@ -189,6 +189,22 @@ jobs:
             sudo -u www-data venv/bin/python manage.py migrate --noinput 2>&1 || echo "⚠️  Ошибка миграций"
             set -e
             
+            # Создаем .env файл если его нет
+            if [ ! -f "$BACKEND_DIR/.env" ]; then
+              echo "📝 Создаем .env файл..."
+              sudo -u www-data tee $BACKEND_DIR/.env > /dev/null << 'ENV_EOF'
+SECRET_KEY=$(python3 -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
+DEBUG=False
+ALLOWED_HOSTS=temis.ooo,api.temis.ooo,localhost,127.0.0.1
+DATABASE_URL=sqlite:///$(pwd)/db.sqlite3
+USE_SQLITE=True
+ENV_EOF
+              sudo chmod 600 $BACKEND_DIR/.env
+              echo "✅ .env файл создан"
+            else
+              echo "✅ .env файл уже существует"
+            fi
+            
             # Собираем статику
             echo "📦 Собираем статику Django..."
             sudo -u www-data venv/bin/python manage.py collectstatic --noinput || echo "⚠️  Ошибка collectstatic"
@@ -240,7 +256,7 @@ Type=simple
 User=www-data
 WorkingDirectory=/var/www/temis/backend
 Environment="PATH=/var/www/temis/backend/venv/bin"
-EnvironmentFile=/var/www/temis/backend/.env
+EnvironmentFile=-/var/www/temis/backend/.env
 ExecStart=/var/www/temis/backend/venv/bin/gunicorn \
     --bind 127.0.0.1:8001 \
     --workers 1 \
