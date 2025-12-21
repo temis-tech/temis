@@ -59,12 +59,13 @@ def get_image_url(image_field, request=None):
             f'{protocol}://{api_domain}\\1',
             image_url
         )
-        # Заменяем любые другие домены с /media/ на правильный API домен
-        image_url = re.sub(
-            r'https?://[^/]+(' + MEDIA_PATH + r'/.*)',
-            f'{protocol}://{api_domain}\\1',
-            image_url
-        )
+        # Заменяем любые другие домены с /media/ на правильный API домен (но не api.temis.ooo)
+        if api_domain not in image_url:
+            image_url = re.sub(
+                r'https?://[^/]+(' + MEDIA_PATH + r'/.*)',
+                f'{protocol}://{api_domain}\\1',
+                image_url
+            )
         return image_url
     
     # Если есть request, формируем абсолютный URL используя правильный API домен
@@ -94,12 +95,13 @@ def get_image_url(image_field, request=None):
                 f'{protocol}://{api_domain}\\1',
                 image_url
             )
-            # Заменяем любые другие домены с /media/ на правильный API домен
-            image_url = re.sub(
-                r'https?://[^/]+(' + MEDIA_PATH + r'/.*)',
-                f'{protocol}://{api_domain}\\1',
-                image_url
-            )
+            # Заменяем любые другие домены с /media/ на правильный API домен (но не api.temis.ooo)
+            if api_domain not in image_url:
+                image_url = re.sub(
+                    r'https?://[^/]+(' + MEDIA_PATH + r'/.*)',
+                    f'{protocol}://{api_domain}\\1',
+                    image_url
+                )
             return image_url
         
         # Если image_url относительный, формируем абсолютный URL с правильным доменом
@@ -590,7 +592,6 @@ class GalleryImageSerializer(serializers.ModelSerializer):
     def get_video_embed_url(self, obj):
         """Конвертирует URL видео в embed URL для YouTube, Rutube, Vimeo, VK"""
         if obj.content_type == 'video' and obj.video_url:
-            import re
             url = obj.video_url
             
             # YouTube
