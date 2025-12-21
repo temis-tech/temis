@@ -18,17 +18,38 @@ export async function GET(
   const url = new URL(request.url);
   const queryString = url.search;
 
+  // Убеждаемся, что путь заканчивается на / для Django
+  const apiPath = path.endsWith('/') ? path : `${path}/`;
+
   try {
-    const response = await fetch(`${API_BASE_URL}/content/${path}${queryString}`, {
+    const response = await fetch(`${API_BASE_URL}/content/${apiPath}${queryString}`, {
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
+      cache: 'no-store',
     });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { error: errorText || 'Unknown error' };
+      }
+      console.error(`API error: ${response.status}`, errorData);
+      return NextResponse.json(errorData, { status: response.status });
+    }
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('API route error:', error);
+    return NextResponse.json({ 
+      error: 'Internal Server Error',
+      details: error.message 
+    }, { status: 500 });
   }
 }
 
