@@ -6,14 +6,22 @@ from django.db import connection
 
 
 def check_field_exists(table_name, field_name):
-    """Проверяет, существует ли поле в таблице"""
+    """Проверяет, существует ли поле в таблице (работает с SQLite и PostgreSQL)"""
+    db_engine = connection.settings_dict.get('ENGINE', '')
     with connection.cursor() as cursor:
-        cursor.execute("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name=%s AND column_name=%s
-        """, [table_name, field_name])
-        return cursor.fetchone() is not None
+        if 'sqlite' in db_engine:
+            # Для SQLite используем PRAGMA table_info
+            cursor.execute(f"PRAGMA table_info({table_name})")
+            columns = [row[1] for row in cursor.fetchall()]
+            return field_name in columns
+        else:
+            # Для PostgreSQL и других используем information_schema
+            cursor.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name=%s AND column_name=%s
+            """, [table_name, field_name])
+            return cursor.fetchone() is not None
 
 
 def add_missing_fields_from_0024(apps, schema_editor):
