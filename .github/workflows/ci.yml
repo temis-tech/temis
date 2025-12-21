@@ -63,6 +63,9 @@ jobs:
           python manage.py makemigrations --check --dry-run
         env:
           DJANGO_SETTINGS_MODULE: config.settings
+          SECRET_KEY: 'ci-test-secret-key-for-testing-only'
+          DEBUG: 'False'
+          ALLOWED_HOSTS: 'localhost,127.0.0.1'
           USE_SQLITE: 'True'
       
       - name: Run Django check
@@ -71,4 +74,7 @@ jobs:
           python manage.py check
         env:
           DJANGO_SETTINGS_MODULE: config.settings
+          SECRET_KEY: 'ci-test-secret-key-for-testing-only'
+          DEBUG: 'False'
+          ALLOWED_HOSTS: 'localhost,127.0.0.1'
           USE_SQLITE: 'True'
