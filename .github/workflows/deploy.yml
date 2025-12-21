@@ -222,7 +222,26 @@ jobs:
             sudo -u www-data venv/bin/python -m pip install --no-cache-dir -r requirements.txt
             echo "✅ Зависимости установлены"
             
-            # КРИТИЧНО: Создаем директорию для БД и устанавливаем права
+            # КРИТИЧНО: Создаем .env файл если его нет (до fix-server.sh)
+            if [ ! -f "$BACKEND_DIR/.env" ]; then
+              echo "📝 Создаем .env файл..."
+              SECRET_KEY=$(sudo -u www-data venv/bin/python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
+              sudo -u www-data bash -c "printf 'SECRET_KEY=%s\nDEBUG=False\nALLOWED_HOSTS=temis.ooo,api.temis.ooo,localhost,127.0.0.1\nDATABASE_URL=mysql://temis:temis_password@127.0.0.1:3306/temisdb\nUSE_SQLITE=False\n' \"\$SECRET_KEY\" > $BACKEND_DIR/.env" SECRET_KEY="$SECRET_KEY"
+              sudo chmod 600 $BACKEND_DIR/.env
+              echo "✅ .env файл создан (с MySQL по умолчанию)"
+            else
+              echo "✅ .env файл уже существует"
+            fi
+            
+            # КРИТИЧНО: Запускаем fix-server.sh ДО миграций (создаст MySQL БД если нужно)
+            echo "🔧 Запускаем fix-server.sh для настройки БД и исправления проблем..."
+            if [ -f "$DEPLOY_DIR/deploy/fix-server.sh" ]; then
+              sudo bash $DEPLOY_DIR/deploy/fix-server.sh || echo "⚠️  fix-server.sh завершился с предупреждениями"
+            else
+              echo "⚠️  Скрипт fix-server.sh не найден, пропускаем"
+            fi
+            
+            # КРИТИЧНО: Создаем директорию для БД и устанавливаем права (fallback для SQLite)
             echo "🗄️  Настраиваем базу данных..."
             sudo mkdir -p $(dirname "$BACKEND_DIR/db.sqlite3")
             sudo chown -R www-data:www-data $BACKEND_DIR
@@ -232,22 +251,11 @@ jobs:
             fi
             echo "✅ База данных настроена"
             
-            # Применяем миграции
+            # Применяем миграции (после fix-server.sh, который создал БД)
             echo "🗄️  Применяем миграции Django..."
             set +e
             sudo -u www-data venv/bin/python manage.py migrate --noinput 2>&1 || echo "⚠️  Ошибка миграций"
             set -e
-            
-            # Создаем .env файл если его нет
-            if [ ! -f "$BACKEND_DIR/.env" ]; then
-              echo "📝 Создаем .env файл..."
-              SECRET_KEY=$(sudo -u www-data venv/bin/python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
-              sudo -u www-data bash -c "printf 'SECRET_KEY=%s\nDEBUG=False\nALLOWED_HOSTS=temis.ooo,api.temis.ooo,localhost,127.0.0.1\nDATABASE_URL=sqlite:///%s/db.sqlite3\nUSE_SQLITE=True\n' \"\$SECRET_KEY\" \"\$BACKEND_DIR\" > $BACKEND_DIR/.env" SECRET_KEY="$SECRET_KEY" BACKEND_DIR="$BACKEND_DIR"
-              sudo chmod 600 $BACKEND_DIR/.env
-              echo "✅ .env файл создан"
-            else
-              echo "✅ .env файл уже существует"
-            fi
             
             # Собираем статику
             echo "📦 Собираем статику Django..."
@@ -699,15 +707,6 @@ jobs:
             fi
             
             echo "✅ Деплой Temis завершен!"
-            
-            # Запускаем скрипт быстрого исправления
-            echo "🔧 Запускаем скрипт быстрого исправления..."
-            if [ -f "$DEPLOY_DIR/deploy/fix-server.sh" ]; then
-              sudo bash $DEPLOY_DIR/deploy/fix-server.sh
-              echo "✅ Скрипт исправления выполнен"
-            else
-              echo "⚠️  Скрипт fix-server.sh не найден, пропускаем"
-            fi
       
       - name: Send Telegram notification on success
         if: success()
