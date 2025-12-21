@@ -86,9 +86,46 @@ jobs:
     if: always()
     steps:
       - name: Check CI results
+        id: check_results
         run: |
           if [ "${{ needs.frontend.result }}" != "success" ] || [ "${{ needs.backend.result }}" != "success" ]; then
             echo "❌ CI failed: frontend=${{ needs.frontend.result }}, backend=${{ needs.backend.result }}"
+            echo "status=failure" >> $GITHUB_OUTPUT
             exit 1
           fi
           echo "✅ All CI checks passed"
+          echo "status=success" >> $GITHUB_OUTPUT
+      
+      - name: Send Telegram notification on success
+        if: steps.check_results.outputs.status == 'success'
+        run: |
+          BOT_TOKEN="${{ secrets.TELEGRAM_BOT_TOKEN || '8519804617:AAFDdXQOMb9EqfdJViVfBFS5ReLoP9oHYnQ' }}"
+          CHAT_ID="${{ secrets.TELEGRAM_CHAT_ID }}"
+          if [ -z "$CHAT_ID" ]; then
+            echo "⚠️ TELEGRAM_CHAT_ID не настроен, пропускаем уведомление"
+            exit 0
+          fi
+          MESSAGE="✅ <b>CI успешно завершен</b>%0A%0A📦 Проект: Temis%0A🔗 Репозиторий: ${{ github.repository }}%0A🌿 Ветка: ${{ github.ref_name }}%0A👤 Автор: ${{ github.actor }}%0A🔗 <a href=\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\">Посмотреть логи</a>"
+          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            -d chat_id="${CHAT_ID}" \
+            -d text="${MESSAGE}" \
+            -d parse_mode="HTML" \
+            -d disable_web_page_preview=true || true
+      
+      - name: Send Telegram notification on failure
+        if: failure()
+        run: |
+          BOT_TOKEN="${{ secrets.TELEGRAM_BOT_TOKEN || '8519804617:AAFDdXQOMb9EqfdJViVfBFS5ReLoP9oHYnQ' }}"
+          CHAT_ID="${{ secrets.TELEGRAM_CHAT_ID }}"
+          if [ -z "$CHAT_ID" ]; then
+            echo "⚠️ TELEGRAM_CHAT_ID не настроен, пропускаем уведомление"
+            exit 0
+          fi
+          FRONTEND_STATUS="${{ needs.frontend.result }}"
+          BACKEND_STATUS="${{ needs.backend.result }}"
+          MESSAGE="❌ <b>CI завершился с ошибкой</b>%0A%0A📦 Проект: Temis%0A🔗 Репозиторий: ${{ github.repository }}%0A🌿 Ветка: ${{ github.ref_name }}%0A👤 Автор: ${{ github.actor }}%0A%0A📊 Статус:%0A• Frontend: ${FRONTEND_STATUS}%0A• Backend: ${BACKEND_STATUS}%0A%0A🔗 <a href=\"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\">Посмотреть логи</a>"
+          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            -d chat_id="${CHAT_ID}" \
+            -d text="${MESSAGE}" \
+            -d parse_mode="HTML" \
+            -d disable_web_page_preview=true || true

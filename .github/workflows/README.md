@@ -51,6 +51,11 @@
    - **`PROD_SERVER_HOST`**: IP адрес сервера (например: `85.190.102.101`)
    - **`PROD_SERVER_USER`**: Имя пользователя для SSH (например: `administrator`)
    - **`PROD_SERVER_PASSWORD`**: Пароль для SSH
+   - **`TELEGRAM_BOT_TOKEN`** (опционально): Токен Telegram бота для уведомлений. Если не указан, используется токен по умолчанию.
+   - **`TELEGRAM_CHAT_ID`**: ID чата в Telegram для отправки уведомлений. Чтобы узнать свой chat_id:
+     - Найди бота [@userinfobot](https://t.me/userinfobot) в Telegram
+     - Отправь ему любое сообщение
+     - Бот вернет твой ID (например: `123456789`)
 
 ## Структура деплоя
 
