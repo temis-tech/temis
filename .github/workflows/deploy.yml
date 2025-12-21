@@ -420,7 +420,7 @@ jobs:
                     proxy_connect_timeout 75s;
                 }
 
-                # Статические файлы Next.js
+                # Статические файлы Next.js - КРИТИЧНО: проксируем на порт 3001
                 location /_next/ {
                     proxy_pass http://localhost:3001;
                     proxy_http_version 1.1;
@@ -428,8 +428,21 @@ jobs:
                     proxy_set_header X-Real-IP $remote_addr;
                     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                     proxy_set_header X-Forwarded-Proto $scheme;
+                    proxy_cache_bypass $http_upgrade;
                     expires 1y;
                     add_header Cache-Control "public, max-age=31536000, immutable";
+                }
+                
+                # Favicon и другие статические файлы из public
+                location ~ ^/(favicon\.ico|robots\.txt|sitemap\.xml)$ {
+                    proxy_pass http://localhost:3001;
+                    proxy_http_version 1.1;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                    expires 7d;
+                    add_header Cache-Control "public";
                 }
                 
                 # Проксирование медиа файлов на API (напрямую на backend)
@@ -520,10 +533,17 @@ jobs:
               echo "⚠️  Конфигурация Nginx не найдена, пропускаем"
             fi
             
-            # Перезагружаем Nginx
-            echo "🔄 Перезагружаем Nginx..."
-            sudo systemctl reload nginx
-            echo "✅ Nginx перезагружен"
+            # Перезагружаем Nginx (принудительно, чтобы сбросить кэш)
+            echo "🔄 Перезагружаем Nginx (принудительно)..."
+            sudo systemctl restart nginx
+            sleep 2
+            if sudo systemctl is-active --quiet nginx; then
+              echo "✅ Nginx перезапущен"
+            else
+              echo "❌ Ошибка при перезапуске Nginx!"
+              sudo systemctl status nginx --no-pager -l | head -20
+              exit 1
+            fi
             
             # КРИТИЧНО: Проверяем, что api.temis.ooo НЕ проксируется на старый порт
             echo "🔍 КРИТИЧЕСКАЯ ПРОВЕРКА: Проверяем конфигурацию api.temis.ooo..."
