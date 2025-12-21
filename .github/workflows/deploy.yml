@@ -525,6 +525,48 @@ jobs:
             sudo systemctl reload nginx
             echo "✅ Nginx перезагружен"
             
+            # КРИТИЧНО: Проверяем, что api.temis.ooo НЕ проксируется на старый порт
+            echo "🔍 КРИТИЧЕСКАЯ ПРОВЕРКА: Проверяем конфигурацию api.temis.ooo..."
+            
+            # Проверяем все конфигурации Nginx на наличие api.temis.ooo
+            echo "Поиск конфигураций для api.temis.ooo:"
+            sudo grep -r "server_name.*api.temis.ooo" /etc/nginx/sites-enabled/ || echo "   Не найдено"
+            
+            # Проверяем, на какой порт проксируется api.temis.ooo
+            API_CONFIG=$(sudo grep -A 20 "server_name.*api.temis.ooo" /etc/nginx/sites-enabled/* 2>/dev/null | grep -A 5 "location /" | grep "proxy_pass" | head -1)
+            if [ -n "$API_CONFIG" ]; then
+              echo "Найденная конфигурация proxy_pass для api.temis.ooo:"
+              echo "   $API_CONFIG"
+              
+              # Проверяем порт
+              if echo "$API_CONFIG" | grep -q ":8001"; then
+                echo "   ✅ Правильно проксируется на порт 8001 (temis-backend)"
+              elif echo "$API_CONFIG" | grep -q ":8000"; then
+                echo "   ❌ ОШИБКА: Проксируется на порт 8000 (estenomada-backend)!"
+                echo "   Это неправильно! Нужно исправить конфигурацию."
+              else
+                echo "   ⚠️  Не удалось определить порт"
+              fi
+            else
+              echo "   ⚠️  Конфигурация proxy_pass для api.temis.ooo не найдена"
+            fi
+            
+            # Проверяем, что temis-backend запущен
+            echo "🔍 Проверяем статус temis-backend..."
+            if systemctl is-active --quiet temis-backend; then
+              echo "   ✅ temis-backend запущен"
+              # Проверяем порт
+              if sudo netstat -tlnp 2>/dev/null | grep -q ":8001" || sudo ss -tlnp 2>/dev/null | grep -q ":8001"; then
+                echo "   ✅ Порт 8001 слушается"
+              else
+                echo "   ⚠️  Порт 8001 не слушается!"
+              fi
+            else
+              echo "   ❌ temis-backend НЕ запущен!"
+              echo "   Пытаемся запустить..."
+              sudo systemctl start temis-backend || echo "   Не удалось запустить"
+            fi
+            
             # Проверяем статус
             echo "📊 Проверяем статус сервисов..."
             sudo systemctl status temis-backend --no-pager -l | head -10 || true
