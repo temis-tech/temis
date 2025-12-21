@@ -1,0 +1,254 @@
+name: Deploy Temis to Production
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-temis-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Temis to Production
+    runs-on: ubuntu-latest
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      (github.event.workflow_run.head_branch == 'main' || github.event.workflow_run.head_branch == 'master')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './frontend/package-lock.json'
+      
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+      
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+        env:
+          NODE_ENV: production
+          NEXT_TELEMETRY_DISABLED: 1
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: './backend/requirements.txt'
+      
+      - name: Install Python dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir -r requirements.txt
+      
+      - name: Check Django
+        working-directory: ./backend
+        run: python manage.py check
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings
+          USE_SQLITE: 'True'
+      
+      - name: Create deployment archive
+        run: |
+          echo "📦 Creating deployment archive..."
+          
+          # Упаковываем frontend (standalone режим)
+          cd frontend
+          tar -czf ../frontend-deploy.tar.gz \
+            .next/standalone \
+            .next/static \
+            public \
+            package.json \
+            next.config.js
+          cd ..
+          
+          # Упаковываем backend
+          tar -czf backend-deploy.tar.gz \
+            backend \
+            deploy/configs
+          
+          # Создаем финальный архив
+          tar -czf deploy.tar.gz frontend-deploy.tar.gz backend-deploy.tar.gz
+          rm frontend-deploy.tar.gz backend-deploy.tar.gz
+          echo "✅ Archive created: $(du -h deploy.tar.gz | cut -f1)"
+      
+      - name: Check secrets
+        run: |
+          if [ -z "${{ secrets.PROD_SERVER_HOST }}" ]; then
+            echo "❌ Ошибка: PROD_SERVER_HOST не настроен"
+            exit 1
+          fi
+          if [ -z "${{ secrets.PROD_SERVER_USER }}" ]; then
+            echo "❌ Ошибка: PROD_SERVER_USER не настроен"
+            exit 1
+          fi
+          if [ -z "${{ secrets.PROD_SERVER_PASSWORD }}" ]; then
+            echo "❌ Ошибка: PROD_SERVER_PASSWORD не настроен"
+            exit 1
+          fi
+          echo "✅ Все секреты настроены"
+      
+      - name: Install sshpass
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+      
+      - name: Upload archive via SCP
+        env:
+          SSHPASS: ${{ secrets.PROD_SERVER_PASSWORD }}
+        run: |
+          echo "📤 Uploading deploy.tar.gz to server..."
+          sshpass -e scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+            deploy.tar.gz ${{ secrets.PROD_SERVER_USER }}@${{ secrets.PROD_SERVER_HOST }}:/tmp/temis-deploy.tar.gz
+      
+      - name: Extract and deploy on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_SERVER_HOST }}
+          username: ${{ secrets.PROD_SERVER_USER }}
+          password: ${{ secrets.PROD_SERVER_PASSWORD }}
+          port: 22
+          timeout: 600s
+          debug: true
+          script: |
+            set -e
+            
+            DEPLOY_DIR="/var/www/temis"
+            BACKEND_DIR="$DEPLOY_DIR/backend"
+            FRONTEND_DIR="$DEPLOY_DIR/frontend"
+            
+            echo "🚀 Начинаем деплой Temis..."
+            echo "⚠️  ВАЖНО: Не затрагиваем Este Nómada в /var/www/estenomada"
+            
+            # Создаем бэкап
+            if [ -d "$DEPLOY_DIR" ]; then
+              echo "📦 Создаю бэкап..."
+              sudo tar -czf /tmp/temis-backup-$(date +%Y%m%d-%H%M%S).tar.gz -C $DEPLOY_DIR . 2>/dev/null || true
+            fi
+            
+            # Распаковываем новый код
+            echo "📥 Распаковываем новый код..."
+            sudo mkdir -p $DEPLOY_DIR
+            sudo mkdir -p $FRONTEND_DIR
+            sudo mkdir -p $BACKEND_DIR
+            cd /tmp
+            sudo tar -xzf temis-deploy.tar.gz
+            sudo tar -xzf frontend-deploy.tar.gz -C $FRONTEND_DIR
+            sudo tar -xzf backend-deploy.tar.gz -C $DEPLOY_DIR
+            sudo rm -f temis-deploy.tar.gz frontend-deploy.tar.gz backend-deploy.tar.gz
+            echo "✅ Код распакован"
+            
+            # Устанавливаем права
+            echo "🔐 Устанавливаем права..."
+            sudo chown -R www-data:www-data $DEPLOY_DIR
+            sudo find $DEPLOY_DIR -type d -exec chmod 755 {} \;
+            sudo find $DEPLOY_DIR -type f -exec chmod 644 {} \;
+            sudo chmod +x $DEPLOY_DIR/scripts/*.sh 2>/dev/null || true
+            
+            # Backend: устанавливаем зависимости
+            echo "📦 Устанавливаем Python зависимости..."
+            cd $BACKEND_DIR
+            
+            PYTHON_CMD=$(which python3.11 || which python3 || which python)
+            echo "Используем Python: $PYTHON_CMD"
+            
+            # Создаем venv если его нет
+            if [ ! -d "venv" ]; then
+              echo "Создаю виртуальное окружение..."
+              sudo -u www-data $PYTHON_CMD -m venv venv
+            fi
+            sudo chmod +x venv/bin/* 2>/dev/null || true
+            sudo chown -R www-data:www-data venv
+            
+            # Устанавливаем зависимости
+            echo "Устанавливаю зависимости..."
+            sudo -u www-data venv/bin/python -m pip install --upgrade pip
+            sudo -u www-data venv/bin/python -m pip install --no-cache-dir -r requirements.txt
+            echo "✅ Зависимости установлены"
+            
+            # Применяем миграции
+            echo "🗄️  Применяем миграции Django..."
+            set +e
+            sudo -u www-data venv/bin/python manage.py migrate --noinput 2>&1 || echo "⚠️  Ошибка миграций"
+            set -e
+            
+            # Собираем статику
+            echo "📦 Собираем статику Django..."
+            sudo -u www-data venv/bin/python manage.py collectstatic --noinput || echo "⚠️  Ошибка collectstatic"
+            
+            # Frontend: проверяем наличие .next/standalone
+            echo "📦 Проверяем Frontend (standalone режим)..."
+            cd $FRONTEND_DIR
+            
+            if [ ! -d ".next/standalone" ]; then
+              echo "⚠️  .next/standalone директория не найдена!"
+              exit 1
+            fi
+            
+            # В standalone режиме зависимости уже включены в .next/standalone
+            # Просто проверяем наличие server.js
+            if [ ! -f ".next/standalone/server.js" ]; then
+              echo "⚠️  server.js не найден в standalone!"
+              exit 1
+            fi
+            echo "✅ Frontend готов (standalone режим)"
+            
+            # Перезапускаем сервисы
+            echo "🔄 Перезапускаем сервисы..."
+            set +e
+            
+            if systemctl list-unit-files | grep -q temis-backend; then
+              sudo systemctl restart temis-backend
+              echo "✅ Backend перезапущен"
+            else
+              echo "⚠️  Сервис temis-backend не найден, возможно нужно создать вручную"
+            fi
+            
+            if systemctl list-unit-files | grep -q temis-frontend; then
+              sudo systemctl restart temis-frontend
+              echo "✅ Frontend перезапущен"
+            else
+              echo "⚠️  Сервис temis-frontend не найден, возможно нужно создать вручную"
+            fi
+            set -e
+            
+            # Перезагружаем Nginx
+            echo "🔄 Перезагружаем Nginx..."
+            sudo nginx -t && sudo systemctl reload nginx
+            echo "✅ Nginx перезагружен"
+            
+            # Проверяем статус
+            echo "📊 Проверяем статус сервисов..."
+            sudo systemctl status temis-backend --no-pager -l | head -10 || true
+            sudo systemctl status temis-frontend --no-pager -l | head -10 || true
+            
+            # Проверяем, что Este Nómada не затронут
+            echo "✅ Проверяем, что Este Nómada не затронут..."
+            if systemctl is-active --quiet estenomada-frontend; then
+              echo "✅ Este Nómada frontend работает"
+            fi
+            if systemctl is-active --quiet estenomada-backend; then
+              echo "✅ Este Nómada backend работает"
+            fi
+            
+            echo "✅ Деплой Temis завершен!"
+      
+      - name: Cleanup
+        if: always()
+        run: rm -f deploy.tar.gz
+
