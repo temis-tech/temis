@@ -8,6 +8,8 @@ DEPLOY_DIR="/var/www/temis"
 NGINX_CONFIG_SOURCE="$DEPLOY_DIR/deploy/configs/nginx/temis.conf"
 NGINX_CONFIG_TARGET="/etc/nginx/sites-available/temis.conf"
 NGINX_ENABLED="/etc/nginx/sites-enabled/temis.conf"
+NGINX_LEGACY_AVAILABLE="/etc/nginx/sites-available/temis"
+NGINX_LEGACY_ENABLED="/etc/nginx/sites-enabled/temis"
 
 echo "🌐 Применение конфигурации Nginx для Temis..."
 
@@ -21,6 +23,11 @@ fi
 # Копируем конфигурацию
 echo "📋 Копируем конфигурацию Nginx..."
 sudo cp "$NGINX_CONFIG_SOURCE" "$NGINX_CONFIG_TARGET"
+
+# Удаляем старую (legacy) конфигурацию temis, чтобы не было конфликтов server_name
+echo "🧹 Убираем legacy-конфиги (если есть)..."
+sudo rm -f "$NGINX_LEGACY_ENABLED" 2>/dev/null || true
+sudo rm -f "$NGINX_LEGACY_AVAILABLE" 2>/dev/null || true
 
 # Создаем симлинк если его нет
 if [ ! -L "$NGINX_ENABLED" ]; then

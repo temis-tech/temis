@@ -11,6 +11,30 @@ DEPLOY_DIR="/var/www/temis"
 BACKEND_DIR="$DEPLOY_DIR/backend"
 FRONTEND_DIR="$DEPLOY_DIR/frontend"
 
+# 0. Останавливаем сервисы, чтобы не было гонок за порты/файлы
+echo "⏹️  Останавливаем сервисы (если существуют)..."
+sudo systemctl stop temis-frontend 2>/dev/null || true
+sudo systemctl stop temis-backend 2>/dev/null || true
+sudo systemctl reset-failed temis-frontend 2>/dev/null || true
+sudo systemctl reset-failed temis-backend 2>/dev/null || true
+
+# 0.1 Убиваем “сиротские” процессы, которые держат порты (частая причина EADDRINUSE)
+kill_port_listeners() {
+    local port="$1"
+    # ss выводит что-то вроде users:(("node",pid=123,fd=19))
+    local pids
+    pids=$(sudo ss -ltnp 2>/dev/null | awk -v p=":$port" '$0 ~ p {print $0}' | sed -nE 's/.*pid=([0-9]+).*/\1/p' | sort -u)
+    if [ -n "$pids" ]; then
+        echo "   ⚠️  Порт $port занят (PID: $pids) — завершаем процессы..."
+        sudo kill $pids 2>/dev/null || true
+        sleep 1
+        sudo kill -9 $pids 2>/dev/null || true
+    fi
+}
+echo "🧹 Освобождаем порты 3001/8001 (если заняты)..."
+kill_port_listeners 3001
+kill_port_listeners 8001
+
 # 1. Проверяем структуру директорий
 echo "📁 Проверяем структуру директорий..."
 if [ ! -d "$DEPLOY_DIR" ]; then
@@ -23,8 +47,8 @@ echo "🔐 Исправляем права доступа..."
 sudo chown -R www-data:www-data $DEPLOY_DIR
 sudo find $DEPLOY_DIR -type d -exec chmod 755 {} \;
 sudo find $DEPLOY_DIR -type f -exec chmod 644 {} \;
-sudo find $DEPLOY_DIR/.next/static -type d -exec chmod 755 {} \; 2>/dev/null || true
-sudo find $DEPLOY_DIR/.next/static -type f -exec chmod 644 {} \; 2>/dev/null || true
+sudo find $FRONTEND_DIR/.next/static -type d -exec chmod 755 {} \; 2>/dev/null || true
+sudo find $FRONTEND_DIR/.next/static -type f -exec chmod 644 {} \; 2>/dev/null || true
 echo "✅ Права доступа исправлены"
 
 # 3. Проверяем .env файл backend
@@ -112,16 +136,108 @@ fi
 # 5. Создаем директорию для БД и исправляем права
 echo "🗄️  Настраиваем базу данных..."
 cd $BACKEND_DIR
-# Создаем директорию для БД если её нет
-sudo mkdir -p $(dirname "$BACKEND_DIR/db.sqlite3")
 # Устанавливаем права на директорию backend
 sudo chown -R www-data:www-data $BACKEND_DIR
 sudo chmod 755 $BACKEND_DIR
-# Если БД существует, исправляем права
-if [ -f "$BACKEND_DIR/db.sqlite3" ]; then
-    sudo chown www-data:www-data "$BACKEND_DIR/db.sqlite3"
-    sudo chmod 664 "$BACKEND_DIR/db.sqlite3"
-    echo "   ✅ Права на БД исправлены"
+# Гарантируем существование файла БД (Django/SQLite иначе может падать "unable to open database file")
+if [ ! -f "$BACKEND_DIR/db.sqlite3" ]; then
+    echo "   Создаем пустой db.sqlite3..."
+    sudo -u www-data touch "$BACKEND_DIR/db.sqlite3"
+fi
+sudo chown www-data:www-data "$BACKEND_DIR/db.sqlite3"
+sudo chmod 664 "$BACKEND_DIR/db.sqlite3"
+echo "   ✅ Права на БД исправлены"
+
+# 6.1 Если в .env указан Postgres (DATABASE_URL=postgres://...), создаем БД/пользователя если их нет
+DATABASE_URL=$(grep -E '^DATABASE_URL=' "$BACKEND_DIR/.env" 2>/dev/null | head -1 | cut -d= -f2- | sed "s/^['\"]//;s/['\"]$//")
+if echo "$DATABASE_URL" | grep -q '^postgres'; then
+    echo "🐘 Обнаружен Postgres в DATABASE_URL — проверяю/создаю БД..."
+    if ! command -v psql >/dev/null 2>&1; then
+        echo "   ⚠️  psql не найден. Установите postgresql-client или postgresql и повторите."
+    else
+        # Парсим DSN через python, экранируем кавычки для psql
+        eval "$(DATABASE_URL="$DATABASE_URL" python - <<'PY'
+import os, sys
+from urllib.parse import urlparse
+
+dsn = os.environ.get("DATABASE_URL","")
+if not dsn.startswith("postgres"):
+    sys.exit(0)
+u = urlparse(dsn)
+def esc(v): return (v or "").replace("'", "''")
+print(f"PG_USER='{esc(u.username or '')}'")
+print(f"PG_PASS='{esc(u.password or '')}'")
+print(f"PG_HOST='{u.hostname or ''}'")
+print(f"PG_PORT='{u.port or 5432}'")
+print(f"PG_DB='{(u.path or '').lstrip('/')}'")
+PY
+)"
+        if [ -z "$PG_USER" ] || [ -z "$PG_DB" ]; then
+            echo "   ⚠️  Не удалось распарсить DATABASE_URL. Пропускаю авто-создание БД."
+        elif [ "$PG_HOST" != "127.0.0.1" ] && [ "$PG_HOST" != "localhost" ]; then
+            echo "   ℹ️  DATABASE_URL указывает на внешний хост ($PG_HOST). Авто-создание пропущено."
+        else
+            sudo -u postgres psql -v ON_ERROR_STOP=1 <<SQL
+DO \$\$
+BEGIN
+   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${PG_USER}') THEN
+      CREATE ROLE "${PG_USER}" LOGIN PASSWORD '${PG_PASS}';
+   END IF;
+END
+\$\$;
+
+DO \$\$
+BEGIN
+   IF NOT EXISTS (SELECT FROM pg_database WHERE datname = '${PG_DB}') THEN
+      CREATE DATABASE "${PG_DB}" OWNER "${PG_USER}";
+   END IF;
+END
+\$\$;
+
+GRANT ALL PRIVILEGES ON DATABASE "${PG_DB}" TO "${PG_USER}";
+SQL
+            echo "   ✅ Postgres: пользователь/БД проверены"
+        fi
+    fi
+fi
+
+# 6.2 Если в .env указан MySQL (mysql:// или mysql+pymysql://), создаем БД/пользователя если их нет
+if echo "$DATABASE_URL" | grep -q '^mysql'; then
+    echo "🐬 Обнаружен MySQL в DATABASE_URL — проверяю/создаю БД..."
+    if ! command -v mysql >/dev/null 2>&1; then
+        echo "   ⚠️  mysql клиент не найден. Установите mysql-client/mysql-server и повторите."
+    else
+        eval "$(DATABASE_URL="$DATABASE_URL" python - <<'PY'
+import os, sys
+from urllib.parse import urlparse
+
+dsn = os.environ.get("DATABASE_URL","")
+if not dsn.startswith("mysql"):
+    sys.exit(0)
+u = urlparse(dsn)
+def esc(v): return (v or "").replace("'", "''")
+print(f"MY_USER='{esc(u.username or '')}'")
+print(f"MY_PASS='{esc(u.password or '')}'")
+print(f"MY_HOST='{u.hostname or ''}'")
+print(f"MY_PORT='{u.port or 3306}'")
+print(f"MY_DB='{(u.path or '').lstrip('/')}'")
+PY
+)"
+        if [ -z "$MY_USER" ] || [ -z "$MY_DB" ]; then
+            echo "   ⚠️  Не удалось распарсить DATABASE_URL. Пропускаю авто-создание БД."
+        elif [ "$MY_HOST" != "127.0.0.1" ] && [ "$MY_HOST" != "localhost" ]; then
+            echo "   ℹ️  DATABASE_URL указывает на внешний хост ($MY_HOST). Авто-создание пропущено."
+        else
+            # Используем root без пароля (по умолчанию в свежих установках через unix_socket). При необходимости адаптировать.
+            sudo mysql <<SQL
+CREATE DATABASE IF NOT EXISTS \`${MY_DB}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS '${MY_USER}'@'%' IDENTIFIED BY '${MY_PASS}';
+GRANT ALL PRIVILEGES ON \`${MY_DB}\`.* TO '${MY_USER}'@'%';
+FLUSH PRIVILEGES;
+SQL
+            echo "   ✅ MySQL: пользователь/БД проверены"
+        fi
+    fi
 fi
 
 # 6. Применяем миграции
@@ -134,8 +250,11 @@ if [ -d "venv" ]; then
         sudo chmod +x venv/bin/python
         echo "   ✅ Права на исполнение установлены"
     fi
-    sudo -u www-data venv/bin/python manage.py migrate --noinput || echo "   ⚠️  Ошибка миграций"
-    echo "   ✅ Миграции применены"
+    if sudo -u www-data venv/bin/python manage.py migrate --noinput; then
+        echo "   ✅ Миграции применены"
+    else
+        echo "   ❌ Ошибка миграций (см. вывод выше)"
+    fi
 else
     echo "   ⚠️  venv не найден, пропускаем миграции"
 fi
@@ -164,12 +283,13 @@ fi
 # 9. Проверяем и применяем Nginx конфигурацию
 echo "🌐 Применяем Nginx конфигурацию..."
 
-# Удаляем старые конфликтующие конфигурации
+# Удаляем старые конфликтующие конфигурации (иначе Nginx игнорирует дубликаты server_name)
 echo "   Проверяем конфликтующие конфигурации..."
-if [ -L "/etc/nginx/sites-enabled/temis.conf" ] || [ -f "/etc/nginx/sites-enabled/temis.conf" ]; then
-    sudo rm -f /etc/nginx/sites-enabled/temis.conf
-    echo "   ✅ Старая конфигурация удалена"
-fi
+sudo rm -f /etc/nginx/sites-enabled/temis.conf 2>/dev/null || true
+sudo rm -f /etc/nginx/sites-enabled/temis 2>/dev/null || true
+sudo rm -f /etc/nginx/sites-enabled/temis.production.conf 2>/dev/null || true
+sudo rm -f /etc/nginx/sites-available/temis 2>/dev/null || true
+echo "   ✅ Старые temis-конфиги/симлинки очищены (если были)"
 
 # Проверяем SSL сертификаты
 SSL_TEMIS_EXISTS=false
@@ -308,7 +428,7 @@ else
     exit 1
 fi
 
-# 8. Перезапускаем сервисы
+# 10. Перезапускаем сервисы
 echo "🔄 Перезапускаем сервисы..."
 
 # Backend
