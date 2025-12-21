@@ -114,7 +114,7 @@ CKEDITOR_CONFIGS = {
             ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
             ['Link', 'Unlink'],
             ['RemoveFormat', 'Source'],
-            ['Image', 'Table', 'HorizontalRule', 'VideoEmbed'],
+            ['Image', 'Table', 'HorizontalRule', 'Embed'],
             ['Styles', 'Format', 'Font', 'FontSize'],
             ['TextColor', 'BGColor'],
         ],
@@ -122,11 +122,9 @@ CKEDITOR_CONFIGS = {
         'language': 'ru',
         # Разрешаем iframe и div для вставки видео
         'allowedContent': True,
-        'extraPlugins': 'videoembed',
+        'extraPlugins': 'embed,autoembed',
         # Настройки для iframe
         'extraAllowedContent': 'div[style];iframe[src,style,allowfullscreen,allow,frameborder]',
-        # Указываем путь к локальным плагинам (для videoembed)
-        'pluginsPath': '/static/ckeditor/ckeditor/plugins/',
     },
 }
 
