@@ -291,7 +291,7 @@ SERVICE_EOF
             
             if ! systemctl list-unit-files | grep -q temis-frontend; then
               echo "📦 Создаем сервис temis-frontend..."
-              sudo tee /etc/systemd/system/temis-frontend.service > /dev/null << 'EOF'
+              cat > /tmp/temis-frontend.service << 'SERVICE_EOF'
 [Unit]
 Description=Temis Next.js Frontend
 After=network.target
@@ -308,7 +308,8 @@ RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
-EOF
+SERVICE_EOF
+              sudo mv /tmp/temis-frontend.service /etc/systemd/system/temis-frontend.service
               sudo systemctl daemon-reload
               sudo systemctl enable temis-frontend
               echo "✅ Сервис temis-frontend создан и включен"
