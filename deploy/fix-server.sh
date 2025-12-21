@@ -21,14 +21,30 @@ sudo systemctl reset-failed temis-backend 2>/dev/null || true
 # 0.1 Убиваем “сиротские” процессы, которые держат порты (частая причина EADDRINUSE)
 kill_port_listeners() {
     local port="$1"
-    # ss выводит что-то вроде users:(("node",pid=123,fd=19))
-    local pids
-    pids=$(sudo ss -ltnp 2>/dev/null | awk -v p=":$port" '$0 ~ p {print $0}' | sed -nE 's/.*pid=([0-9]+).*/\1/p' | sort -u)
+    local pids=""
+    # Пробуем через ss
+    pids=$(sudo ss -ltnp 2>/dev/null | awk -v p=":$port" '$0 ~ p {print $0}' | sed -nE 's/.*pid=([0-9]+).*/\1/p' | sort -u | tr '\n' ' ')
+    # Если не нашли, пробуем через netstat
+    if [ -z "$pids" ]; then
+        pids=$(sudo netstat -tlnp 2>/dev/null | awk -v p=":$port" '$0 ~ p {print $7}' | cut -d/ -f1 | sort -u | tr '\n' ' ')
+    fi
+    # Если не нашли, пробуем через lsof (если установлен)
+    if [ -z "$pids" ] && command -v lsof >/dev/null 2>&1; then
+        pids=$(sudo lsof -ti:$port 2>/dev/null | tr '\n' ' ')
+    fi
     if [ -n "$pids" ]; then
         echo "   ⚠️  Порт $port занят (PID: $pids) — завершаем процессы..."
-        sudo kill $pids 2>/dev/null || true
+        for pid in $pids; do
+            [ -n "$pid" ] && sudo kill $pid 2>/dev/null || true
+        done
+        sleep 2
+        for pid in $pids; do
+            [ -n "$pid" ] && sudo kill -9 $pid 2>/dev/null || true
+        done
         sleep 1
-        sudo kill -9 $pids 2>/dev/null || true
+        echo "   ✅ Порт $port освобождён"
+    else
+        echo "   ✅ Порт $port свободен"
     fi
 }
 echo "🧹 Освобождаем порты 3001/8001 (если заняты)..."
@@ -51,21 +67,37 @@ sudo find $FRONTEND_DIR/.next/static -type d -exec chmod 755 {} \; 2>/dev/null |
 sudo find $FRONTEND_DIR/.next/static -type f -exec chmod 644 {} \; 2>/dev/null || true
 echo "✅ Права доступа исправлены"
 
-# 3. Проверяем .env файл backend
+# 3. Проверяем и обновляем .env файл backend
 echo "📝 Проверяем .env файл..."
+cd $BACKEND_DIR
 if [ ! -f "$BACKEND_DIR/.env" ]; then
-    echo "   Создаем .env файл..."
-    cd $BACKEND_DIR
+    echo "   Создаем .env файл с MySQL..."
     if [ -d "venv" ]; then
         SECRET_KEY=$(sudo -u www-data venv/bin/python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
-        sudo -u www-data bash -c "printf 'SECRET_KEY=%s\nDEBUG=False\nALLOWED_HOSTS=temis.ooo,api.temis.ooo,localhost,127.0.0.1\nDATABASE_URL=sqlite:///%s/db.sqlite3\nUSE_SQLITE=True\n' \"\$SECRET_KEY\" \"\$BACKEND_DIR\" > $BACKEND_DIR/.env" SECRET_KEY="$SECRET_KEY" BACKEND_DIR="$BACKEND_DIR"
+        sudo -u www-data bash -c "printf 'SECRET_KEY=%s\nDEBUG=False\nALLOWED_HOSTS=temis.ooo,api.temis.ooo,localhost,127.0.0.1\nDATABASE_URL=mysql://temis:temis_password@127.0.0.1:3306/temisdb\nUSE_SQLITE=False\n' \"\$SECRET_KEY\" > $BACKEND_DIR/.env" SECRET_KEY="$SECRET_KEY"
         sudo chmod 600 $BACKEND_DIR/.env
-        echo "   ✅ .env файл создан"
+        echo "   ✅ .env файл создан (MySQL)"
     else
         echo "   ⚠️  venv не найден, пропускаем создание .env"
     fi
 else
     echo "   ✅ .env файл существует"
+    # Проверяем, не SQLite ли там - если да, обновляем на MySQL
+    if grep -q "DATABASE_URL.*sqlite" "$BACKEND_DIR/.env" 2>/dev/null; then
+        echo "   ⚠️  Обнаружен SQLite в .env - обновляем на MySQL..."
+        if [ -d "venv" ]; then
+            # Сохраняем SECRET_KEY если есть, иначе генерируем новый
+            OLD_SECRET=$(grep "^SECRET_KEY=" "$BACKEND_DIR/.env" | cut -d= -f2- | sed "s/^['\"]//;s/['\"]$//")
+            if [ -z "$OLD_SECRET" ]; then
+                OLD_SECRET=$(sudo -u www-data venv/bin/python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
+            fi
+            sudo -u www-data bash -c "printf 'SECRET_KEY=%s\nDEBUG=False\nALLOWED_HOSTS=temis.ooo,api.temis.ooo,localhost,127.0.0.1\nDATABASE_URL=mysql://temis:temis_password@127.0.0.1:3306/temisdb\nUSE_SQLITE=False\n' \"\$OLD_SECRET\" > $BACKEND_DIR/.env" OLD_SECRET="$OLD_SECRET"
+            sudo chmod 600 $BACKEND_DIR/.env
+            echo "   ✅ .env обновлён на MySQL"
+        fi
+    else
+        echo "   ✅ .env уже использует MySQL или другую БД"
+    fi
 fi
 
 # 4. Проверяем и создаем systemd сервисы
