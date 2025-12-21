@@ -227,13 +227,21 @@ jobs:
             sudo -u www-data venv/bin/python -m pip install --no-cache-dir -r requirements.txt
             echo "✅ Зависимости установлены"
             
-            # Освобождаем порты перед запуском сервисов
+            # Останавливаем сервисы и освобождаем порты
+            echo "⏹️  Останавливаем сервисы..."
+            sudo systemctl stop temis-frontend 2>/dev/null || true
+            sudo systemctl stop temis-backend 2>/dev/null || true
+            sudo systemctl reset-failed temis-frontend 2>/dev/null || true
+            sudo systemctl reset-failed temis-backend 2>/dev/null || true
+            sleep 2
+            
             echo "🧹 Освобождаем порты 3001/8001..."
             PIDS=$(sudo ss -ltnp 2>/dev/null | awk '/:3001|:8001/ {print $0}' | sed -nE 's/.*pid=([0-9]+).*/\1/p' | sort -u)
             if [ -n "$PIDS" ]; then
+              echo "   Завершаем процессы на портах: $PIDS"
               echo "$PIDS" | xargs sudo kill -9 2>/dev/null || true
+              sleep 2
             fi
-            sleep 1
             
             # Настраиваем .env файл
             echo "📝 Настраиваем .env файл..."
@@ -410,38 +418,30 @@ jobs:
               SSL_TEMIS_EXISTS=false
               SSL_API_EXISTS=false
               
-              # Проверяем temis.ooo
-              if [ -f "/etc/letsencrypt/live/temis.ooo/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/temis.ooo/privkey.pem" ]; then
+              # Проверяем temis.ooo (проверяем через sudo для доступа)
+              if sudo test -f "/etc/letsencrypt/live/temis.ooo/fullchain.pem" && sudo test -f "/etc/letsencrypt/live/temis.ooo/privkey.pem"; then
                 SSL_TEMIS_EXISTS=true
                 echo "✅ SSL сертификат для temis.ooo найден"
-                echo "   fullchain.pem: $(sudo ls -lh /etc/letsencrypt/live/temis.ooo/fullchain.pem | awk '{print $5, $6, $7, $8}')"
-                echo "   privkey.pem: $(sudo ls -lh /etc/letsencrypt/live/temis.ooo/privkey.pem | awk '{print $5, $6, $7, $8}')"
+                sudo ls -lh /etc/letsencrypt/live/temis.ooo/fullchain.pem /etc/letsencrypt/live/temis.ooo/privkey.pem 2>/dev/null || true
               else
                 echo "⚠️  SSL сертификат для temis.ooo не найден"
-                if [ -d "/etc/letsencrypt/live/temis.ooo" ]; then
-                  echo "   Директория существует, но файлы отсутствуют:"
+                if sudo test -d "/etc/letsencrypt/live/temis.ooo"; then
+                  echo "   Директория существует, содержимое:"
                   sudo ls -la /etc/letsencrypt/live/temis.ooo/ || true
-                else
-                  echo "   Директория /etc/letsencrypt/live/temis.ooo не существует"
                 fi
-                echo "   Будет использоваться HTTP конфигурация"
               fi
               
               # Проверяем api.temis.ooo
-              if [ -f "/etc/letsencrypt/live/api.temis.ooo/fullchain.pem" ] && [ -f "/etc/letsencrypt/live/api.temis.ooo/privkey.pem" ]; then
+              if sudo test -f "/etc/letsencrypt/live/api.temis.ooo/fullchain.pem" && sudo test -f "/etc/letsencrypt/live/api.temis.ooo/privkey.pem"; then
                 SSL_API_EXISTS=true
                 echo "✅ SSL сертификат для api.temis.ooo найден"
-                echo "   fullchain.pem: $(sudo ls -lh /etc/letsencrypt/live/api.temis.ooo/fullchain.pem | awk '{print $5, $6, $7, $8}')"
-                echo "   privkey.pem: $(sudo ls -lh /etc/letsencrypt/live/api.temis.ooo/privkey.pem | awk '{print $5, $6, $7, $8}')"
+                sudo ls -lh /etc/letsencrypt/live/api.temis.ooo/fullchain.pem /etc/letsencrypt/live/api.temis.ooo/privkey.pem 2>/dev/null || true
               else
                 echo "⚠️  SSL сертификат для api.temis.ooo не найден"
-                if [ -d "/etc/letsencrypt/live/api.temis.ooo" ]; then
-                  echo "   Директория существует, но файлы отсутствуют:"
+                if sudo test -d "/etc/letsencrypt/live/api.temis.ooo"; then
+                  echo "   Директория существует, содержимое:"
                   sudo ls -la /etc/letsencrypt/live/api.temis.ooo/ || true
-                else
-                  echo "   Директория /etc/letsencrypt/live/api.temis.ooo не существует"
                 fi
-                echo "   Будет использоваться HTTP конфигурация"
               fi
               
               # Проверяем, установлен ли certbot
@@ -567,11 +567,13 @@ jobs:
                 sudo cp $DEPLOY_DIR/deploy/configs/nginx/temis.conf /etc/nginx/sites-available/temis.conf
               fi
               
-              # Создаем симлинк если его нет
-              if [ ! -L /etc/nginx/sites-enabled/temis.conf ]; then
+              # Удаляем старые конфликтующие конфигурации
+              sudo rm -f /etc/nginx/sites-enabled/temis /etc/nginx/sites-enabled/temis.production.conf 2>/dev/null || true
+              
+              # Создаем/обновляем симлинк
+              sudo rm -f /etc/nginx/sites-enabled/temis.conf
                 echo "🔗 Создаем симлинк для temis.conf..."
                 sudo ln -s /etc/nginx/sites-available/temis.conf /etc/nginx/sites-enabled/temis.conf
-              fi
               
               # Проверяем конфигурацию
               if sudo nginx -t; then
