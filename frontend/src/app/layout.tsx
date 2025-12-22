@@ -17,17 +17,58 @@ export async function generateMetadata(): Promise<Metadata> {
         icons: {
           icon: '/favicon.ico',
         },
+        openGraph: {
+          title: 'Temis',
+          description: 'Temis',
+          url: 'https://temis.ooo',
+          siteName: 'Temis',
+          type: 'website',
+        },
+        twitter: {
+          card: 'summary',
+          title: 'Temis',
+          description: 'Temis',
+        },
       };
     }
     
     const pageTitle = siteSettings.page_title || 'Temis';
     const description = siteSettings.description || 'Temis';
+    const siteName = siteSettings.site_name || 'Temis';
+    const siteUrl = 'https://temis.ooo';
     
     return {
       title: pageTitle,
       description: description,
       icons: {
         icon: siteSettings.favicon || '/favicon.ico',
+      },
+      openGraph: {
+        title: pageTitle,
+        description: description,
+        url: siteUrl,
+        siteName: siteName,
+        type: 'website',
+        images: siteSettings.favicon ? [
+          {
+            url: siteSettings.favicon.startsWith('http') 
+              ? siteSettings.favicon 
+              : `${siteUrl}${siteSettings.favicon.startsWith('/') ? '' : '/'}${siteSettings.favicon}`,
+            width: 1200,
+            height: 630,
+            alt: siteName,
+          }
+        ] : undefined,
+      },
+      twitter: {
+        card: 'summary',
+        title: pageTitle,
+        description: description,
+        images: siteSettings.favicon ? [
+          siteSettings.favicon.startsWith('http') 
+            ? siteSettings.favicon 
+            : `${siteUrl}${siteSettings.favicon.startsWith('/') ? '' : '/'}${siteSettings.favicon}`
+        ] : undefined,
       },
     };
   } catch (error) {
@@ -38,6 +79,18 @@ export async function generateMetadata(): Promise<Metadata> {
       description: 'Temis',
       icons: {
         icon: '/favicon.ico',
+      },
+      openGraph: {
+        title: 'Temis',
+        description: 'Temis',
+        url: 'https://temis.ooo',
+        siteName: 'Temis',
+        type: 'website',
+      },
+      twitter: {
+        card: 'summary',
+        title: 'Temis',
+        description: 'Temis',
       },
     };
   }
