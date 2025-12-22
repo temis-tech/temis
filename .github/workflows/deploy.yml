@@ -464,8 +464,51 @@ jobs:
             fi
             
             if systemctl list-unit-files | grep -q temis-frontend; then
+              # Убеждаемся, что порт 3001 свободен перед перезапуском
+              echo "🔍 Проверяем, что порт 3001 свободен перед перезапуском фронтенда..."
+              if sudo ss -ltnp 2>/dev/null | grep -q ":3001"; then
+                echo "   ⚠️  Порт 3001 все еще занят, очищаем..."
+                PIDS=$(sudo ss -ltnp 2>/dev/null | awk '/:3001/' | sed -nE 's/.*pid=([0-9]+).*/\1/p' | sort -u)
+                if [ -n "$PIDS" ]; then
+                  echo "$PIDS" | xargs sudo kill -9 2>/dev/null || true
+                  sleep 2
+                fi
+              fi
+              
+              # Убеждаемся, что симлинк создан
+              if [ -d "$FRONTEND_DIR/.next/standalone/.next" ] && [ -d "$FRONTEND_DIR/.next/static" ]; then
+                echo "🔗 Проверяем симлинк для статических файлов..."
+                if [ ! -L "$FRONTEND_DIR/.next/standalone/.next/static" ]; then
+                  echo "   Создаем симлинк..."
+                  cd "$FRONTEND_DIR/.next/standalone/.next"
+                  sudo rm -rf static 2>/dev/null || true
+                  sudo ln -sf ../../static static
+                  cd "$FRONTEND_DIR"
+                  echo "   ✅ Симлинк создан"
+                else
+                  echo "   ✅ Симлинк уже существует"
+                fi
+              fi
+              
               sudo systemctl restart temis-frontend
-              echo "✅ Frontend перезапущен"
+              sleep 5
+              # Проверяем, что сервис запустился
+              if systemctl is-active --quiet temis-frontend; then
+                echo "✅ Frontend перезапущен и работает"
+              else
+                echo "⚠️  Frontend не запустился, проверяем логи..."
+                sudo systemctl status temis-frontend --no-pager -l | head -20
+                # Пытаемся запустить еще раз после небольшой задержки
+                sleep 3
+                sudo systemctl start temis-frontend
+                sleep 5
+                if systemctl is-active --quiet temis-frontend; then
+                  echo "✅ Frontend запущен после повторной попытки"
+                else
+                  echo "❌ Frontend не удалось запустить"
+                  sudo systemctl status temis-frontend --no-pager -l | head -20
+                fi
+              fi
             fi
             set -e
             
