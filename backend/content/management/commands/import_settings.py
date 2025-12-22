@@ -36,7 +36,7 @@ class Command(BaseCommand):
         
         menu_items = [
             {'title': 'Услуги', 'url': '/services', 'order': 1},
-            {'title': 'Логопеды', 'url': '/specialists', 'order': 2},
+            {'title': 'Специалисты', 'url': '/specialists', 'order': 2},
             {'title': 'Отзывы', 'url': '/reviews', 'order': 3},
             {'title': 'Филиалы', 'url': '/branches', 'order': 4},
             {'title': 'Акции', 'url': '/promotions', 'order': 5},
@@ -64,7 +64,7 @@ class Command(BaseCommand):
         settings, created = HeaderSettings.objects.get_or_create(
             pk=1,
             defaults={
-                'logo_text': 'Радуга слов',
+                'logo_text': 'Temis',
                 'logo_url': '/',
                 'show_menu': True,
                 'show_phone': False,
@@ -82,9 +82,9 @@ class Command(BaseCommand):
         settings, created = HeroSettings.objects.get_or_create(
             pk=1,
             defaults={
-                'title': 'Temis - занятия с опытным логопедом',
-                'subtitle': 'Помогаем детям в запуске речи, постановке звуков, развитии коммуникативных навыков и мелкой моторики. Используем нейроигры, артикуляционную гимнастику чтобы поддержать произношение, внимание и слух.',
-                'button_text': 'Записаться к логопеду',
+                'title': 'Temis',
+                'subtitle': 'Профессиональные услуги для развития и поддержки',
+                'button_text': 'Записаться',
                 'button_url': '#contact-form',
                 'is_active': True,
             }

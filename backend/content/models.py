@@ -158,7 +158,7 @@ class Service(models.Model):
 
 
 class Specialist(models.Model):
-    """Логопеды/специалисты"""
+    """Специалисты"""
     name = models.CharField('Имя', max_length=200)
     position = models.CharField('Должность', max_length=200)
     bio = models.TextField('Биография', blank=True)
@@ -1011,7 +1011,7 @@ class MenuItem(models.Model):
 
 class HeaderSettings(models.Model):
     """Настройки шапки"""
-    logo_text = models.CharField('Текст логотипа', max_length=100, default='Радуга слов')
+    logo_text = models.CharField('Текст логотипа', max_length=100, default='Temis')
     logo_image = models.ImageField('Изображение логотипа', upload_to='logo/', blank=True, null=True, 
                                     help_text='Если загружено, будет использоваться вместо текста')
     logo_url = models.CharField('URL логотипа', max_length=200, default='/', blank=True)
@@ -1056,7 +1056,7 @@ class HeroSettings(models.Model):
     title = models.CharField('Заголовок', max_length=300)
     subtitle = RichTextField('Подзаголовок', blank=True,
                             help_text='Подзаголовок с поддержкой форматирования текста')
-    button_text = models.CharField('Текст кнопки', max_length=100, default='Записаться к логопеду')
+    button_text = models.CharField('Текст кнопки', max_length=100, default='Записаться')
     button_url = models.CharField('URL кнопки', max_length=200, default='#contact-form', blank=True,
                                    help_text='Используется только если тип кнопки = "Ссылка"')
     
@@ -1257,7 +1257,7 @@ class PrivacyPolicy(models.Model):
 
 class SiteSettings(models.Model):
     """Глобальные настройки сайта"""
-    site_name = models.CharField('Название сайта', max_length=200, default='Радуга слов',
+    site_name = models.CharField('Название сайта', max_length=200, default='Temis',
                                 help_text='Название сайта, отображаемое в шапке и других местах')
     page_title = models.CharField('Заголовок страницы', max_length=200, default='Temis',
                                 help_text='Заголовок страницы (title), отображаемый во вкладке браузера')
