@@ -1261,6 +1261,8 @@ class SiteSettings(models.Model):
                                 help_text='Название сайта, отображаемое в шапке и других местах')
     page_title = models.CharField('Заголовок страницы', max_length=200, default='Temis',
                                 help_text='Заголовок страницы (title), отображаемый во вкладке браузера')
+    description = models.TextField('Описание сайта', max_length=500, blank=True,
+                                  help_text='Краткое описание сайта для мета-тегов и соцсетей (Open Graph, Twitter Card)')
     favicon = models.ImageField('Фавикон', upload_to='site/', blank=True, null=True,
                               help_text='Иконка сайта, отображаемая во вкладке браузера (рекомендуемый размер: 32x32 или 16x16 пикселей)')
     primary_color = models.CharField('Основной цвет', max_length=7, default='#667eea',

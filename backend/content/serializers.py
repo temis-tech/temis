@@ -452,7 +452,7 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = SiteSettings
-        fields = ['site_name', 'page_title', 'favicon', 'primary_color', 'gradient_start', 
+        fields = ['site_name', 'page_title', 'description', 'favicon', 'primary_color', 'gradient_start', 
                  'gradient_end', 'secondary_color', 'text_color', 'background_color']
     
     def get_favicon(self, obj):

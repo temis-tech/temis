@@ -595,8 +595,8 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     list_display = ['site_name', 'page_title', 'primary_color', 'gradient_start', 'gradient_end', 'color_preview']
     fieldsets = (
         ('Основная информация', {
-            'fields': ('site_name', 'page_title', 'favicon', 'favicon_preview'),
-            'description': 'Название сайта, заголовок страницы и фавикон'
+            'fields': ('site_name', 'page_title', 'description', 'favicon', 'favicon_preview'),
+            'description': 'Название сайта, заголовок страницы, описание для мета-тегов и соцсетей, фавикон'
         }),
         ('Цвета', {
             'fields': ('primary_color', 'secondary_color', 'text_color', 'background_color')
