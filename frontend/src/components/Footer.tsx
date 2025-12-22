@@ -32,7 +32,7 @@ export default async function Footer() {
     if (!item) return false;
     const title = item.title || '';
     // Убираем пункты меню, которые содержат упоминания логопедии
-    if (title.includes('Логопед') || title.includes('логопед') || title.includes('Логопеды')) {
+    if (title && (title.includes('Логопед') || title.includes('логопед') || title.includes('Логопеды'))) {
       return false;
     }
     return true;

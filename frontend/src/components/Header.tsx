@@ -30,7 +30,7 @@ export default async function Header() {
   const siteName = siteSettings?.site_name || 'Temis';
   
   // Если siteName все еще "Радуга слов" (старое значение по умолчанию), не показываем
-  if (siteName === 'Радуга слов' || siteName.includes('Радуга') || siteName.includes('радуга')) {
+  if (siteName && (siteName === 'Радуга слов' || siteName.includes('Радуга') || siteName.includes('радуга'))) {
     return null;
   }
 
@@ -60,9 +60,9 @@ export default async function Header() {
 
   // Проверяем logoText на старые данные
   const logoText = headerSettings?.logo_text || siteName;
-  if (logoText.includes('Радуга слов') || logoText.includes('радуга')) {
+  if (logoText && (logoText.includes('Радуга слов') || logoText.includes('радуга'))) {
     // Если в логотипе старые данные, используем только siteName (если он валиден)
-    const cleanLogoText = siteName !== 'Радуга слов' && !siteName.includes('Радуга') ? siteName : 'Temis';
+    const cleanLogoText = siteName && siteName !== 'Радуга слов' && !siteName.includes('Радуга') ? siteName : 'Temis';
     return (
       <>
         <HeaderClient 
