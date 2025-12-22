@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     
     return {
       title: pageTitle,
-      description: 'Детский логопед в Санкт-Петербурге. Занятия с опытным логопедом, запуск речи, постановка звуков.',
+      description: siteSettings?.description || 'Temis',
       icons: {
         icon: siteSettings?.favicon || '/favicon.ico',
       },
@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
   } catch {
     return {
       title: 'Temis',
-      description: 'Детский логопед в Санкт-Петербурге. Занятия с опытным логопедом, запуск речи, постановка звуков.',
+      description: 'Temis',
       icons: {
         icon: '/favicon.ico',
       },
