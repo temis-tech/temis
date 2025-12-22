@@ -320,6 +320,18 @@ jobs:
             echo "📦 Проверяем Frontend (standalone режим)..."
             cd $FRONTEND_DIR
             
+            # КРИТИЧНО: Создаем симлинк для статических файлов Next.js в standalone режиме
+            if [ -d ".next/standalone/.next" ] && [ -d ".next/static" ]; then
+              echo "🔗 Создаем симлинк для статических файлов..."
+              cd .next/standalone/.next
+              sudo rm -rf static 2>/dev/null || true
+              sudo ln -sf ../../static static
+              echo "✅ Симлинк создан: .next/standalone/.next/static -> ../../static"
+              cd $FRONTEND_DIR
+            else
+              echo "⚠️  Не найдены необходимые директории для создания симлинка"
+            fi
+            
             if [ ! -d ".next/standalone" ]; then
               echo "⚠️  .next/standalone директория не найдена!"
               exit 1
