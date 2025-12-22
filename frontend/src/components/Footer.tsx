@@ -26,6 +26,17 @@ export default async function Footer() {
 
   // Получаем меню из настроек футера
   const menuItems = footerSettings?.menu?.items || [];
+  
+  // Фильтруем меню, убирая пункты со старыми данными
+  const filteredMenuItems = Array.isArray(menuItems) ? menuItems.filter((item: MenuItem) => {
+    if (!item) return false;
+    const title = item.title || '';
+    // Убираем пункты меню, которые содержат упоминания логопедии
+    if (title.includes('Логопед') || title.includes('логопед') || title.includes('Логопеды')) {
+      return false;
+    }
+    return true;
+  }) : [];
 
   return (
     <footer className={styles.footer}>
@@ -40,10 +51,10 @@ export default async function Footer() {
               {contacts.inn && <p>ИНН: {contacts.inn}</p>}
             </div>
           )}
-          {footerSettings?.show_navigation && menuItems && Array.isArray(menuItems) && menuItems.length > 0 && (
+          {footerSettings?.show_navigation && filteredMenuItems && filteredMenuItems.length > 0 && (
             <div className={styles.section}>
               <h3>Навигация</h3>
-              {menuItems.map((item: MenuItem) => {
+              {filteredMenuItems.map((item: MenuItem) => {
                 const content = item.image ? (
                   <img src={normalizeImageUrl(item.image)} alt={item.title || 'Menu item'} style={{ maxHeight: '30px' }} />
                 ) : (

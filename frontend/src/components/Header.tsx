@@ -30,7 +30,7 @@ export default async function Header() {
   const siteName = siteSettings?.site_name || 'Temis';
   
   // Если siteName все еще "Радуга слов" (старое значение по умолчанию), не показываем
-  if (siteName === 'Радуга слов') {
+  if (siteName === 'Радуга слов' || siteName.includes('Радуга') || siteName.includes('радуга')) {
     return null;
   }
 
@@ -38,24 +38,56 @@ export default async function Header() {
   const menuItems = headerSettings?.menu?.items || [];
   const safeMenuItems = Array.isArray(menuItems) ? menuItems : [];
   
+  // Фильтруем меню, убирая пункты со старыми данными
+  const filteredMenuItems = safeMenuItems.filter((item: any) => {
+    if (!item) return false;
+    const title = item.title || '';
+    // Убираем пункты меню, которые содержат упоминания логопедии
+    if (title.includes('Логопед') || title.includes('логопед') || title.includes('Логопеды')) {
+      return false;
+    }
+    return true;
+  });
+  
   // Отладочная информация
   if (process.env.NODE_ENV === 'development') {
     console.log('Header settings:', {
       show_menu: headerSettings?.show_menu,
       menu: headerSettings?.menu,
-      menuItems: safeMenuItems.length,
+      menuItems: filteredMenuItems.length,
     });
+  }
+
+  // Проверяем logoText на старые данные
+  const logoText = headerSettings?.logo_text || siteName;
+  if (logoText.includes('Радуга слов') || logoText.includes('радуга')) {
+    // Если в логотипе старые данные, используем только siteName (если он валиден)
+    const cleanLogoText = siteName !== 'Радуга слов' && !siteName.includes('Радуга') ? siteName : 'Temis';
+    return (
+      <>
+        <HeaderClient 
+          logoText={cleanLogoText}
+          logoImage={headerSettings?.logo_image || undefined}
+          logoUrl={headerSettings?.logo_url || '/'}
+          logoHeight={headerSettings?.logo_height || 100}
+          showMenu={false} // Не показываем меню, если есть подозрение на старые данные
+          menuItems={[]}
+          showPhone={headerSettings?.show_phone}
+          phoneText={headerSettings?.phone_text}
+        />
+      </>
+    );
   }
 
   return (
     <>
       <HeaderClient 
-        logoText={headerSettings?.logo_text || siteName}
+        logoText={logoText}
         logoImage={headerSettings?.logo_image || undefined}
         logoUrl={headerSettings?.logo_url || '/'}
         logoHeight={headerSettings?.logo_height || 100}
         showMenu={headerSettings?.show_menu !== false}
-        menuItems={safeMenuItems}
+        menuItems={filteredMenuItems}
         showPhone={headerSettings?.show_phone}
         phoneText={headerSettings?.phone_text}
       />
