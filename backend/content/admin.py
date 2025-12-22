@@ -465,7 +465,7 @@ class HeroSettingsAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Контент', {
             'fields': ('title', 'subtitle'),
-            'description': 'Поля "Заголовок" и "Подзаголовок" поддерживают HTML форматирование. Можно использовать теги: <strong>, <em>, <br>, <p>, <span style="color: #FF820E;"> и др.'
+            'description': 'Поле "Подзаголовок" поддерживает форматирование текста через редактор. Поле "Заголовок" - обычный текст.'
         }),
         ('Кнопка', {
             'fields': ('button_text', 'button_type', 'button_url', 'button_quiz', 'button_booking_form'),
@@ -506,17 +506,13 @@ class HeroSettingsAdmin(admin.ModelAdmin):
                 'type': 'color',
                 'style': 'width: 100px; height: 40px;'
             })
-        # Увеличиваем размер полей title и subtitle для удобства редактирования HTML
+        # Увеличиваем размер поля title для удобства редактирования
         if 'title' in form.base_fields:
             form.base_fields['title'].widget.attrs.update({
                 'rows': 3,
                 'style': 'width: 100%; font-family: monospace;'
             })
-        if 'subtitle' in form.base_fields:
-            form.base_fields['subtitle'].widget.attrs.update({
-                'rows': 6,
-                'style': 'width: 100%; font-family: monospace;'
-            })
+        # Поле subtitle теперь RichTextField, CKEditor настроится автоматически
         # Добавляем слайдер для масштаба изображения
         if 'image_scale' in form.base_fields:
             form.base_fields['image_scale'].widget.attrs.update({
