@@ -698,8 +698,8 @@ jobs:
               
               # Создаем/обновляем симлинк
               sudo rm -f /etc/nginx/sites-enabled/temis.conf
-                echo "🔗 Создаем симлинк для temis.conf..."
-                sudo ln -s /etc/nginx/sites-available/temis.conf /etc/nginx/sites-enabled/temis.conf
+              echo "🔗 Создаем симлинк для temis.conf..."
+              sudo ln -s /etc/nginx/sites-available/temis.conf /etc/nginx/sites-enabled/temis.conf
               
               # Проверяем конфигурацию
               if sudo nginx -t; then
