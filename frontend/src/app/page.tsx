@@ -98,12 +98,26 @@ export default async function Home() {
     );
   }
 
+  // Если нет активного контента, не показываем ничего
+  if (!hasContent) {
+    return (
+      <main>
+        <Hero />
+        <WelcomeBanners />
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <h1>Temis</h1>
+          <p>Контент временно недоступен. Пожалуйста, попробуйте позже.</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main>
       <Hero />
       <WelcomeBanners />
-      {/* Всегда показываем ContentPage если страница загружена, даже если не активна - для отладки */}
-      {homePage && <ContentPage page={homePage} />}
+      {/* Показываем ContentPage только если страница загружена и активна */}
+      {homePage && hasContent && <ContentPage page={homePage} />}
       {/* Отладочная информация всегда видна в development */}
       {(process.env.NODE_ENV === 'development' || !hasContent) && (
         <div style={{ padding: '2rem', background: hasContent ? '#d4edda' : '#fff3cd', border: `1px solid ${hasContent ? '#28a745' : '#ffc107'}`, borderRadius: '4px', margin: '2rem', textAlign: 'left', fontFamily: 'monospace', fontSize: '0.9rem' }}>

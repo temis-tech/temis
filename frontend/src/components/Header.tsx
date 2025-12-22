@@ -21,11 +21,18 @@ export default async function Header() {
   }
 
   // Если нет настроек, не показываем шапку
+  // Это предотвратит показ старых данных при падении бэкенда
   if (!headerSettings && !siteSettings) {
     return null;
   }
 
+  // Если есть ошибка при загрузке, не показываем шапку
   const siteName = siteSettings?.site_name || 'Temis';
+  
+  // Если siteName все еще "Радуга слов" (старое значение по умолчанию), не показываем
+  if (siteName === 'Радуга слов') {
+    return null;
+  }
 
   // Получаем меню из настроек шапки (может быть выбрано конкретное меню)
   const menuItems = headerSettings?.menu?.items || [];
