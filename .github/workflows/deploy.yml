@@ -193,6 +193,18 @@ jobs:
               echo "✅ Права на server.js установлены"
             fi
             
+            # КРИТИЧНО: Создаем симлинк для статических файлов сразу после распаковки
+            echo "🔗 Создаем симлинк для статических файлов Next.js..."
+            if [ -d "$FRONTEND_DIR/.next/standalone/.next" ] && [ -d "$FRONTEND_DIR/.next/static" ]; then
+              cd "$FRONTEND_DIR/.next/standalone/.next"
+              sudo rm -rf static 2>/dev/null || true
+              sudo ln -sf ../../static static
+              echo "✅ Симлинк создан: .next/standalone/.next/static -> ../../static"
+              cd "$FRONTEND_DIR"
+            else
+              echo "⚠️  Не найдены необходимые директории для создания симлинка"
+            fi
+            
             # КРИТИЧНО: Права на директорию БД
             sudo mkdir -p $(dirname "$BACKEND_DIR/db.sqlite3")
             sudo chown -R www-data:www-data $BACKEND_DIR
