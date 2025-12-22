@@ -237,12 +237,44 @@ jobs:
             sleep 2
             
             echo "🧹 Освобождаем порты 3001/8001..."
-            PIDS=$(sudo ss -ltnp 2>/dev/null | awk '/:3001|:8001/ {print $0}' | sed -nE 's/.*pid=([0-9]+).*/\1/p' | sort -u)
-            if [ -n "$PIDS" ]; then
-              echo "   Завершаем процессы на портах: $PIDS"
-              echo "$PIDS" | xargs sudo kill -9 2>/dev/null || true
-              sleep 2
-            fi
+            # Более надежная очистка портов - используем несколько методов
+            for PORT in 3001 8001; do
+              echo "   Очищаем порт $PORT..."
+              # Метод 1: через ss
+              PIDS=$(sudo ss -ltnp 2>/dev/null | awk "/:$PORT/" | sed -nE 's/.*pid=([0-9]+).*/\1/p' | sort -u)
+              # Метод 2: через lsof (если доступен)
+              if command -v lsof >/dev/null 2>&1; then
+                LSOF_PIDS=$(sudo lsof -ti:$PORT 2>/dev/null || true)
+                if [ -n "$LSOF_PIDS" ]; then
+                  PIDS="$PIDS $LSOF_PIDS"
+                fi
+              fi
+              # Метод 3: через fuser (если доступен)
+              if command -v fuser >/dev/null 2>&1; then
+                FUSER_PIDS=$(sudo fuser $PORT/tcp 2>/dev/null | awk '{print $NF}' || true)
+                if [ -n "$FUSER_PIDS" ]; then
+                  PIDS="$PIDS $FUSER_PIDS"
+                fi
+              fi
+              # Убираем дубликаты и завершаем процессы
+              UNIQUE_PIDS=$(echo $PIDS | tr ' ' '\n' | sort -u | tr '\n' ' ')
+              if [ -n "$UNIQUE_PIDS" ]; then
+                echo "   Завершаем процессы на порту $PORT: $UNIQUE_PIDS"
+                for PID in $UNIQUE_PIDS; do
+                  sudo kill -9 $PID 2>/dev/null || true
+                done
+              fi
+            done
+            sleep 3
+            # Проверяем, что порты действительно свободны
+            for PORT in 3001 8001; do
+              if sudo ss -ltnp 2>/dev/null | grep -q ":$PORT"; then
+                echo "   ⚠️  Порт $PORT все еще занят, пытаемся еще раз..."
+                sudo fuser -k $PORT/tcp 2>/dev/null || true
+                sleep 2
+              fi
+            done
+            echo "✅ Порты очищены"
             
             # Настраиваем .env файл
             echo "📝 Настраиваем .env файл..."
@@ -389,8 +421,34 @@ jobs:
             # Перезапускаем сервисы
             echo "🔄 Перезапускаем сервисы..."
             if systemctl list-unit-files | grep -q temis-backend; then
+              # Убеждаемся, что порт свободен перед перезапуском
+              echo "🔍 Проверяем, что порт 8001 свободен перед перезапуском..."
+              if sudo ss -ltnp 2>/dev/null | grep -q ":8001"; then
+                echo "   ⚠️  Порт 8001 все еще занят, очищаем..."
+                PIDS=$(sudo ss -ltnp 2>/dev/null | awk '/:8001/' | sed -nE 's/.*pid=([0-9]+).*/\1/p' | sort -u)
+                if [ -n "$PIDS" ]; then
+                  echo "$PIDS" | xargs sudo kill -9 2>/dev/null || true
+                  sleep 2
+                fi
+              fi
               sudo systemctl restart temis-backend
-              echo "✅ Backend перезапущен"
+              sleep 3
+              # Проверяем, что сервис запустился
+              if systemctl is-active --quiet temis-backend; then
+                echo "✅ Backend перезапущен и работает"
+              else
+                echo "⚠️  Backend не запустился, проверяем логи..."
+                sudo systemctl status temis-backend --no-pager -l | head -20
+                # Пытаемся запустить еще раз после небольшой задержки
+                sleep 2
+                sudo systemctl start temis-backend
+                sleep 3
+                if systemctl is-active --quiet temis-backend; then
+                  echo "✅ Backend запущен после повторной попытки"
+                else
+                  echo "❌ Backend не удалось запустить"
+                fi
+              fi
             fi
             
             if systemctl list-unit-files | grep -q temis-frontend; then
