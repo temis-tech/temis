@@ -86,6 +86,18 @@ export default async function Home() {
     });
   }
 
+  // Если бэкенд недоступен и нет данных, не показываем старый контент
+  if (!homePage && errorMessage) {
+    return (
+      <main>
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <h1>Temis</h1>
+          <p>Сервис временно недоступен. Пожалуйста, попробуйте позже.</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main>
       <Hero />

@@ -8,17 +8,31 @@ import Footer from '@/components/Footer'
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const siteSettings = await contentApi.getSiteSettings().then(res => res.data).catch(() => null);
-    const siteName = siteSettings?.site_name || 'Temis';
-    const pageTitle = siteSettings?.page_title || 'Temis';
+    
+    // Если нет настроек, используем минимальные значения без упоминания логопедии
+    if (!siteSettings) {
+      return {
+        title: 'Temis',
+        description: 'Temis',
+        icons: {
+          icon: '/favicon.ico',
+        },
+      };
+    }
+    
+    const pageTitle = siteSettings.page_title || 'Temis';
+    const description = siteSettings.description || 'Temis';
     
     return {
       title: pageTitle,
-      description: siteSettings?.description || 'Temis',
+      description: description,
       icons: {
-        icon: siteSettings?.favicon || '/favicon.ico',
+        icon: siteSettings.favicon || '/favicon.ico',
       },
     };
-  } catch {
+  } catch (error) {
+    console.error('Error generating metadata:', error);
+    // При ошибке возвращаем минимальные значения
     return {
       title: 'Temis',
       description: 'Temis',

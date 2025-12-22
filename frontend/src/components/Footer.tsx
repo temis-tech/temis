@@ -5,10 +5,24 @@ import Link from 'next/link';
 import { MenuItem } from '@/types';
 
 export default async function Footer() {
-  const [contacts, footerSettings] = await Promise.all([
-    contentApi.getContacts().then(res => res.data.results?.[0] || res.data?.[0]).catch(() => null),
-    contentApi.getFooterSettings().then(res => res.data).catch(() => null),
-  ]);
+  let contacts = null;
+  let footerSettings = null;
+  
+  try {
+    [contacts, footerSettings] = await Promise.all([
+      contentApi.getContacts().then(res => res.data.results?.[0] || res.data?.[0]).catch(() => null),
+      contentApi.getFooterSettings().then(res => res.data).catch(() => null),
+    ]);
+  } catch (error) {
+    console.error('Error loading footer data:', error);
+    // При ошибке не показываем футер, чтобы не показывать старые данные
+    return null;
+  }
+
+  // Если нет настроек, не показываем футер
+  if (!footerSettings && !contacts) {
+    return null;
+  }
 
   // Получаем меню из настроек футера
   const menuItems = footerSettings?.menu?.items || [];

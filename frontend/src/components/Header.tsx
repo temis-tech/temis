@@ -3,13 +3,28 @@ import { contentApi } from '@/lib/api';
 import HeaderClient from './HeaderClient';
 
 export default async function Header() {
-  const headerSettings = await contentApi.getHeaderSettings().then(res => res.data).catch((err) => {
-    console.error('Error fetching header settings:', err);
-    return null;
-  });
+  let headerSettings = null;
+  let siteSettings = null;
+  
+  try {
+    headerSettings = await contentApi.getHeaderSettings().then(res => res.data).catch((err) => {
+      console.error('Error fetching header settings:', err);
+      return null;
+    });
 
-  // Получаем настройки сайта для названия сайта
-  const siteSettings = await contentApi.getSiteSettings().then(res => res.data).catch(() => null);
+    // Получаем настройки сайта для названия сайта
+    siteSettings = await contentApi.getSiteSettings().then(res => res.data).catch(() => null);
+  } catch (error) {
+    console.error('Error loading header data:', error);
+    // При ошибке не показываем ничего, чтобы не показывать старые данные
+    return null;
+  }
+
+  // Если нет настроек, не показываем шапку
+  if (!headerSettings && !siteSettings) {
+    return null;
+  }
+
   const siteName = siteSettings?.site_name || 'Temis';
 
   // Получаем меню из настроек шапки (может быть выбрано конкретное меню)
