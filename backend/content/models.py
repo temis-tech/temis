@@ -1054,7 +1054,8 @@ class HeaderSettings(models.Model):
 class HeroSettings(models.Model):
     """Настройки Hero секции (шапка главной страницы)"""
     title = models.CharField('Заголовок', max_length=300)
-    subtitle = models.TextField('Подзаголовок')
+    subtitle = RichTextField('Подзаголовок', blank=True,
+                            help_text='Подзаголовок с поддержкой форматирования текста')
     button_text = models.CharField('Текст кнопки', max_length=100, default='Записаться к логопеду')
     button_url = models.CharField('URL кнопки', max_length=200, default='#contact-form', blank=True,
                                    help_text='Используется только если тип кнопки = "Ссылка"')
