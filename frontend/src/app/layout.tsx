@@ -37,18 +37,22 @@ export async function generateMetadata(): Promise<Metadata> {
     const siteName = siteSettings.site_name || 'Temis';
     const siteUrl = 'https://temis.ooo';
     
+    // Очищаем описание от HTML тегов, если они есть
+    const cleanDescription = description.replace(/<[^>]*>/g, '').trim() || 'Temis';
+    
     return {
       title: pageTitle,
-      description: description,
+      description: cleanDescription,
       icons: {
         icon: siteSettings.favicon || '/favicon.ico',
       },
       openGraph: {
         title: pageTitle,
-        description: description,
+        description: cleanDescription,
         url: siteUrl,
         siteName: siteName,
         type: 'website',
+        locale: 'ru_RU',
         images: siteSettings.favicon ? [
           {
             url: siteSettings.favicon.startsWith('http') 
@@ -61,15 +65,20 @@ export async function generateMetadata(): Promise<Metadata> {
         ] : undefined,
       },
       twitter: {
-        card: 'summary',
+        card: 'summary_large_image',
         title: pageTitle,
-        description: description,
+        description: cleanDescription,
         images: siteSettings.favicon ? [
           siteSettings.favicon.startsWith('http') 
             ? siteSettings.favicon 
             : `${siteUrl}${siteSettings.favicon.startsWith('/') ? '' : '/'}${siteSettings.favicon}`
         ] : undefined,
       },
+      // Дополнительные мета-теги
+      keywords: undefined, // Можно добавить поле keywords в SiteSettings если нужно
+      authors: [{ name: siteName }],
+      creator: siteName,
+      publisher: siteName,
     };
   } catch (error) {
     console.error('Error generating metadata:', error);
@@ -110,6 +119,9 @@ export default async function RootLayout({
   const headerHeight = headerSettings?.header_height || 140;
   const mobileHeaderHeight = Math.min(headerHeight * 0.85, 120);
 
+  // Если не удалось загрузить настройки шапки, все равно показываем минимальный layout
+  // но Header и Footer сами проверят наличие данных и вернут null при ошибках
+  
   return (
     <html lang="ru" suppressHydrationWarning>
       <head>
