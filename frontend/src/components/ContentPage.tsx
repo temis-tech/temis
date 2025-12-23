@@ -515,9 +515,7 @@ export default function ContentPage({ page }: ContentPageProps) {
   if (page.page_type === 'faq') {
     return (
       <div className={styles.container}>
-        {page.show_title && page.title && (
-          <h1 className={styles.title}>{page.title}</h1>
-        )}
+        {/* Заголовок отображается в [slug]/page.tsx, здесь не дублируем */}
         {page.description && (
           <div
             className={styles.description}
