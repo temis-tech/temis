@@ -35,19 +35,26 @@ export function initGlobalBookingForm() {
   // Глобальная функция для вызова из HTML
   if (typeof window !== 'undefined' && !window.openBookingForm) {
     window.openBookingForm = (formId: number, serviceTitle?: string, serviceId?: number) => {
-      // Вызываем только первый успешный callback, чтобы избежать двойного открытия формы
+      console.log('🔍 window.openBookingForm вызвана:', { formId, serviceTitle, serviceId, callbacksCount: bookingFormCallbacks.length });
+      
+      // Вызываем все callbacks, но останавливаемся после первого успешного
+      // Это нужно, чтобы форма открылась в правильном компоненте (ContentPage имеет приоритет)
       let called = false;
-      for (const callback of bookingFormCallbacks) {
+      for (let i = 0; i < bookingFormCallbacks.length; i++) {
+        const callback = bookingFormCallbacks[i];
         try {
+          console.log(`🔍 Вызываем callback ${i + 1}/${bookingFormCallbacks.length}`);
           callback(formId, serviceTitle || '', serviceId ?? undefined);
           called = true;
+          console.log(`✅ Callback ${i + 1} успешно вызван, останавливаемся`);
           break; // Останавливаемся после первого успешного вызова
         } catch (e) {
-          // Игнорируем ошибки, продолжаем пробовать другие callbacks
+          console.error(`❌ Ошибка в callback ${i + 1}:`, e);
+          // Продолжаем пробовать другие callbacks
         }
       }
       if (!called) {
-        console.warn('BookingForm callback not set. Form will not open. Form ID:', formId);
+        console.warn('⚠️ BookingForm callback not set. Form will not open. Form ID:', formId, 'Available callbacks:', bookingFormCallbacks.length);
       }
     };
   }

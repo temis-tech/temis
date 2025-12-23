@@ -40,6 +40,7 @@ export default function ContentPage({ page }: ContentPageProps) {
   useEffect(() => {
     setBookingFormCallback(openBookingForm)
     initGlobalBookingForm()
+    console.log('✅ ContentPage: зарегистрирован callback для открытия формы записи')
   }, [])
 
   const handleButtonClick = (item: any) => {
