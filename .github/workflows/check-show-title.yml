@@ -23,12 +23,40 @@ jobs:
           timeout: 60s
           debug: false
           script: |
+            set +x
+            echo "🔍 Проверяем show_title на сервере..."
+            echo ""
             cd /var/www/temis/backend
+            
+            # Проверяем значение в базе данных напрямую
+            echo "1️⃣ Проверяем значение в базе данных:"
+            sudo -u www-data venv/bin/python manage.py shell << 'PYTHON_EOF'
+from content.models import ContentPage
+import json
+
+pages = ContentPage.objects.all().values('id', 'title', 'slug', 'page_type', 'show_title')
+print("\nВсе страницы в БД:")
+for page in pages:
+    show_title_val = page['show_title']
+    print(f"  ID: {page['id']:3d} | Slug: {page['slug']:30s} | Type: {page['page_type']:10s} | show_title: {show_title_val} (type: {type(show_title_val).__name__})")
+PYTHON_EOF
+
+            echo ""
+            echo "2️⃣ Проверяем через API (сериализатор):"
             if [ -n "${{ github.event.inputs.slug }}" ]; then
-              echo "🔍 Проверяем страницу со slug: ${{ github.event.inputs.slug }}"
-              sudo -u www-data venv/bin/python manage.py check_show_title --slug "${{ github.event.inputs.slug }}"
+              SLUG="${{ github.event.inputs.slug }}"
+              echo "   Проверяем страницу со slug: $SLUG"
+              sudo -u www-data venv/bin/python manage.py check_show_title --slug "$SLUG"
             else
-              echo "🔍 Проверяем все страницы..."
+              echo "   Проверяем все страницы..."
               sudo -u www-data venv/bin/python manage.py check_show_title
+            fi
+            
+            echo ""
+            echo "3️⃣ Проверяем ответ API через curl:"
+            if [ -n "${{ github.event.inputs.slug }}" ]; then
+              SLUG="${{ github.event.inputs.slug }}"
+              echo "   Запрос: https://api.temis.ooo/api/content/pages/by-slug/$SLUG/"
+              curl -s "https://api.temis.ooo/api/content/pages/by-slug/$SLUG/" | python3 -c "import sys, json; data=json.load(sys.stdin); print(f\"show_title в API: {data.get('show_title')} (type: {type(data.get('show_title')).__name__})\")" 2>/dev/null || echo "   Не удалось получить ответ API"
             fi
 
