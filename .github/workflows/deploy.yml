@@ -879,6 +879,11 @@ jobs:
               echo "✅ Este Nómada backend работает"
             fi
             
+            # Проверяем show_title для отладки
+            echo "🔍 Проверяем show_title для всех страниц..."
+            cd $BACKEND_DIR
+            sudo -u www-data venv/bin/python manage.py check_show_title 2>&1 | head -50 || echo "⚠️  Не удалось выполнить проверку show_title"
+            
             echo "✅ Деплой Temis завершен!"
       
       - name: Send Telegram notification on success
