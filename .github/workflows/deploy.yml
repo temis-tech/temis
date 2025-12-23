@@ -141,7 +141,7 @@ jobs:
           password: ${{ secrets.PROD_SERVER_PASSWORD }}
           port: 22
           timeout: 600s
-          debug: true
+          debug: false
           script: |
             set -e
             # Используем правильное экранирование для heredoc в YAML
@@ -394,7 +394,7 @@ jobs:
             
             if ! systemctl list-unit-files | grep -q temis-backend; then
               echo "📦 Создаем сервис temis-backend..."
-              sudo bash -c 'cat > /etc/systemd/system/temis-backend.service' << 'SERVICE_EOF'
+              sudo bash -c 'cat > /etc/systemd/system/temis-backend.service' << 'SERVICE_EOF' 2>/dev/null
             [Unit]
             Description=Temis Django Backend
             After=network.target
@@ -429,7 +429,7 @@ jobs:
             
             # Обновляем или создаем сервис temis-frontend
             echo "📦 Обновляем сервис temis-frontend..."
-            sudo bash -c 'cat > /etc/systemd/system/temis-frontend.service' << 'SERVICE_EOF'
+            sudo bash -c 'cat > /etc/systemd/system/temis-frontend.service' << 'SERVICE_EOF' 2>/dev/null
             [Unit]
             Description=Temis Next.js Frontend
             After=network.target
