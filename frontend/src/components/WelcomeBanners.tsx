@@ -6,6 +6,7 @@ import { contentApi } from '@/lib/api';
 import { WelcomeBanner, WelcomeBannerCard } from '@/types';
 import { normalizeImageUrl } from '@/lib/utils';
 import BookingForm from './BookingForm';
+import { setBookingFormCallback, initGlobalBookingForm } from '@/lib/bookingForm';
 import styles from './WelcomeBanners.module.css';
 
 const WIDTH_MAP: Record<WelcomeBanner['content_width'], number> = {
@@ -49,6 +50,12 @@ export default function WelcomeBanners() {
     setSelectedServiceTitle(title || '');
     setShowBookingForm(true);
   };
+
+  // Регистрируем глобальную функцию для вызова формы из HTML
+  useEffect(() => {
+    setBookingFormCallback(handleBooking);
+    initGlobalBookingForm();
+  }, []);
 
   const handleCardClick = (card: WelcomeBannerCard) => {
     switch (card.button_type) {

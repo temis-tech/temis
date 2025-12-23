@@ -6,7 +6,7 @@ import { normalizeHtmlContent } from '@/lib/htmlUtils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import BookingForm from './BookingForm'
 import Gallery from './Gallery'
 import FAQ from './FAQ'
@@ -14,6 +14,7 @@ import BranchesList from './BranchesList'
 import ServicesList from './ServicesList'
 import CatalogNavigator from './CatalogNavigator'
 import { useBranch } from '@/hooks/useBranch'
+import { setBookingFormCallback, initGlobalBookingForm } from '@/lib/bookingForm'
 import styles from './ContentPage.module.css'
 
 interface ContentPageProps {
@@ -34,6 +35,12 @@ export default function ContentPage({ page }: ContentPageProps) {
     setSelectedServiceId(serviceId ?? null)
     setShowBookingForm(true)
   }
+
+  // Регистрируем глобальную функцию для вызова формы из HTML
+  useEffect(() => {
+    setBookingFormCallback(openBookingForm)
+    initGlobalBookingForm()
+  }, [])
 
   const handleButtonClick = (item: any) => {
     if (item.button_type === 'booking') {
