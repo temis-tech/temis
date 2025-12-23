@@ -37,10 +37,11 @@ export default function ContentPage({ page }: ContentPageProps) {
   }
 
   // Регистрируем глобальную функцию для вызова формы из HTML
+  // ContentPage должен быть первым (priority: 'high'), так как он есть на всех страницах
   useEffect(() => {
-    setBookingFormCallback(openBookingForm)
+    setBookingFormCallback(openBookingForm, 'high')
     initGlobalBookingForm()
-    console.log('✅ ContentPage: зарегистрирован callback для открытия формы записи')
+    console.log('✅ ContentPage: зарегистрирован callback для открытия формы записи (приоритет: high)')
   }, [])
 
   const handleButtonClick = (item: any) => {

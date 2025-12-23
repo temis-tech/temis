@@ -24,10 +24,18 @@ declare global {
 let bookingFormCallbacks: Array<((formId: number, serviceTitle?: string, serviceId?: number) => void)> = [];
 let urlParamsProcessed = false; // Флаг для предотвращения повторной обработки URL параметров
 
-export function setBookingFormCallback(callback: (formId: number, serviceTitle?: string, serviceId?: number) => void) {
+export function setBookingFormCallback(
+  callback: (formId: number, serviceTitle?: string, serviceId?: number) => void,
+  priority: 'high' | 'normal' = 'normal'
+) {
   // Добавляем callback в список, чтобы поддерживать несколько компонентов
+  // ContentPage должен быть первым (priority: 'high'), так как он есть на всех страницах
   if (!bookingFormCallbacks.includes(callback)) {
-    bookingFormCallbacks.push(callback);
+    if (priority === 'high') {
+      bookingFormCallbacks.unshift(callback); // Добавляем в начало
+    } else {
+      bookingFormCallbacks.push(callback); // Добавляем в конец
+    }
   }
 }
 

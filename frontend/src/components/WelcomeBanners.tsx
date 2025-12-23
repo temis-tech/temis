@@ -47,8 +47,10 @@ export default function WelcomeBanners() {
   const handleBooking = (formId: number, title?: string, serviceId?: number) => {
     if (!formId) {
       console.warn('⚠️ WelcomeBanners.handleBooking: formId не указан');
-      return;
+      throw new Error('WelcomeBanners: formId не указан');
     }
+    // Проверяем, что компонент смонтирован и может отобразить форму
+    // Если нет, выбрасываем ошибку, чтобы следующий callback мог обработать запрос
     console.log('🎯 WelcomeBanners.handleBooking вызвана:', { formId, title, serviceId });
     setSelectedFormId(formId);
     setSelectedServiceTitle(title || '');
