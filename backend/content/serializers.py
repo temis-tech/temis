@@ -763,6 +763,9 @@ class ContentPageSerializer(serializers.ModelSerializer):
     selected_catalog_page = serializers.SerializerMethodField()
     selected_gallery_page = serializers.SerializerMethodField()
     
+    # Явно указываем show_title как BooleanField для гарантии правильного типа
+    show_title = serializers.BooleanField(default=True)
+    
     class Meta:
         model = ContentPage
         fields = ['id', 'title', 'slug', 'page_type', 'description', 'image', 'image_align', 'image_size', 
