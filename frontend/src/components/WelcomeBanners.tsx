@@ -45,6 +45,10 @@ export default function WelcomeBanners() {
   }, []);
 
   const handleBooking = (formId: number, title?: string, serviceId?: number) => {
+    if (!formId) {
+      console.warn('⚠️ WelcomeBanners.handleBooking: formId не указан');
+      return;
+    }
     console.log('🎯 WelcomeBanners.handleBooking вызвана:', { formId, title, serviceId });
     setSelectedFormId(formId);
     setSelectedServiceTitle(title || '');
@@ -63,7 +67,9 @@ export default function WelcomeBanners() {
   const handleCardClick = (card: WelcomeBannerCard) => {
     switch (card.button_type) {
       case 'booking':
-        handleBooking(card.button_booking_form_id, card.title);
+        if (card.button_booking_form_id) {
+          handleBooking(card.button_booking_form_id, card.title);
+        }
         break;
       case 'quiz':
         if (card.button_quiz_slug) {
