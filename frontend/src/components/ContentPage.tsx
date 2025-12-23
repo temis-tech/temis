@@ -351,10 +351,15 @@ export default function ContentPage({ page }: ContentPageProps) {
           // Определяем тип страницы для правильного отображения
           const pageType = contentPage.page_type
 
+          // Проверяем, нужно ли показывать заголовок:
+          // 1. block.show_title - настройка блока главной страницы
+          // 2. contentPage.show_title - настройка самой страницы "Показывать заголовок на странице"
+          // Заголовок показывается только если ОБА условия true
+          const shouldShowBlockTitle = block.show_title === true && (contentPage.show_title === true || contentPage.show_title === undefined)
 
           return (
             <div key={block.id} className={styles.homeBlock}>
-              {block.show_title && displayTitle && (
+              {shouldShowBlockTitle && displayTitle && (
                 <TitleTag
                   className={`${styles.blockTitle} ${titleSizeClass}`}
                   style={{
