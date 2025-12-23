@@ -24,17 +24,29 @@ export default async function DynamicPage({ params }: { params: { slug: string }
       notFound();
     }
 
-    // Отладочный вывод (можно убрать после проверки)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Page show_title value:', page.show_title, 'Type:', typeof page.show_title);
-    }
+    // Отладочный вывод для проверки значения show_title
+    console.log('🔍 DEBUG show_title:', {
+      value: page.show_title,
+      type: typeof page.show_title,
+      isTrue: page.show_title === true,
+      isFalse: page.show_title === false,
+      isUndefined: page.show_title === undefined,
+      isNull: page.show_title === null,
+      stringTrue: page.show_title === 'true',
+      stringFalse: page.show_title === 'false',
+      pageTitle: page.title,
+      pageType: page.page_type
+    });
+
+    // Нормализуем значение show_title (на случай если приходит строка)
+    const shouldShowTitle = page.show_title === true || page.show_title === 'true';
 
     return (
       <main>
         <div style={{ paddingTop: '2rem' }}>
           {/* Показываем заголовок для всех типов страниц (catalog, gallery, text, faq), только если show_title === true */}
           {/* Если show_title === false или undefined, заголовок не показываем */}
-          {page.show_title === true && page.title && (
+          {shouldShowTitle && page.title && (
             <h1 style={{ 
               textAlign: 'center', 
               fontSize: '2.5rem', 
