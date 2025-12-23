@@ -513,6 +513,24 @@ class ContentPage(models.Model):
                                              verbose_name='Услуги для отображения',
                                              help_text='Выберите услуги, которые будут отображаться на этой странице. Услуги будут автоматически фильтроваться по выбранному филиалу, если он указан.')
     
+    # Настройки отображения услуг
+    SERVICES_CARD_STYLE_CHOICES = [
+        ('standard', 'Стандартная карточка'),
+        ('compact', 'Компактная карточка'),
+        ('detailed', 'Подробная карточка'),
+        ('minimal', 'Минималистичная карточка'),
+    ]
+    
+    services_show_title = models.BooleanField('Показывать заголовок блока услуг', default=True,
+                                              help_text='Отображать заголовок над блоком услуг')
+    services_title = models.CharField('Заголовок блока услуг', max_length=200, blank=True,
+                                     default='Наши услуги',
+                                     help_text='Заголовок, который будет отображаться над блоком услуг. Если не указан, используется "Наши услуги"')
+    services_card_style = models.CharField('Стиль карточки услуги', max_length=20,
+                                          choices=SERVICES_CARD_STYLE_CHOICES,
+                                          default='standard',
+                                          help_text='Выберите стиль отображения карточек услуг')
+    
     is_active = models.BooleanField('Активна', default=True)
     order = models.IntegerField('Порядок', default=0)
     created_at = models.DateTimeField('Создана', auto_now_add=True)

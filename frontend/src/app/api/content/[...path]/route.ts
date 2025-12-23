@@ -31,12 +31,16 @@ export async function GET(
     };
     
     // Если запрос к внутреннему API, добавляем заголовки для Django
+    // В Node.js fetch нельзя установить Host напрямую, но можно использовать URL с правильным host
+    let fetchUrl = `${API_BASE_URL}/content/${apiPath}${queryString}`;
     if (isInternal) {
-      fetchHeaders['Host'] = 'api.temis.ooo';
       fetchHeaders['X-Forwarded-Proto'] = 'https';
+      fetchHeaders['X-Forwarded-Host'] = 'api.temis.ooo';
+      // Используем URL с правильным host для внутренних запросов
+      fetchUrl = `http://127.0.0.1:8001/api/content/${apiPath}${queryString}`;
     }
     
-    const response = await fetch(`${API_BASE_URL}/content/${apiPath}${queryString}`, {
+    const response = await fetch(fetchUrl, {
       headers: fetchHeaders,
       cache: 'no-store',
     });

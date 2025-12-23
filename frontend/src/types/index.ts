@@ -201,6 +201,9 @@ export interface ContentPage {
   } | null;
   // Услуги для отображения на странице
   display_services?: Service[];
+  services_show_title?: boolean;
+  services_title?: string;
+  services_card_style?: 'standard' | 'compact' | 'detailed' | 'minimal';
 }
 
 export interface WelcomeBannerCard {

@@ -159,6 +159,140 @@
   color: white;
 }
 
+/* Стили для разных вариантов карточек */
+
+/* Стандартная карточка (базовый стиль) */
+.card_standard {
+  /* Использует базовые стили .card */
+}
+
+/* Компактная карточка */
+.card_compact .imageWrapper {
+  height: 150px;
+}
+
+.card_compact .content {
+  padding: 1rem;
+}
+
+.card_compact .name {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.card_compact .description {
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.card_compact .duration {
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.card_compact .priceContainer {
+  padding-top: 0.75rem;
+}
+
+.card_compact .priceValue {
+  font-size: 1rem;
+}
+
+.card_compact .bookingButton,
+.card_compact .link {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+/* Подробная карточка */
+.card_detailed {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.card_detailed .imageWrapper {
+  height: 250px;
+}
+
+.card_detailed .content {
+  padding: 2rem;
+}
+
+.card_detailed .name {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.card_detailed .description {
+  font-size: 1.05rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.7;
+}
+
+.card_detailed .duration {
+  font-size: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.card_detailed .priceContainer {
+  padding-top: 1.5rem;
+  border-top: 2px solid #e0e0e0;
+}
+
+.card_detailed .priceValue {
+  font-size: 1.25rem;
+}
+
+.card_detailed .bookingButton,
+.card_detailed .link {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+}
+
+/* Минималистичная карточка */
+.card_minimal {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e0e0e0;
+}
+
+.card_minimal .content {
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.card_minimal .name {
+  font-size: 1.15rem;
+  margin-bottom: 0.75rem;
+}
+
+.card_minimal .priceContainer {
+  padding-top: 0.75rem;
+  border-top: 1px solid #e0e0e0;
+  margin-top: 0.75rem;
+}
+
+.card_minimal .price {
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.card_minimal .priceLabel {
+  font-size: 0.85rem;
+}
+
+.card_minimal .priceValue {
+  font-size: 1.15rem;
+}
+
+.card_minimal .buttonsContainer {
+  margin-top: 0.75rem;
+  justify-content: center;
+}
+
+.card_minimal .bookingButton {
+  padding: 0.6rem 1.5rem;
+  font-size: 0.95rem;
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
   .container {
@@ -196,5 +330,32 @@
   .bookingButton,
   .link {
     width: 100%;
+  }
+
+  /* Адаптивность для компактных карточек */
+  .card_compact .imageWrapper {
+    height: 120px;
+  }
+
+  .card_compact .content {
+    padding: 0.875rem;
+  }
+
+  /* Адаптивность для подробных карточек */
+  .card_detailed .imageWrapper {
+    height: 200px;
+  }
+
+  .card_detailed .content {
+    padding: 1.5rem;
+  }
+
+  .card_detailed .name {
+    font-size: 1.25rem;
+  }
+
+  /* Адаптивность для минималистичных карточек */
+  .card_minimal .content {
+    padding: 1rem;
   }
 }

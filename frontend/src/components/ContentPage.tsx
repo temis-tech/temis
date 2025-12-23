@@ -492,6 +492,9 @@ export default function ContentPage({ page }: ContentPageProps) {
               {contentPage.display_services && contentPage.display_services.length > 0 && (
                 <ServicesList 
                   services={contentPage.display_services} 
+                  title={contentPage.services_title || 'Наши услуги'}
+                  showTitle={contentPage.services_show_title !== false}
+                  cardStyle={contentPage.services_card_style || 'standard'}
                   filterByBranchId={selectedBranch?.id || null}
                   onBookingClick={openBookingForm}
                 />

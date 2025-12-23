@@ -11,6 +11,7 @@ interface ServicesListProps {
   title?: string;
   showTitle?: boolean;
   className?: string;
+  cardStyle?: 'standard' | 'compact' | 'detailed' | 'minimal';
   filterByBranchId?: number | null;
   onBookingClick?: (formId: number, serviceTitle: string, serviceId: number) => void;
 }
@@ -20,6 +21,7 @@ export default function ServicesList({
   title = 'Наши услуги',
   showTitle = true,
   className = '',
+  cardStyle = 'standard',
   filterByBranchId,
   onBookingClick
 }: ServicesListProps) {
@@ -123,9 +125,11 @@ export default function ServicesList({
           const formattedPrice = formatPrice(price);
           const formattedPriceWithAbonement = priceWithAbonement ? formatPrice(priceWithAbonement) : null;
 
+          const cardClassName = `${styles.card} ${styles[`card_${cardStyle}`] || ''}`;
+          
           return (
-            <div key={service.id} className={styles.card}>
-              {service.image && (
+            <div key={service.id} className={cardClassName}>
+              {service.image && cardStyle !== 'minimal' && (
                 <div className={styles.imageWrapper}>
                   <Image
                     src={normalizeImageUrl(service.image)}
@@ -133,16 +137,16 @@ export default function ServicesList({
                     width={400}
                     height={250}
                     className={styles.image}
-                    style={{ objectFit: 'contain', objectPosition: 'center', borderRadius: '8px' }}
+                    style={{ objectFit: cardStyle === 'compact' ? 'cover' : 'contain', objectPosition: 'center', borderRadius: '8px' }}
                   />
                 </div>
               )}
               <div className={styles.content}>
                 <h3 className={styles.name}>{service.title}</h3>
-                {service.short_description && (
+                {service.short_description && cardStyle !== 'compact' && cardStyle !== 'minimal' && (
                   <p className={styles.description}>{service.short_description}</p>
                 )}
-                {service.duration && (
+                {service.duration && cardStyle !== 'minimal' && (
                   <p className={styles.duration}>⏱️ {service.duration}</p>
                 )}
                 {(formattedPrice || formattedPriceWithAbonement) && (
@@ -155,7 +159,7 @@ export default function ServicesList({
                         </span>
                       </div>
                     )}
-                    {formattedPriceWithAbonement && (
+                    {formattedPriceWithAbonement && cardStyle === 'detailed' && (
                       <div className={styles.priceAbonement}>
                         <span className={styles.priceLabel}>По абонементу:</span>
                         <span className={styles.priceValue}>
@@ -180,7 +184,7 @@ export default function ServicesList({
                         Записаться
                       </button>
                     )}
-                    {service.has_own_page && service.url && (
+                    {service.has_own_page && service.url && cardStyle !== 'minimal' && (
                       <Link href={service.url} className={styles.link}>
                         Подробнее
                       </Link>

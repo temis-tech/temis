@@ -769,7 +769,7 @@ class ContentPageSerializer(serializers.ModelSerializer):
                  'gallery_display_type', 'gallery_enable_fullscreen', 'show_title', 'show_catalog_navigator', 'is_active', 'catalog_items',
                  'gallery_images', 'home_blocks', 'faq_items', 'faq_icon', 'faq_icon_position', 
                  'faq_background_color', 'faq_background_image', 'faq_animation', 'faq_columns', 'branches', 'display_branches',
-                 'display_services', 'selected_catalog_page', 'selected_gallery_page']
+                 'display_services', 'services_show_title', 'services_title', 'services_card_style', 'selected_catalog_page', 'selected_gallery_page']
     
     def get_image(self, obj):
         return get_image_url(obj.image, self.context.get('request'))
