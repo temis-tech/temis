@@ -37,9 +37,9 @@ export function initGlobalBookingForm() {
     window.openBookingForm = (formId: number, serviceTitle?: string, serviceId?: number) => {
       console.log('🔍 window.openBookingForm вызвана:', { formId, serviceTitle, serviceId, callbacksCount: bookingFormCallbacks.length });
       
-      // Вызываем все callbacks по порядку
+      // Вызываем callbacks по порядку, но останавливаемся после первого успешного вызова
+      // Это предотвращает двойное открытие формы
       // ContentPage обычно регистрируется первым и является универсальным обработчиком
-      // Hero и WelcomeBanners могут иметь специфичные проверки
       let called = false;
       for (let i = 0; i < bookingFormCallbacks.length; i++) {
         const callback = bookingFormCallbacks[i];
@@ -47,12 +47,11 @@ export function initGlobalBookingForm() {
           console.log(`🔍 Вызываем callback ${i + 1}/${bookingFormCallbacks.length}`);
           callback(formId, serviceTitle || '', serviceId ?? undefined);
           called = true;
-          console.log(`✅ Callback ${i + 1} успешно вызван`);
-          // НЕ останавливаемся - некоторые callbacks могут иметь условия и не открывать форму
-          // Но если callback вызвался без ошибки, считаем что он обработал запрос
+          console.log(`✅ Callback ${i + 1} успешно вызван, останавливаемся`);
+          break; // Останавливаемся после первого успешного вызова, чтобы форма не открывалась несколько раз
         } catch (e) {
           console.error(`❌ Ошибка в callback ${i + 1}:`, e);
-          // Продолжаем пробовать другие callbacks
+          // Продолжаем пробовать другие callbacks при ошибке
         }
       }
       if (!called) {

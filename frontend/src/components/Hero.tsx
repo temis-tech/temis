@@ -52,6 +52,8 @@ export default function Hero() {
           console.log('✅ Hero: форма открыта');
         } else {
           console.log('⏭️ Hero: formId не совпадает, пропускаем');
+          // Если formId не совпадает, выбрасываем ошибку, чтобы следующий callback мог обработать запрос
+          throw new Error(`Hero: formId ${formId} не совпадает с button_booking_form_id ${heroSettings.button_booking_form_id}`);
         }
       };
       setBookingFormCallback(openBookingForm);
