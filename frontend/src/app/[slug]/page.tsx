@@ -35,11 +35,14 @@ export default async function DynamicPage({ params }: { params: { slug: string }
       stringTrue: page.show_title === 'true',
       stringFalse: page.show_title === 'false',
       pageTitle: page.title,
-      pageType: page.page_type
+      pageType: page.page_type,
+      rawValue: JSON.stringify(page.show_title)
     });
 
-    // Нормализуем значение show_title (на случай если приходит строка)
-    const shouldShowTitle = page.show_title === true || page.show_title === 'true';
+    // Нормализуем значение show_title
+    // Проверяем строго: только если явно true, показываем заголовок
+    // Если false, undefined, null или любое другое значение - не показываем
+    const shouldShowTitle = page.show_title === true;
 
     return (
       <main>
