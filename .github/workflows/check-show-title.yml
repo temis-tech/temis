@@ -1,0 +1,34 @@
+name: Check show_title on server
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: 'Slug страницы для проверки (оставьте пустым для проверки всех страниц)'
+        required: false
+        type: string
+
+jobs:
+  check:
+    name: Check show_title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check show_title on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_SERVER_HOST }}
+          username: ${{ secrets.PROD_SERVER_USER }}
+          password: ${{ secrets.PROD_SERVER_PASSWORD }}
+          port: 22
+          timeout: 60s
+          debug: false
+          script: |
+            cd /var/www/temis/backend
+            if [ -n "${{ github.event.inputs.slug }}" ]; then
+              echo "🔍 Проверяем страницу со slug: ${{ github.event.inputs.slug }}"
+              sudo -u www-data venv/bin/python manage.py check_show_title --slug "${{ github.event.inputs.slug }}"
+            else
+              echo "🔍 Проверяем все страницы..."
+              sudo -u www-data venv/bin/python manage.py check_show_title
+            fi
+
