@@ -187,10 +187,20 @@ jobs:
               echo "✅ Права на исполнение Python/gunicorn установлены"
             fi
             
-            # КРИТИЧНО: Права на frontend server.js
-            if [ -f "$FRONTEND_DIR/.next/standalone/server.js" ]; then
-              sudo chmod +x "$FRONTEND_DIR/.next/standalone/server.js"
-              echo "✅ Права на server.js установлены"
+            # КРИТИЧНО: Права на frontend server.js и директорию standalone
+            if [ -d "$FRONTEND_DIR/.next/standalone" ]; then
+              sudo chown -R www-data:www-data "$FRONTEND_DIR/.next/standalone"
+              sudo chmod +x "$FRONTEND_DIR/.next/standalone/server.js" 2>/dev/null || true
+              echo "✅ Права на standalone директорию установлены"
+              # Проверяем наличие node_modules в standalone
+              if [ ! -d "$FRONTEND_DIR/.next/standalone/node_modules" ]; then
+                echo "⚠️  node_modules не найдены в standalone, проверяем структуру..."
+                ls -la "$FRONTEND_DIR/.next/standalone/" | head -20
+              fi
+            else
+              echo "❌ Директория .next/standalone не найдена!"
+              echo "   Проверяем структуру .next:"
+              ls -la "$FRONTEND_DIR/.next/" 2>/dev/null || echo "   Директория .next не существует!"
             fi
             
             # КРИТИЧНО: Создаем симлинк для статических файлов сразу после распаковки
@@ -417,9 +427,9 @@ jobs:
               echo "✅ Сервис temis-backend создан и включен"
             fi
             
-            if ! systemctl list-unit-files | grep -q temis-frontend; then
-              echo "📦 Создаем сервис temis-frontend..."
-              sudo bash -c 'cat > /etc/systemd/system/temis-frontend.service' << 'SERVICE_EOF'
+            # Обновляем или создаем сервис temis-frontend
+            echo "📦 Обновляем сервис temis-frontend..."
+            sudo bash -c 'cat > /etc/systemd/system/temis-frontend.service' << 'SERVICE_EOF'
             [Unit]
             Description=Temis Next.js Frontend
             After=network.target
@@ -439,10 +449,9 @@ jobs:
             [Install]
             WantedBy=multi-user.target
             SERVICE_EOF
-              sudo systemctl daemon-reload
-              sudo systemctl enable temis-frontend
-              echo "✅ Сервис temis-frontend создан и включен"
-            fi
+            sudo systemctl daemon-reload
+            sudo systemctl enable temis-frontend
+            echo "✅ Сервис temis-frontend обновлен и включен"
             
             # Перезапускаем сервисы
             echo "🔄 Перезапускаем сервисы..."
