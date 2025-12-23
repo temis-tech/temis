@@ -38,7 +38,7 @@ export function initGlobalBookingForm() {
       let called = false;
       for (const callback of bookingFormCallbacks) {
         try {
-          callback(formId, serviceTitle || '', serviceId || null);
+          callback(formId, serviceTitle || '', serviceId ?? undefined);
           called = true;
         } catch (e) {
           // Игнорируем ошибки, продолжаем пробовать другие callbacks
