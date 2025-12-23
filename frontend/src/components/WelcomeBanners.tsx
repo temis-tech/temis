@@ -44,17 +44,20 @@ export default function WelcomeBanners() {
       });
   }, []);
 
-  const handleBooking = (formId?: number, title?: string) => {
-    if (!formId) return;
+  const handleBooking = (formId: number, title?: string, serviceId?: number) => {
+    console.log('🎯 WelcomeBanners.handleBooking вызвана:', { formId, title, serviceId });
     setSelectedFormId(formId);
     setSelectedServiceTitle(title || '');
+    setSelectedServiceId(serviceId ?? null);
     setShowBookingForm(true);
+    console.log('✅ WelcomeBanners: форма открыта');
   };
 
   // Регистрируем глобальную функцию для вызова формы из HTML
   useEffect(() => {
     setBookingFormCallback(handleBooking);
     initGlobalBookingForm();
+    console.log('✅ WelcomeBanners: зарегистрирован callback для открытия формы записи');
   }, []);
 
   const handleCardClick = (card: WelcomeBannerCard) => {

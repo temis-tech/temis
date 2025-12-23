@@ -46,12 +46,17 @@ export default function Hero() {
   useEffect(() => {
     if (heroSettings?.button_booking_form_id) {
       const openBookingForm = (formId: number, title?: string, serviceId?: number) => {
+        console.log('🎯 Hero.openBookingForm вызвана:', { formId, buttonFormId: heroSettings.button_booking_form_id, match: formId === heroSettings.button_booking_form_id });
         if (formId === heroSettings.button_booking_form_id) {
           setShowBookingForm(true);
+          console.log('✅ Hero: форма открыта');
+        } else {
+          console.log('⏭️ Hero: formId не совпадает, пропускаем');
         }
       };
       setBookingFormCallback(openBookingForm);
       initGlobalBookingForm();
+      console.log('✅ Hero: зарегистрирован callback для открытия формы записи');
     }
   }, [heroSettings?.button_booking_form_id]);
 
