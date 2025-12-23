@@ -24,6 +24,11 @@ export default async function DynamicPage({ params }: { params: { slug: string }
       notFound();
     }
 
+    // Отладочный вывод (можно убрать после проверки)
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Page show_title value:', page.show_title, 'Type:', typeof page.show_title);
+    }
+
     return (
       <main>
         <div style={{ paddingTop: '2rem' }}>
