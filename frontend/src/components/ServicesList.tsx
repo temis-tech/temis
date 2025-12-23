@@ -129,6 +129,18 @@ export default function ServicesList({
           
           return (
             <div key={service.id} className={cardClassName}>
+              {service.image && cardStyle === 'minimal' && (
+                <div className={styles.imageWrapperMinimal}>
+                  <Image
+                    src={normalizeImageUrl(service.image)}
+                    alt={service.title}
+                    width={80}
+                    height={80}
+                    className={styles.imageMinimal}
+                    style={{ objectFit: 'contain', objectPosition: 'center', borderRadius: '8px' }}
+                  />
+                </div>
+              )}
               {service.image && cardStyle !== 'minimal' && (
                 <div className={styles.imageWrapper}>
                   <Image
