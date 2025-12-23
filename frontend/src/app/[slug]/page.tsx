@@ -27,8 +27,9 @@ export default async function DynamicPage({ params }: { params: { slug: string }
     return (
       <main>
         <div style={{ paddingTop: '2rem' }}>
-          {/* Показываем заголовок для всех типов страниц (catalog, gallery, text, faq), если show_title !== false */}
-          {page.show_title !== false && page.title && (
+          {/* Показываем заголовок для всех типов страниц (catalog, gallery, text, faq), только если show_title === true */}
+          {/* Если show_title === false или undefined, заголовок не показываем */}
+          {page.show_title === true && page.title && (
             <h1 style={{ 
               textAlign: 'center', 
               fontSize: '2.5rem', 
