@@ -42,6 +42,19 @@ export default function Hero() {
       .catch(() => setHeroSettings(null));
   }, []);
 
+  // Регистрируем глобальную функцию для вызова формы из HTML
+  useEffect(() => {
+    if (heroSettings?.button_booking_form_id) {
+      const openBookingForm = (formId: number, title?: string, serviceId?: number) => {
+        if (formId === heroSettings.button_booking_form_id) {
+          setShowBookingForm(true);
+        }
+      };
+      setBookingFormCallback(openBookingForm);
+      initGlobalBookingForm();
+    }
+  }, [heroSettings?.button_booking_form_id]);
+
   if (!heroSettings || !heroSettings.is_active) {
     return null;
   }
