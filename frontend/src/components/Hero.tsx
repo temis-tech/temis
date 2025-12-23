@@ -5,6 +5,7 @@ import { contentApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { normalizeImageUrl } from '@/lib/utils';
 import BookingForm from './BookingForm';
+import { setBookingFormCallback, initGlobalBookingForm } from '@/lib/bookingForm';
 import styles from './Hero.module.css';
 
 interface HeroSettings {

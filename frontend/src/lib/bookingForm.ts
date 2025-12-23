@@ -29,13 +29,23 @@ export function setBookingFormCallback(callback: (formId: number, serviceTitle?:
 
 export function initGlobalBookingForm() {
   // Глобальная функция для вызова из HTML
-  window.openBookingForm = (formId: number, serviceTitle?: string, serviceId?: number) => {
-    if (bookingFormCallback) {
-      bookingFormCallback(formId, serviceTitle || '', serviceId || null);
-    } else {
-      console.warn('BookingForm callback not set. Form will not open.');
-    }
-  };
+  if (typeof window !== 'undefined' && !window.openBookingForm) {
+    window.openBookingForm = (formId: number, serviceTitle?: string, serviceId?: number) => {
+      // Пытаемся вызвать все зарегистрированные callbacks
+      let called = false;
+      for (const callback of bookingFormCallbacks) {
+        try {
+          callback(formId, serviceTitle || '', serviceId || null);
+          called = true;
+        } catch (e) {
+          // Игнорируем ошибки, продолжаем пробовать другие callbacks
+        }
+      }
+      if (!called) {
+        console.warn('BookingForm callback not set. Form will not open. Form ID:', formId);
+      }
+    };
+  }
 
   // Проверяем URL параметры при загрузке страницы
   if (typeof window !== 'undefined') {
