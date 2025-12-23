@@ -21,10 +21,13 @@ declare global {
   }
 }
 
-let bookingFormCallback: ((formId: number, serviceTitle?: string, serviceId?: number) => void) | null = null;
+let bookingFormCallbacks: Array<((formId: number, serviceTitle?: string, serviceId?: number) => void)> = [];
 
 export function setBookingFormCallback(callback: (formId: number, serviceTitle?: string, serviceId?: number) => void) {
-  bookingFormCallback = callback;
+  // Добавляем callback в список, чтобы поддерживать несколько компонентов
+  if (!bookingFormCallbacks.includes(callback)) {
+    bookingFormCallbacks.push(callback);
+  }
 }
 
 export function initGlobalBookingForm() {
