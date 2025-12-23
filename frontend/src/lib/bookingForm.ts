@@ -22,6 +22,7 @@ declare global {
 }
 
 let bookingFormCallbacks: Array<((formId: number, serviceTitle?: string, serviceId?: number) => void)> = [];
+let urlParamsProcessed = false; // Флаг для предотвращения повторной обработки URL параметров
 
 export function setBookingFormCallback(callback: (formId: number, serviceTitle?: string, serviceId?: number) => void) {
   // Добавляем callback в список, чтобы поддерживать несколько компонентов
@@ -34,12 +35,13 @@ export function initGlobalBookingForm() {
   // Глобальная функция для вызова из HTML
   if (typeof window !== 'undefined' && !window.openBookingForm) {
     window.openBookingForm = (formId: number, serviceTitle?: string, serviceId?: number) => {
-      // Пытаемся вызвать все зарегистрированные callbacks
+      // Вызываем только первый успешный callback, чтобы избежать двойного открытия формы
       let called = false;
       for (const callback of bookingFormCallbacks) {
         try {
           callback(formId, serviceTitle || '', serviceId ?? undefined);
           called = true;
+          break; // Останавливаемся после первого успешного вызова
         } catch (e) {
           // Игнорируем ошибки, продолжаем пробовать другие callbacks
         }
@@ -50,8 +52,9 @@ export function initGlobalBookingForm() {
     };
   }
 
-  // Проверяем URL параметры при загрузке страницы
-  if (typeof window !== 'undefined') {
+  // Проверяем URL параметры при загрузке страницы (только один раз)
+  if (typeof window !== 'undefined' && !urlParamsProcessed) {
+    urlParamsProcessed = true;
     const urlParams = new URLSearchParams(window.location.search);
     const formIdParam = urlParams.get('booking_form');
     const serviceIdParam = urlParams.get('service_id');
@@ -64,7 +67,9 @@ export function initGlobalBookingForm() {
         setTimeout(() => {
           const serviceId = serviceIdParam ? parseInt(serviceIdParam, 10) : undefined;
           const serviceTitle = serviceTitleParam ? decodeURIComponent(serviceTitleParam) : undefined;
-          window.openBookingForm(formId, serviceTitle, serviceId);
+          if (window.openBookingForm) {
+            window.openBookingForm(formId, serviceTitle, serviceId);
+          }
         }, 500);
       }
     }
