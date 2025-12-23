@@ -144,6 +144,7 @@ jobs:
           debug: false
           script: |
             set -e
+            set +x  # Отключаем вывод команд в лог для уменьшения размера логов
             # Используем правильное экранирование для heredoc в YAML
             
             DEPLOY_DIR="/var/www/temis"
