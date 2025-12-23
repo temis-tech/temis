@@ -427,12 +427,14 @@ jobs:
             [Service]
             Type=simple
             User=www-data
-            WorkingDirectory=/var/www/temis/frontend
+            WorkingDirectory=/var/www/temis/frontend/.next/standalone
             Environment=NODE_ENV=production
             Environment=PORT=3001
             ExecStart=/usr/bin/node /var/www/temis/frontend/.next/standalone/server.js
             Restart=always
             RestartSec=10
+            StandardOutput=journal
+            StandardError=journal
 
             [Install]
             WantedBy=multi-user.target
@@ -509,7 +511,25 @@ jobs:
                 echo "✅ Frontend перезапущен и работает"
               else
                 echo "⚠️  Frontend не запустился, проверяем логи..."
-                sudo systemctl status temis-frontend --no-pager -l | head -20
+                sudo systemctl status temis-frontend --no-pager -l | head -30
+                echo "📋 Детальные логи фронтенда:"
+                sudo journalctl -u temis-frontend -n 50 --no-pager || true
+                echo "🔍 Проверяем наличие файла server.js..."
+                if [ -f "$FRONTEND_DIR/.next/standalone/server.js" ]; then
+                  echo "   ✅ Файл server.js существует"
+                  ls -la "$FRONTEND_DIR/.next/standalone/server.js"
+                  echo "🔍 Проверяем права доступа..."
+                  sudo chown -R www-data:www-data "$FRONTEND_DIR/.next"
+                  echo "🔍 Пытаемся запустить вручную для диагностики..."
+                  cd "$FRONTEND_DIR/.next/standalone"
+                  sudo -u www-data /usr/bin/node server.js --help 2>&1 | head -10 || true
+                  echo "🔍 Проверяем переменные окружения..."
+                  sudo -u www-data env | grep -E "(NODE_ENV|PORT|NEXT_PUBLIC)" || true
+                else
+                  echo "   ❌ Файл server.js НЕ найден!"
+                  echo "   Проверяем структуру директории..."
+                  ls -la "$FRONTEND_DIR/.next/standalone/" || true
+                fi
                 # Пытаемся запустить еще раз после небольшой задержки
                 sleep 3
                 sudo systemctl start temis-frontend
@@ -518,7 +538,8 @@ jobs:
                   echo "✅ Frontend запущен после повторной попытки"
                 else
                   echo "❌ Frontend не удалось запустить"
-                  sudo systemctl status temis-frontend --no-pager -l | head -20
+                  echo "📋 Последние логи:"
+                  sudo journalctl -u temis-frontend -n 30 --no-pager || true
                 fi
               fi
             fi
