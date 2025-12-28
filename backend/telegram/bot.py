@@ -968,96 +968,15 @@ def handle_crm_commands(telegram_id, text, user):
         
         # Команда /leads - список необработанных заявок (новые и в работе)
         if text == '/leads' or text.startswith('/leads '):
-            # Получаем статусы для необработанных заявок
-            new_status = LeadStatus.objects.filter(code='new').first()
-            in_progress_status = LeadStatus.objects.filter(code='in_progress').first()
-            
-            statuses = []
-            if new_status:
-                statuses.append(new_status)
-            if in_progress_status:
-                statuses.append(in_progress_status)
-            
-            if not statuses:
-                send_message(telegram_id, '❌ Статусы для заявок не настроены.')
-                return
-            
-            # Получаем необработанные заявки
-            leads = Lead.objects.filter(status__in=statuses).order_by('-created_at')[:20]
-            
-            if not leads:
-                send_message(telegram_id, '✅ Нет необработанных заявок.')
-                return
-            
-            message = f'📋 <b>Необработанные заявки ({leads.count()}):</b>\n\n'
-            for lead in leads:
-                name = lead.get_name() or 'Без имени'
-                phone = lead.get_phone() or 'Нет телефона'
-                status_name = lead.status.name if lead.status else 'Без статуса'
-                created = lead.created_at.strftime('%d.%m.%Y %H:%M')
-                message += (
-                    f'<b>#{lead.id}</b> {name}\n'
-                    f'📞 {phone}\n'
-                    f'📊 {status_name}\n'
-                    f'📅 {created}\n'
-                    f'🔗 {lead.source or "Не указан"}\n\n'
-                )
-            
-            send_message(telegram_id, message)
+            show_leads_list(telegram_id)
         
         # Команда /leads_new - только новые заявки
         elif text == '/leads_new':
-            new_status = LeadStatus.objects.filter(code='new').first()
-            if not new_status:
-                send_message(telegram_id, '❌ Статус "Новый" не найден.')
-                return
-            
-            leads = Lead.objects.filter(status=new_status).order_by('-created_at')[:20]
-            
-            if not leads:
-                send_message(telegram_id, '✅ Нет новых заявок.')
-                return
-            
-            message = f'🆕 <b>Новые заявки ({leads.count()}):</b>\n\n'
-            for lead in leads:
-                name = lead.get_name() or 'Без имени'
-                phone = lead.get_phone() or 'Нет телефона'
-                created = lead.created_at.strftime('%d.%m.%Y %H:%M')
-                message += (
-                    f'<b>#{lead.id}</b> {name}\n'
-                    f'📞 {phone}\n'
-                    f'📅 {created}\n'
-                    f'🔗 {lead.source or "Не указан"}\n\n'
-                )
-            
-            send_message(telegram_id, message)
+            show_leads_list(telegram_id, status_code='new')
         
         # Команда /leads_in_progress - заявки в работе
         elif text == '/leads_in_progress':
-            in_progress_status = LeadStatus.objects.filter(code='in_progress').first()
-            if not in_progress_status:
-                send_message(telegram_id, '❌ Статус "В процессе работы" не найден.')
-                return
-            
-            leads = Lead.objects.filter(status=in_progress_status).order_by('-created_at')[:20]
-            
-            if not leads:
-                send_message(telegram_id, '✅ Нет заявок в работе.')
-                return
-            
-            message = f'⚙️ <b>Заявки в работе ({leads.count()}):</b>\n\n'
-            for lead in leads:
-                name = lead.get_name() or 'Без имени'
-                phone = lead.get_phone() or 'Нет телефона'
-                created = lead.created_at.strftime('%d.%m.%Y %H:%M')
-                message += (
-                    f'<b>#{lead.id}</b> {name}\n'
-                    f'📞 {phone}\n'
-                    f'📅 {created}\n'
-                    f'🔗 {lead.source or "Не указан"}\n\n'
-                )
-            
-            send_message(telegram_id, message)
+            show_leads_list(telegram_id, status_code='in_progress')
         
         # Команда /client <id> - информация о клиенте
         elif text.startswith('/client '):
