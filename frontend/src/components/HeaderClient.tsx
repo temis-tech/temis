@@ -65,8 +65,9 @@ export default function HeaderClient({
               className={styles.logoImage}
               style={{ 
                 maxHeight: `${logoHeight}px`, 
-                maxWidth: `${logoWidth}px`
-              }}
+                maxWidth: `${logoWidth}px`,
+                '--mobile-scale': `${logoMobileScale}`
+              } as React.CSSProperties}
             />
           )}
           {logoText && (

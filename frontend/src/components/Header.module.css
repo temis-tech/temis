@@ -280,8 +280,8 @@
   .logoImage {
     max-width: 100%;
     height: auto;
-    /* Применяем уменьшение на мобильных устройствах через CSS переменную из container */
-    transform: scale(calc(var(--mobile-scale, 100) / 100));
+    /* Применяем уменьшение на мобильных устройствах через CSS переменную */
+    transform: scale(calc(var(--mobile-scale, 100) / 100)) !important;
     transform-origin: left center;
     transition: transform 0.3s ease;
   }
