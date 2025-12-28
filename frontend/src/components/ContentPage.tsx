@@ -219,7 +219,7 @@ export default function ContentPage({ page }: ContentPageProps) {
         <ServicesList 
           services={page.display_services} 
           title={page.services_title || 'Наши услуги'}
-          showTitle={page.services_show_title !== false}
+          showTitle={page.services_show_title === true}
           cardStyle={page.services_card_style || 'standard'}
           cardWidth={
             page.services_card_style === 'standard' ? (page.services_card_standard_width ?? 300) :
@@ -524,7 +524,7 @@ export default function ContentPage({ page }: ContentPageProps) {
                 <ServicesList 
                   services={contentPage.display_services} 
                   title={contentPage.services_title || 'Наши услуги'}
-                  showTitle={contentPage.services_show_title !== false}
+                  showTitle={contentPage.services_show_title === true}
                   cardStyle={contentPage.services_card_style || 'standard'}
                   cardWidth={
                     contentPage.services_card_style === 'standard' ? (contentPage.services_card_standard_width ?? 300) :
