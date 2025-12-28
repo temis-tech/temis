@@ -697,11 +697,12 @@ class ServiceAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Основная информация', {
-            'fields': ('title', 'slug', 'description', 'short_description')
+            'fields': ('title', 'slug', 'description', 'short_description', 'card_short_description'),
+            'description': 'Поле "Краткое описание для карточки" используется для отображения в карточках услуг стиля "minimal" и поддерживает форматирование текста.'
         }),
         ('Цены (базовые)', {
-            'fields': ('price', 'price_is_from', 'price_with_abonement', 'price_with_abonement_is_from', 'duration', 'price_duration_position'),
-            'description': 'Базовые цены услуги. Если для филиала не указана индивидуальная цена, будет использована базовая. Выберите расположение блоков с ценой и длительностью относительно описания. Включите "Цена От" или "Цена по абонементу От", чтобы перед ценой отображалось "От" (например, "От 1000 ₽").'
+            'fields': ('price', 'price_is_from', 'price_with_abonement', 'price_with_abonement_is_from', 'price_duration_position'),
+            'description': 'Базовые цены услуги. Если для филиала не указана индивидуальная цена, будет использована базовая. Выберите расположение блока с ценой относительно описания. Включите "Цена От" или "Цена по абонементу От", чтобы перед ценой отображалось "От" (например, "От 1000 ₽").'
         }),
         ('Изображение', {
             'fields': ('image', 'image_align', 'image_size')

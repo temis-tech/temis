@@ -155,12 +155,11 @@ export default function ServicesList({
               )}
               <div className={styles.content}>
                 <h3 className={styles.name}>{service.title}</h3>
-                {service.short_description && cardStyle !== 'compact' && cardStyle !== 'minimal' && (
+                {cardStyle === 'minimal' && service.card_short_description ? (
+                  <div className={styles.description} dangerouslySetInnerHTML={{ __html: service.card_short_description }} />
+                ) : service.short_description && cardStyle !== 'compact' && cardStyle !== 'minimal' ? (
                   <p className={styles.description}>{service.short_description}</p>
-                )}
-                {service.duration && cardStyle !== 'minimal' && (
-                  <p className={styles.duration}>⏱️ {service.duration}</p>
-                )}
+                ) : null}
                 {(formattedPrice || formattedPriceWithAbonement) && (
                   <div className={styles.priceContainer}>
                     {formattedPrice && (

@@ -73,6 +73,8 @@ class Service(models.Model):
     description = RichTextField('Описание', blank=True,
                                help_text='Описание услуги с поддержкой форматирования текста')
     short_description = models.TextField('Краткое описание', blank=True)
+    card_short_description = RichTextField('Краткое описание для карточки', blank=True,
+                                          help_text='Краткое описание для отображения в карточках услуг (стиль "minimal"). Поддерживает форматирование текста.')
     price = models.DecimalField('Цена', max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     price_is_from = models.BooleanField('Цена "От"', default=False,
                                        help_text='Если включено, перед ценой будет отображаться "От" (например, "От 1000 ₽")')
