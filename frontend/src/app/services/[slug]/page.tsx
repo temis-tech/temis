@@ -17,7 +17,6 @@ interface Service {
   price_is_from?: boolean;
   price_with_abonement?: number;
   price_with_abonement_is_from?: boolean;
-  duration: string;
   image?: string;
   image_align?: 'left' | 'right' | 'center' | 'full';
   image_size?: 'small' | 'medium' | 'large' | 'full';
@@ -26,6 +25,10 @@ interface Service {
   url?: string | null;
   show_booking_button?: boolean;
   booking_form_id?: number;
+  show_booking_button_on_page?: boolean;
+  booking_button_text?: string;
+  booking_form_on_page_id?: number;
+  booking_form_on_page_title?: string;
 }
 
 export default async function ServicePage({ params }: { params: { slug: string } }) {
@@ -203,13 +206,14 @@ export default async function ServicePage({ params }: { params: { slug: string }
             );
           })()}
           
-          {service.show_booking_button && service.booking_form_id && (
+          {service.show_booking_button_on_page && (service.booking_form_on_page_id || service.booking_form_id) && (
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
               <BookingFormWrapper
-                formId={service.booking_form_id}
+                formId={service.booking_form_on_page_id || service.booking_form_id!}
                 serviceId={service.id}
                 serviceTitle={service.title}
                 sourcePage={`/services/${service.slug}/`}
+                buttonText={service.booking_button_text || 'Записаться'}
               />
             </div>
           )}

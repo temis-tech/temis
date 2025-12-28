@@ -82,7 +82,6 @@ class Service(models.Model):
                                                 validators=[MinValueValidator(0)], blank=True, null=True)
     price_with_abonement_is_from = models.BooleanField('Цена по абонементу "От"', default=False,
                                                         help_text='Если включено, перед ценой по абонементу будет отображаться "От"')
-    duration = models.CharField('Длительность', max_length=50, default='45 минут')
     image = models.ImageField('Изображение', upload_to='services/', blank=True, null=True)
     
     # Настройки изображения
@@ -124,6 +123,14 @@ class Service(models.Model):
     booking_form = models.ForeignKey('booking.BookingForm', on_delete=models.SET_NULL, 
                                      null=True, blank=True, verbose_name='Форма записи',
                                      help_text='Форма, которая откроется при нажатии на кнопку "Записаться"')
+    show_booking_button_on_page = models.BooleanField('Показывать кнопку записи на странице услуги', default=False,
+                                                      help_text='Отображать кнопку записи на странице детального просмотра услуги')
+    booking_button_text = models.CharField('Текст кнопки записи на странице', max_length=100, blank=True, default='Записаться',
+                                          help_text='Текст кнопки записи, которая отображается на странице услуги')
+    booking_form_on_page = models.ForeignKey('booking.BookingForm', on_delete=models.SET_NULL, 
+                                            null=True, blank=True, verbose_name='Форма записи на странице',
+                                            related_name='services_page',
+                                            help_text='Форма записи, которая откроется при нажатии на кнопку на странице услуги. Если не указана, используется основная форма записи.')
     order = models.IntegerField('Порядок', default=0)
     is_active = models.BooleanField('Активен', default=True)
     created_at = models.DateTimeField('Создан', auto_now_add=True)

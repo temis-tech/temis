@@ -101,7 +101,6 @@ class Command(BaseCommand):
                 'short_description': 'Индивидуальные занятия',
                 'price': 2400,
                 'price_with_abonement': 2200,
-                'duration': '45 минут',
                 'order': 1,
             },
             {
@@ -110,7 +109,6 @@ class Command(BaseCommand):
                 'short_description': 'Программа для развития речи',
                 'price': 2400,
                 'price_with_abonement': 2200,
-                'duration': '45 минут',
                 'order': 2,
             },
             {
@@ -119,7 +117,6 @@ class Command(BaseCommand):
                 'short_description': 'Работа с особенностями развития',
                 'price': 2400,
                 'price_with_abonement': 2200,
-                'duration': '45 минут',
                 'order': 3,
             },
             {
@@ -127,7 +124,6 @@ class Command(BaseCommand):
                 'description': 'Развитие коммуникативных навыков помогает успешно общаться со сверстниками и взрослыми. Учим поддерживать диалог, выражать просьбы, понимать социальные ситуации. Используем ролевые игры, групповые занятия, нейроигры.',
                 'short_description': 'Развитие навыков общения и взаимодействия',
                 'price': 2400,
-                'duration': '45 минут',
                 'order': 4,
             },
             {
@@ -136,7 +132,6 @@ class Command(BaseCommand):
                 'short_description': 'Специализированная программа постановки звука Р',
                 'price': 2400,
                 'price_with_abonement': 2200,
-                'duration': '45 минут',
                 'order': 5,
             },
             {
@@ -145,7 +140,6 @@ class Command(BaseCommand):
                 'short_description': 'Комплексная помощь специалиста',
                 'price': 2400,
                 'price_with_abonement': 2200,
-                'duration': '45 минут',
                 'order': 6,
             },
             {
@@ -154,7 +148,6 @@ class Command(BaseCommand):
                 'short_description': 'Коррекция нарушений письма',
                 'price': 2400,
                 'price_with_abonement': 2200,
-                'duration': '45 минут',
                 'order': 7,
             },
         ]

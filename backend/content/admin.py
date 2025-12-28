@@ -710,6 +710,10 @@ class ServiceAdmin(admin.ModelAdmin):
         ('Настройки страницы', {
             'fields': ('has_own_page', 'show_booking_button', 'booking_form')
         }),
+        ('Кнопка записи на странице услуги', {
+            'fields': ('show_booking_button_on_page', 'booking_button_text', 'booking_form_on_page'),
+            'description': 'Настройки для отображения кнопки записи на странице детального просмотра услуги. Если форма не указана, будет использована основная форма записи.'
+        }),
         ('Настройки', {
             'fields': ('order', 'is_active', 'created_at', 'updated_at')
         }),

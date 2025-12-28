@@ -8,9 +8,10 @@ interface BookingFormWrapperProps {
   serviceId: number;
   serviceTitle: string;
   sourcePage?: string;
+  buttonText?: string;
 }
 
-export default function BookingFormWrapper({ formId, serviceId, serviceTitle, sourcePage }: BookingFormWrapperProps) {
+export default function BookingFormWrapper({ formId, serviceId, serviceTitle, sourcePage, buttonText = 'Записаться' }: BookingFormWrapperProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   if (!isOpen) {
@@ -31,7 +32,7 @@ export default function BookingFormWrapper({ formId, serviceId, serviceTitle, so
         onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#e6730d'}
         onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#FF820E'}
       >
-        Записаться
+        {buttonText}
       </button>
     );
   }

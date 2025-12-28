@@ -177,6 +177,7 @@ class ServiceSerializer(serializers.ModelSerializer):
                  'image', 'image_align', 'image_size', 
                  'price_duration_position', 'has_own_page', 'url', 'order', 
                  'show_booking_button', 'booking_form_id', 'booking_form_title',
+                 'show_booking_button_on_page', 'booking_button_text', 'booking_form_on_page_id', 'booking_form_on_page_title',
                  'service_branches', 'price_range', 'price_with_abonement_range']
     
     def get_image(self, obj):
