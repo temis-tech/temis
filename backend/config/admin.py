@@ -84,7 +84,8 @@ class CustomAdminSite(admin.AdminSite):
                 if not in_list:
                     result.append('<ol>')
                     in_list = True
-                result.append(f'<li>{re.sub(r"^\d+\.\s*", "", line.strip())}</li>')
+                cleaned_line = re.sub(r'^\d+\.\s*', '', line.strip())
+                result.append(f'<li>{cleaned_line}</li>')
             else:
                 if in_list:
                     result.append('</ul>' if '<ol>' not in '\n'.join(result[-10:]) else '</ol>')
