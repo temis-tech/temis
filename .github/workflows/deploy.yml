@@ -533,6 +533,17 @@ jobs:
               # Проверяем, что сервис запустился
               if systemctl is-active --quiet temis-frontend; then
                 echo "✅ Frontend перезапущен и работает"
+                # Дополнительная проверка: убеждаемся, что статические файлы доступны
+                if [ -L "$FRONTEND_DIR/.next/standalone/.next/static" ] && [ -e "$FRONTEND_DIR/.next/standalone/.next/static" ]; then
+                  STATIC_TEST=$(ls "$FRONTEND_DIR/.next/standalone/.next/static" 2>/dev/null | head -1)
+                  if [ -n "$STATIC_TEST" ]; then
+                    echo "   ✅ Статические файлы доступны через симлинк"
+                  else
+                    echo "   ⚠️  Симлинк существует, но файлы недоступны"
+                  fi
+                else
+                  echo "   ⚠️  Симлинк не существует или не работает"
+                fi
               else
                 echo "⚠️  Frontend не запустился, проверяем логи..."
                 sudo systemctl status temis-frontend --no-pager -l | head -30
