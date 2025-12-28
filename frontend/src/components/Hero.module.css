@@ -105,7 +105,8 @@
 @media (max-width: 768px) {
   .hero {
     padding: 4rem 1.5rem;
-    margin-top: calc(-1 * var(--header-height, 120px)) !important;
+    padding-top: calc(var(--header-height, 140px) + 2rem) !important;
+    margin-top: calc(-1 * var(--header-height, 140px)) !important;
   }
 
   /* На мобильных скрываем background изображение */
