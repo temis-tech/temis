@@ -263,8 +263,29 @@ class TelegramHashtagMappingAdmin(admin.ModelAdmin):
         return ['created_at', 'updated_at']
 
 
-@admin.register(TelegramSyncLog)
-class TelegramSyncLogAdmin(admin.ModelAdmin):
+# Регистрируем TelegramSyncLog только если таблица существует
+try:
+    from django.db import connection
+    # Проверяем существование таблицы перед регистрацией
+    with connection.cursor() as cursor:
+        table_name = TelegramSyncLog._meta.db_table
+        if 'mysql' in connection.settings_dict.get('ENGINE', '').lower():
+            cursor.execute("""
+                SELECT COUNT(*) FROM information_schema.tables 
+                WHERE table_schema = DATABASE() 
+                AND table_name = %s
+            """, [table_name])
+        else:
+            # Для SQLite
+            cursor.execute("""
+                SELECT name FROM sqlite_master 
+                WHERE type='table' AND name=?
+            """, [table_name])
+        table_exists = cursor.fetchone()[0] > 0 if cursor.rowcount > 0 else False
+    
+    if table_exists:
+        @admin.register(TelegramSyncLog)
+        class TelegramSyncLogAdmin(admin.ModelAdmin):
     """Админка для логов синхронизации Telegram"""
     list_display = ('created_at', 'event_type', 'status_badge', 'chat_username', 'hashtags', 'catalog_item_title', 'message_preview')
     list_filter = ('event_type', 'status', 'created_at', 'chat_id')
