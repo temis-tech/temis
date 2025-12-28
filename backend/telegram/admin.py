@@ -263,9 +263,8 @@ class TelegramHashtagMappingAdmin(admin.ModelAdmin):
         return ['created_at', 'updated_at']
 
 
-if TELEGRAM_SYNC_LOG_AVAILABLE and TelegramSyncLog:
-    @admin.register(TelegramSyncLog)
-    class TelegramSyncLogAdmin(admin.ModelAdmin):
+@admin.register(TelegramSyncLog)
+class TelegramSyncLogAdmin(admin.ModelAdmin):
         """Админка для логов синхронизации Telegram"""
         list_display = ('created_at', 'event_type', 'status_badge', 'chat_username', 'hashtags', 'catalog_item_title', 'message_preview')
         list_filter = ('event_type', 'status', 'created_at', 'chat_id')
@@ -339,6 +338,3 @@ if TELEGRAM_SYNC_LOG_AVAILABLE and TelegramSyncLog:
         def has_delete_permission(self, request, obj=None):
             """Разрешаем удаление логов"""
             return True
-else:
-    # Модель TelegramSyncLog еще не доступна (миграция не применена)
-    TelegramSyncLogAdmin = None
