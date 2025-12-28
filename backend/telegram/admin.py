@@ -265,7 +265,7 @@ class TelegramHashtagMappingAdmin(admin.ModelAdmin):
 
 @admin.register(TelegramSyncLog)
 class TelegramSyncLogAdmin(admin.ModelAdmin):
-        """Админка для логов синхронизации Telegram"""
+    """Админка для логов синхронизации Telegram"""
     list_display = ('created_at', 'event_type', 'status_badge', 'chat_username', 'hashtags', 'catalog_item_title', 'message_preview')
     list_filter = ('event_type', 'status', 'created_at', 'chat_id')
     search_fields = ('message', 'error_details', 'catalog_item_title', 'hashtags', 'chat_username')
