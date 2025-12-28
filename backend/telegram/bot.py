@@ -581,6 +581,16 @@ def handle_webhook_update(update_data):
             
             if channel_match:
                 logger.info(f'Канал совпадает, обрабатываем пост message_id: {channel_post.get("message_id")}')
+                # Сохраняем лог о получении поста
+                log_sync_event(
+                    event_type='channel_post',
+                    status='success',
+                    message=f'Получен пост из канала',
+                    message_id=channel_post.get('message_id'),
+                    chat_id=chat_id,
+                    chat_username=chat_username,
+                    raw_data=channel_post
+                )
                 # Создаем элемент каталога из поста
                 catalog_item = create_or_update_catalog_item_from_telegram_post(channel_post, is_edit=False)
                 if catalog_item:
@@ -589,6 +599,15 @@ def handle_webhook_update(update_data):
                     logger.warning(f'Не удалось создать элемент каталога из поста message_id: {channel_post.get("message_id")}')
             else:
                 logger.debug(f'Канал не совпадает: chat_id={chat_id}, username={chat_username}, ожидаемый channel_id={bot_settings.channel_id}, channel_username={bot_settings.channel_username}')
+                log_sync_event(
+                    event_type='channel_post',
+                    status='skipped',
+                    message=f'Канал не совпадает: chat_id={chat_id}, username={chat_username}',
+                    message_id=channel_post.get('message_id'),
+                    chat_id=chat_id,
+                    chat_username=chat_username,
+                    raw_data=channel_post
+                )
         
         # Обрабатываем обновленные посты из канала (edited_channel_post)
         edited_channel_post = update_data.get('edited_channel_post')
