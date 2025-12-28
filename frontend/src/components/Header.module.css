@@ -279,6 +279,7 @@
     /* Применяем уменьшение на мобильных устройствах через CSS переменную из container */
     transform: scale(calc(var(--mobile-scale, 100) / 100));
     transform-origin: left center;
+    transition: transform 0.3s ease;
   }
 
   .headerRight {
