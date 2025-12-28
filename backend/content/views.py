@@ -158,6 +158,18 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
             
             # Логирование для отладки
             logger.info(f'Loading page by slug: {slug}, page_type: {page.page_type}, is_active: {page.is_active}')
+            
+            # Проверяем услуги перед сериализацией
+            services_count = page.display_services.filter(is_active=True, has_own_page=True).count()
+            logger.info(f'Найдено услуг для отображения: {services_count}')
+            
+            # Проверяем каждую услугу на наличие обязательных полей
+            for service in page.display_services.filter(is_active=True, has_own_page=True):
+                if not service.title:
+                    logger.warning(f'Услуга id={service.id} не имеет названия')
+                if not service.description:
+                    logger.warning(f'Услуга id={service.id}, title="{service.title}" не имеет описания')
+            
             all_blocks = page.home_blocks.all()
             active_blocks = page.home_blocks.filter(is_active=True)
             logger.info(f'Home blocks - total: {all_blocks.count()}, active: {active_blocks.count()}')
@@ -168,15 +180,45 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
                     faq_count = block.content_page.faq_items.filter(is_active=True).count()
                     logger.info(f'    FAQ items active: {faq_count}')
             
-            serializer = self.get_serializer(page)
-            data = serializer.data
-            logger.info(f'Serialized data - home_blocks count: {len(data.get("home_blocks", []))}')
-            return Response(data)
+            try:
+                serializer = self.get_serializer(page)
+                data = serializer.data
+                logger.info(f'Serialized data - home_blocks count: {len(data.get("home_blocks", []))}, services count: {len(data.get("display_services", []))}')
+                return Response(data)
+            except Exception as e:
+                logger.error(f'Ошибка при сериализации страницы: {e}', exc_info=True)
+                import traceback
+                logger.error(f'Traceback: {traceback.format_exc()}')
+                # Пытаемся вернуть страницу без услуг, если проблема в услугах
+                try:
+                    logger.info('Пытаемся сериализовать страницу без услуг...')
+                    page_data = {
+                        'id': page.id,
+                        'title': page.title,
+                        'slug': page.slug,
+                        'page_type': page.page_type,
+                        'description': page.description,
+                        'is_active': page.is_active,
+                        'show_title': page.show_title,
+                        'display_services': []  # Пустой список услуг
+                    }
+                    return Response(page_data)
+                except Exception as e2:
+                    logger.error(f'Ошибка при создании упрощенного ответа: {e2}')
+                    raise
         except ContentPage.DoesNotExist:
             logger.warning(f'Page not found by slug: {slug}')
+            # Проверяем, существует ли страница вообще (даже неактивная)
+            all_pages = ContentPage.objects.filter(slug=slug)
+            if all_pages.exists():
+                inactive_page = all_pages.first()
+                logger.info(f'Страница найдена, но неактивна: id={inactive_page.id}, is_active={inactive_page.is_active}')
+                return Response({'error': 'Страница неактивна', 'is_active': False}, status=status.HTTP_404_NOT_FOUND)
             return Response({'error': 'Страница не найдена'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             logger.error(f'Error loading page by slug {slug}: {e}', exc_info=True)
+            import traceback
+            logger.error(f'Traceback: {traceback.format_exc()}')
             return Response({'error': f'Ошибка загрузки страницы: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['get'], url_path='home')
