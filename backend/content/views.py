@@ -128,9 +128,11 @@ class ContentPageViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'], url_path='by-slug/(?P<slug>[^/.]+)')
     def by_slug(self, request, slug=None):
         import logging
+        import traceback
         logger = logging.getLogger(__name__)
         
         try:
+            logger.info(f'Запрос страницы по slug: {slug}')
             # Используем базовый queryset без фильтра is_active для отладки
             # Но все равно фильтруем только активные страницы
             page = ContentPage.objects.filter(is_active=True).prefetch_related(
