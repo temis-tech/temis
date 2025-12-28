@@ -137,7 +137,7 @@ export default async function ServicePage({ params }: { params: { slug: string }
             const position = service.price_duration_position || 'top';
             const showBlocks = position !== 'hidden';
             const hasPrice = service.price && (typeof service.price === 'number' || typeof service.price === 'string') && Number(service.price) > 0;
-            const hasDuration = service.duration && service.duration.trim() !== '';
+            // Продолжительность больше не используется
             const shouldShowBlocks = showBlocks && (hasPrice || hasDuration);
             
             const priceDurationBlocks = shouldShowBlocks ? (
@@ -163,20 +163,6 @@ export default async function ServicePage({ params }: { params: { slug: string }
                         По абонементу: {service.price_with_abonement_is_from ? 'От ' : ''}{Number(service.price_with_abonement).toLocaleString('ru-RU')} ₽
                       </div>
                     )}
-                  </div>
-                )}
-                
-                {hasDuration && (
-                  <div style={{ 
-                    background: '#f5f5f5',
-                    padding: '1.5rem',
-                    borderRadius: '12px',
-                    textAlign: 'center'
-                  }}>
-                    <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>Длительность</div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 600, color: '#333' }}>
-                      {service.duration}
-                    </div>
                   </div>
                 )}
               </div>
