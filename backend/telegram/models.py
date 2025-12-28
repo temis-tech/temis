@@ -176,3 +176,82 @@ class TelegramUser(models.Model):
         """Возвращает полное имя пользователя"""
         parts = [self.first_name, self.last_name]
         return ' '.join(filter(None, parts)) or self.username or f'User {self.telegram_id}'
+
+
+class TelegramSyncLog(models.Model):
+    """Логи синхронизации с Telegram каналом"""
+    
+    EVENT_TYPE_CHOICES = [
+        ('webhook_received', 'Webhook получен'),
+        ('channel_post', 'Пост из канала'),
+        ('edited_channel_post', 'Пост отредактирован'),
+        ('catalog_item_created', 'Элемент каталога создан'),
+        ('catalog_item_updated', 'Элемент каталога обновлен'),
+        ('catalog_item_deactivated', 'Элемент каталога деактивирован'),
+        ('error', 'Ошибка'),
+        ('warning', 'Предупреждение'),
+        ('info', 'Информация'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('success', 'Успешно'),
+        ('error', 'Ошибка'),
+        ('warning', 'Предупреждение'),
+        ('skipped', 'Пропущено'),
+    ]
+    
+    event_type = models.CharField('Тип события', max_length=50, choices=EVENT_TYPE_CHOICES)
+    status = models.CharField('Статус', max_length=20, choices=STATUS_CHOICES, default='success')
+    
+    # Информация о Telegram посте
+    message_id = models.BigIntegerField('ID сообщения Telegram', null=True, blank=True)
+    chat_id = models.CharField('ID канала', max_length=100, blank=True)
+    chat_username = models.CharField('Username канала', max_length=200, blank=True)
+    
+    # Информация о хештегах
+    hashtags = models.CharField('Хештеги', max_length=500, blank=True,
+                                help_text='Хештеги из поста (через запятую)')
+    
+    # Информация о созданном/обновленном элементе
+    catalog_item = models.ForeignKey('content.CatalogItem', on_delete=models.SET_NULL, 
+                                    null=True, blank=True,
+                                    verbose_name='Элемент каталога',
+                                    related_name='telegram_sync_logs')
+    catalog_item_title = models.CharField('Название элемента', max_length=500, blank=True)
+    
+    # Детали события
+    message = models.TextField('Сообщение', blank=True,
+                              help_text='Детальное описание события')
+    error_details = models.TextField('Детали ошибки', blank=True,
+                                    help_text='Детали ошибки, если произошла')
+    
+    # Метаданные
+    raw_data = models.JSONField('Исходные данные', null=True, blank=True,
+                               help_text='Исходные данные из Telegram (для отладки)')
+    
+    created_at = models.DateTimeField('Создано', auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Лог синхронизации Telegram'
+        verbose_name_plural = 'Логи синхронизации Telegram'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['event_type', 'status']),
+            models.Index(fields=['message_id']),
+            models.Index(fields=['chat_id']),
+        ]
+        app_label = 'telegram'
+    
+    def __str__(self):
+        return f'{self.get_event_type_display()} - {self.get_status_display()} ({self.created_at.strftime("%Y-%m-%d %H:%M:%S")})'
+    
+    def get_status_color(self):
+        """Возвращает цвет для отображения статуса"""
+        colors = {
+            'success': '#28a745',
+            'error': '#dc3545',
+            'warning': '#ffc107',
+            'skipped': '#6c757d',
+        }
+        return colors.get(self.status, '#6c757d')

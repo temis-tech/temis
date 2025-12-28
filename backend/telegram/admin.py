@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import format_html
 from config.constants import get_api_domain, get_protocol, TELEGRAM_WEBHOOK_PATH
-from .models import TelegramBotSettings, TelegramUser, TelegramHashtagMapping
+from .models import TelegramBotSettings, TelegramUser, TelegramHashtagMapping, TelegramSyncLog
 from .bot import set_webhook, delete_webhook, get_bot_settings
 
 
@@ -260,3 +260,83 @@ class TelegramHashtagMappingAdmin(admin.ModelAdmin):
     
     def get_readonly_fields(self, request, obj=None):
         return ['created_at', 'updated_at']
+
+
+@admin.register(TelegramSyncLog)
+class TelegramSyncLogAdmin(admin.ModelAdmin):
+    """Админка для логов синхронизации Telegram"""
+    list_display = ('created_at', 'event_type', 'status_badge', 'chat_username', 'hashtags', 'catalog_item_title', 'message_preview')
+    list_filter = ('event_type', 'status', 'created_at', 'chat_id')
+    search_fields = ('message', 'error_details', 'catalog_item_title', 'hashtags', 'chat_username', 'message_id')
+    readonly_fields = ('created_at', 'raw_data_preview', 'catalog_item_link')
+    date_hierarchy = 'created_at'
+    ordering = ('-created_at',)
+    
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('event_type', 'status', 'created_at')
+        }),
+        ('Информация о Telegram посте', {
+            'fields': ('message_id', 'chat_id', 'chat_username', 'hashtags')
+        }),
+        ('Информация об элементе каталога', {
+            'fields': ('catalog_item_link', 'catalog_item_title')
+        }),
+        ('Детали события', {
+            'fields': ('message', 'error_details')
+        }),
+        ('Отладочная информация', {
+            'fields': ('raw_data_preview',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def status_badge(self, obj):
+        """Отображает статус с цветным бейджем"""
+        color = obj.get_status_color()
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: bold;">{}</span>',
+            color,
+            obj.get_status_display()
+        )
+    status_badge.short_description = 'Статус'
+    status_badge.admin_order_field = 'status'
+    
+    def message_preview(self, obj):
+        """Показывает превью сообщения"""
+        if obj.message:
+            preview = obj.message[:100] + '...' if len(obj.message) > 100 else obj.message
+            return format_html('<span title="{}">{}</span>', obj.message, preview)
+        return '-'
+    message_preview.short_description = 'Сообщение'
+    
+    def raw_data_preview(self, obj):
+        """Показывает превью исходных данных"""
+        if obj.raw_data:
+            import json
+            formatted = json.dumps(obj.raw_data, indent=2, ensure_ascii=False)
+            return format_html('<pre style="max-height: 400px; overflow: auto; background: #f5f5f5; padding: 10px; border-radius: 4px;">{}</pre>', formatted)
+        return '-'
+    raw_data_preview.short_description = 'Исходные данные'
+    
+    def catalog_item_link(self, obj):
+        """Ссылка на элемент каталога"""
+        if obj.catalog_item:
+            url = reverse('admin:content_catalogitem_change', args=[obj.catalog_item.pk])
+            return format_html('<a href="{}">{}</a>', url, obj.catalog_item.title)
+        return '-'
+    catalog_item_link.short_description = 'Элемент каталога'
+    
+    def has_add_permission(self, request):
+        """Запрещаем создание логов вручную"""
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        """Запрещаем редактирование логов"""
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        """Разрешаем удаление логов"""
+        return True
+    
+    actions = ['delete_selected']

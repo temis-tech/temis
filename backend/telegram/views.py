@@ -21,6 +21,18 @@ def webhook(request):
         data = json.loads(request.body)
         logger.info(f'Получен webhook от Telegram: {list(data.keys())}')
         
+        # Сохраняем лог о получении webhook
+        from .bot import log_sync_event
+        try:
+            log_sync_event(
+                event_type='webhook_received',
+                status='success',
+                message=f'Получен webhook: {", ".join(data.keys())}',
+                raw_data=data
+            )
+        except Exception as e:
+            logger.error(f'Ошибка сохранения лога webhook: {str(e)}')
+        
         # Логируем тип обновления
         if 'channel_post' in data:
             channel_post = data.get('channel_post', {})

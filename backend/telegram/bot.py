@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.files import File
 from django.core.files.images import ImageFile
 from django.utils.text import slugify
-from .models import TelegramBotSettings, TelegramUser
+from .models import TelegramBotSettings, TelegramUser, TelegramSyncLog
 from content.models import transliterate_slug, Article
 
 logger = logging.getLogger(__name__)
@@ -233,8 +233,26 @@ def create_or_update_catalog_item_from_telegram_post(post_data, is_edit=False):
                 logger.info(f'Хештег удален из поста {message_id}, элемент каталога будет деактивирован')
                 existing_item.is_active = False
                 existing_item.save(update_fields=['is_active'])
+                log_sync_event(
+                    event_type='catalog_item_deactivated',
+                    status='success',
+                    message=f'Элемент каталога деактивирован: хештег удален из поста',
+                    message_id=message_id,
+                    catalog_item=existing_item,
+                    hashtags=hashtags
+                )
             else:
                 logger.debug(f'Не найдена настройка для хештегов: {hashtags}. Пост пропущен.')
+                log_sync_event(
+                    event_type='channel_post',
+                    status='skipped',
+                    message=f'Не найдена настройка для хештегов: {hashtags}',
+                    message_id=message_id,
+                    chat_id=post_data.get('chat', {}).get('id'),
+                    chat_username=post_data.get('chat', {}).get('username'),
+                    hashtags=hashtags,
+                    raw_data=post_data
+                )
             return None
         
         catalog_page = hashtag_mapping.catalog_page
@@ -403,10 +421,40 @@ def create_or_update_catalog_item_from_telegram_post(post_data, is_edit=False):
         
         action = 'Обновлен' if existing_item else 'Создан'
         logger.info(f'{action} элемент каталога из Telegram поста с хештегом {hashtags}: {catalog_item.title}')
+        
+        # Сохраняем лог о создании/обновлении элемента
+        event_type = 'catalog_item_updated' if existing_item else 'catalog_item_created'
+        log_sync_event(
+            event_type=event_type,
+            status='success',
+            message=f'{action} элемент каталога: {catalog_item.title}',
+            message_id=message_id,
+            chat_id=post_data.get('chat', {}).get('id'),
+            chat_username=post_data.get('chat', {}).get('username'),
+            hashtags=hashtags,
+            catalog_item=catalog_item
+        )
+        
         return catalog_item
         
     except Exception as e:
-        logger.error(f'Ошибка создания элемента каталога из Telegram поста: {str(e)}')
+        error_msg = f'Ошибка создания элемента каталога из Telegram поста: {str(e)}'
+        logger.error(error_msg, exc_info=True)
+        
+        # Сохраняем лог об ошибке
+        import traceback
+        log_sync_event(
+            event_type='error',
+            status='error',
+            message=error_msg,
+            message_id=post_data.get('message_id'),
+            chat_id=post_data.get('chat', {}).get('id'),
+            chat_username=post_data.get('chat', {}).get('username'),
+            hashtags=hashtags if 'hashtags' in locals() else None,
+            error_details=traceback.format_exc(),
+            raw_data=post_data
+        )
+        
         return None
 
 
@@ -452,10 +500,22 @@ def handle_webhook_update(update_data):
         
         if not bot_settings:
             logger.debug('Настройки Telegram бота не найдены')
+            log_sync_event(
+                event_type='warning',
+                status='warning',
+                message='Настройки Telegram бота не найдены',
+                raw_data=update_data
+            )
             return
         
         if not bot_settings.sync_channel_enabled:
             logger.debug('Синхронизация канала выключена в настройках')
+            log_sync_event(
+                event_type='warning',
+                status='skipped',
+                message='Синхронизация канала выключена в настройках',
+                raw_data=update_data
+            )
             return
         
         # Обрабатываем посты из канала (channel_post)
