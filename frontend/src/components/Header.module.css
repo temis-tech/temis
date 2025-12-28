@@ -69,9 +69,8 @@
   display: block;
   flex-shrink: 0;
   transition: transform 0.3s ease;
-  /* На десктопе без масштабирования */
-  transform: scale(1);
   transform-origin: left center;
+  /* На десктопе без масштабирования - transform будет применен только на мобильных */
 }
 
 .logoText {
