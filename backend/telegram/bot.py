@@ -1171,17 +1171,37 @@ def show_leads_list(chat_id, message_id=None, callback_query_id=None, status_cod
             leads = Lead.objects.filter(status__in=statuses).order_by('-created_at')[:20]
             title = '📋 Необработанные заявки'
         
+        # Постоянное меню для всех сообщений
+        menu_keyboard = {
+            'keyboard': [
+                [
+                    {'text': '📋 Необработанные заявки'},
+                    {'text': '🆕 Новые заявки'}
+                ],
+                [
+                    {'text': '⚙️ Заявки в работе'},
+                    {'text': '👥 Клиенты'}
+                ],
+                [
+                    {'text': '🔄 Обновить меню'}
+                ]
+            ],
+            'resize_keyboard': True,
+            'one_time_keyboard': False
+        }
+        
         if not leads:
             text = f'{title}\n\n✅ Нет заявок.'
-            keyboard = {
-                'inline_keyboard': [
-                    [{'text': '🔙 Назад', 'callback_data': 'crm_refresh'}]
-                ]
-            }
             if message_id:
-                edit_message_text(chat_id, message_id, text, reply_markup=keyboard)
+                # Для callback используем inline кнопку
+                inline_keyboard = {
+                    'inline_keyboard': [
+                        [{'text': '🔙 Назад', 'callback_data': 'crm_refresh'}]
+                    ]
+                }
+                edit_message_text(chat_id, message_id, text, reply_markup=inline_keyboard)
             else:
-                send_message(chat_id, text, reply_markup=keyboard)
+                send_message(chat_id, text, keyboard=menu_keyboard)
             if callback_query_id:
                 answer_callback_query(callback_query_id, '✅ Нет заявок')
             return
