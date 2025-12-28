@@ -19,11 +19,31 @@ def webhook(request):
     """
     try:
         data = json.loads(request.body)
+        logger.info(f'Получен webhook от Telegram: {list(data.keys())}')
+        
+        # Логируем тип обновления
+        if 'channel_post' in data:
+            channel_post = data.get('channel_post', {})
+            chat = channel_post.get('chat', {})
+            message_id = channel_post.get('message_id')
+            logger.info(f'Webhook: channel_post от канала {chat.get("id")} ({chat.get("username")}), message_id: {message_id}')
+        elif 'edited_channel_post' in data:
+            edited_post = data.get('edited_channel_post', {})
+            chat = edited_post.get('chat', {})
+            message_id = edited_post.get('message_id')
+            logger.info(f'Webhook: edited_channel_post от канала {chat.get("id")} ({chat.get("username")}), message_id: {message_id}')
+        elif 'message' in data:
+            message = data.get('message', {})
+            chat = message.get('chat', {})
+            logger.info(f'Webhook: message от чата {chat.get("id")} ({chat.get("type")})')
+        else:
+            logger.debug(f'Webhook: неизвестный тип обновления: {list(data.keys())}')
+        
         handle_webhook_update(data)
         return JsonResponse({'ok': True})
     except json.JSONDecodeError:
         logger.error('Ошибка парсинга JSON от Telegram webhook')
         return JsonResponse({'ok': False, 'error': 'Invalid JSON'}, status=400)
     except Exception as e:
-        logger.error(f'Ошибка обработки webhook: {str(e)}')
+        logger.error(f'Ошибка обработки webhook: {str(e)}', exc_info=True)
         return JsonResponse({'ok': False, 'error': str(e)}, status=500)

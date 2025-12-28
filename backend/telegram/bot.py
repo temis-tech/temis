@@ -450,9 +450,17 @@ def handle_webhook_update(update_data):
     try:
         bot_settings = get_bot_settings()
         
+        if not bot_settings:
+            logger.debug('Настройки Telegram бота не найдены')
+            return
+        
+        if not bot_settings.sync_channel_enabled:
+            logger.debug('Синхронизация канала выключена в настройках')
+            return
+        
         # Обрабатываем посты из канала (channel_post)
         channel_post = update_data.get('channel_post')
-        if channel_post and bot_settings and bot_settings.sync_channel_enabled:
+        if channel_post:
             # Проверяем, что пост из нужного канала
             chat = channel_post.get('chat', {})
             chat_id = str(chat.get('id', ''))
@@ -473,10 +481,15 @@ def handle_webhook_update(update_data):
                         bot_settings.save(update_fields=['channel_id'])
             
             if channel_match:
+                logger.info(f'Канал совпадает, обрабатываем пост message_id: {channel_post.get("message_id")}')
                 # Создаем элемент каталога из поста
                 catalog_item = create_or_update_catalog_item_from_telegram_post(channel_post, is_edit=False)
                 if catalog_item:
                     logger.info(f'Создан элемент каталога из Telegram канала: {catalog_item.title}')
+                else:
+                    logger.warning(f'Не удалось создать элемент каталога из поста message_id: {channel_post.get("message_id")}')
+            else:
+                logger.debug(f'Канал не совпадает: chat_id={chat_id}, username={chat_username}, ожидаемый channel_id={bot_settings.channel_id}, channel_username={bot_settings.channel_username}')
         
         # Обрабатываем обновленные посты из канала (edited_channel_post)
         edited_channel_post = update_data.get('edited_channel_post')
