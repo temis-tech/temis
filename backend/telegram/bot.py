@@ -1166,7 +1166,7 @@ def show_leads_list(chat_id, message_id=None, callback_query_id=None, status_cod
                 }
                 edit_message_text(chat_id, message_id, text, reply_markup=inline_keyboard)
             else:
-                send_message(chat_id, text, keyboard=menu_keyboard)
+                send_message(chat_id, text, keyboard=get_crm_menu_keyboard())
             if callback_query_id:
                 answer_callback_query(callback_query_id, '✅ Нет заявок')
             return
@@ -1193,7 +1193,7 @@ def show_leads_list(chat_id, message_id=None, callback_query_id=None, status_cod
         if message_id:
             edit_message_text(chat_id, message_id, text, reply_markup=keyboard)
         else:
-            send_message(chat_id, text, reply_markup=keyboard)
+            send_message(chat_id, text, keyboard=get_crm_menu_keyboard())
         
         if callback_query_id:
             answer_callback_query(callback_query_id, f'✅ Найдено {leads.count()} заявок')
@@ -1329,7 +1329,7 @@ def show_clients_list(chat_id, message_id=None, callback_query_id=None):
         if message_id:
             edit_message_text(chat_id, message_id, text, reply_markup=keyboard)
         else:
-            send_message(chat_id, text, reply_markup=keyboard)
+            send_message(chat_id, text, keyboard=get_crm_menu_keyboard())
         
         if callback_query_id:
             answer_callback_query(callback_query_id, f'✅ Найдено {clients.count()} клиентов')
