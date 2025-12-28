@@ -162,7 +162,7 @@ export default function ServicesList({
                     width={400}
                     height={250}
                     className={styles.image}
-                    style={{ objectFit: cardStyle === 'compact' ? 'cover' : 'contain', objectPosition: 'center', borderRadius: '8px' }}
+                    style={{ objectFit: 'cover', objectPosition: 'center', borderRadius: '8px' }}
                   />
                 </div>
               )}
