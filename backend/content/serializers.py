@@ -164,6 +164,8 @@ class ServiceBranchSerializer(serializers.ModelSerializer):
 class ServiceSerializer(serializers.ModelSerializer):
     booking_form_id = serializers.IntegerField(source='booking_form.id', read_only=True, allow_null=True)
     booking_form_title = serializers.CharField(source='booking_form.title', read_only=True, allow_null=True)
+    booking_form_on_page_id = serializers.IntegerField(source='booking_form_on_page.id', read_only=True, allow_null=True)
+    booking_form_on_page_title = serializers.CharField(source='booking_form_on_page.title', read_only=True, allow_null=True)
     image = serializers.SerializerMethodField()
     url = serializers.SerializerMethodField()
     service_branches = serializers.SerializerMethodField()
