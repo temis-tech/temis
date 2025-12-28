@@ -120,12 +120,17 @@ class ContentPageAdmin(admin.ModelAdmin):
             'description': 'Выберите филиалы, которые будут отображаться на этой странице. Можно использовать для создания страницы контактов или страницы с информацией о филиалах.'
         }),
         ('Услуги для отображения', {
-            'fields': ('display_services', 'services_show_title', 'services_title', 'services_card_style',
-                      'services_card_standard_width', 'services_card_standard_height',
-                      'services_card_compact_width', 'services_card_compact_height',
-                      'services_card_detailed_width', 'services_card_detailed_height',
-                      'services_card_minimal_width', 'services_card_minimal_height'),
+            'fields': ('display_services', 'services_show_title', 'services_title', 'services_card_style'),
             'description': 'Выберите услуги, которые будут отображаться на этой странице. Услуги будут автоматически фильтроваться по выбранному филиалу пользователя, если он указан. Подходит для страниц типа "Описание" и "Каталог". Можно настроить отображение заголовка и стиль карточек услуг.'
+        }),
+        ('Размеры карточек услуг', {
+            'fields': (
+                ('services_card_standard_width', 'services_card_standard_height'),
+                ('services_card_compact_width', 'services_card_compact_height'),
+                ('services_card_detailed_width', 'services_card_detailed_height'),
+                ('services_card_minimal_width', 'services_card_minimal_height'),
+            ),
+            'description': 'Настройте размеры карточек услуг для каждого стиля. Размеры применяются только к выбранному стилю карточки. Кнопки всегда будут расположены внизу карточки на одной высоте, независимо от количества текста.'
         }),
         ('Настройки каталога (для типа "Каталог")', {
             'fields': ('show_catalog_navigator',),
