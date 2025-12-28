@@ -2,17 +2,28 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.utils import timezone
-from cryptography.fernet import Fernet
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.backends import default_backend
 import base64
 import os
 import json
 
+# Безопасный импорт cryptography - может не быть установлена при применении миграций
+try:
+    from cryptography.fernet import Fernet
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+    from cryptography.hazmat.backends import default_backend
+    CRYPTOGRAPHY_AVAILABLE = True
+except ImportError:
+    CRYPTOGRAPHY_AVAILABLE = False
+    # Заглушки для случаев, когда cryptography не установлена
+    Fernet = None
+
 
 def get_encryption_key():
     """Получить ключ шифрования из настроек или создать новый"""
+    if not CRYPTOGRAPHY_AVAILABLE:
+        raise ImportError('cryptography не установлена. Установите: pip install cryptography')
+    
     key = getattr(settings, 'CRM_ENCRYPTION_KEY', None)
     if not key:
         # Используем SECRET_KEY для генерации ключа шифрования
@@ -35,6 +46,9 @@ def encrypt_field(value):
     """Зашифровать значение поля"""
     if not value:
         return None
+    if not CRYPTOGRAPHY_AVAILABLE:
+        # Если cryptography не установлена, возвращаем значение как есть (для миграций)
+        return value
     try:
         f = Fernet(get_encryption_key())
         encrypted = f.encrypt(value.encode() if isinstance(value, str) else value)
@@ -47,6 +61,9 @@ def decrypt_field(encrypted_value):
     """Расшифровать значение поля"""
     if not encrypted_value:
         return None
+    if not CRYPTOGRAPHY_AVAILABLE:
+        # Если cryptography не установлена, возвращаем значение как есть (для миграций)
+        return encrypted_value
     try:
         f = Fernet(get_encryption_key())
         decoded = base64.urlsafe_b64decode(encrypted_value.encode())

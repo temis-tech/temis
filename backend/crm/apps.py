@@ -6,4 +6,12 @@ class CrmConfig(AppConfig):
     name = 'crm'
     
     def ready(self):
-        import crm.signals  # noqa
+        # Импортируем сигналы только если приложение полностью загружено
+        # и миграции применены
+        try:
+            import crm.signals  # noqa
+        except Exception as e:
+            # Игнорируем ошибки при загрузке сигналов (например, при применении миграций)
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.debug(f'Не удалось загрузить сигналы CRM: {e}')
