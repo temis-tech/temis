@@ -65,6 +65,8 @@
   display: block;
   flex-shrink: 0;
   transition: transform 0.3s ease;
+  transform: scale(1); /* По умолчанию без масштабирования */
+  transform-origin: left center;
 }
 
 .logoText {
@@ -274,6 +276,7 @@
   .logoImage {
     max-width: 100%;
     height: auto;
+    /* Применяем уменьшение на мобильных устройствах через CSS переменную */
     transform: scale(calc(var(--mobile-scale, 100) / 100));
     transform-origin: left center;
   }
