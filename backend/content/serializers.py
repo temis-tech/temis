@@ -820,8 +820,23 @@ class ContentPageSerializer(serializers.ModelSerializer):
     
     def get_display_services(self, obj):
         """Возвращает список услуг для отображения на странице (через ManyToMany)"""
+        import logging
+        logger = logging.getLogger(__name__)
+        
         services = obj.display_services.filter(is_active=True, has_own_page=True).order_by('order')
-        return ServiceSerializer(services, many=True, context=self.context).data
+        result = []
+        
+        # Сериализуем каждую услугу отдельно, чтобы пропустить проблемные
+        for service in services:
+            try:
+                serializer = ServiceSerializer(service, context=self.context)
+                result.append(serializer.data)
+            except Exception as e:
+                logger.error(f'Ошибка при сериализации услуги id={service.id}, title="{service.title}": {e}', exc_info=True)
+                # Пропускаем проблемную услугу, но продолжаем обработку остальных
+                continue
+        
+        return result
     
     def get_selected_catalog_page(self, obj):
         """Возвращает данные выбранной страницы каталога, если она есть"""
