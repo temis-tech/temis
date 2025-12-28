@@ -33,11 +33,20 @@ class ResultRangeInline(admin.TabularInline):
 
 @admin.register(Quiz)
 class QuizAdmin(admin.ModelAdmin):
-    list_display = ['title', 'slug', 'is_active', 'questions_count', 'created_at']
-    list_filter = ['is_active', 'created_at']
-    list_editable = ['is_active']
+    list_display = ['title', 'slug', 'is_active', 'integrate_with_crm', 'questions_count', 'created_at']
+    list_filter = ['is_active', 'integrate_with_crm', 'created_at']
+    list_editable = ['is_active', 'integrate_with_crm']
     search_fields = ['title', 'description']
     prepopulated_fields = {'slug': ('title',)}
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('title', 'slug', 'description', 'is_active')
+        }),
+        ('Интеграция с CRM', {
+            'fields': ('integrate_with_crm',),
+            'description': 'Если включено, при отправке анкеты автоматически будет создаваться лид в CRM. Используются поля user_name, user_phone, user_email из анкеты.'
+        }),
+    )
     inlines = [QuestionInline, ResultRangeInline]
 
     def questions_count(self, obj):

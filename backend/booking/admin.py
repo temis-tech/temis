@@ -22,9 +22,9 @@ class FormRuleInline(admin.TabularInline):
 
 @admin.register(BookingForm)
 class BookingFormAdmin(admin.ModelAdmin):
-    list_display = ['title', 'is_active', 'default_quiz', 'fields_count', 'submissions_count', 'created_at']
-    list_editable = ['is_active']
-    list_filter = ['is_active', 'created_at', 'default_quiz']
+    list_display = ['title', 'is_active', 'integrate_with_crm', 'default_quiz', 'fields_count', 'submissions_count', 'created_at']
+    list_editable = ['is_active', 'integrate_with_crm']
+    list_filter = ['is_active', 'integrate_with_crm', 'created_at', 'default_quiz']
     search_fields = ['title', 'description']
     readonly_fields = ['default_quiz_status']
     fieldsets = (
@@ -33,6 +33,10 @@ class BookingFormAdmin(admin.ModelAdmin):
         }),
         ('Настройки формы', {
             'fields': ('submit_button_text', 'success_message')
+        }),
+        ('Интеграция с CRM', {
+            'fields': ('integrate_with_crm',),
+            'description': 'Если включено, при отправке формы автоматически будет создаваться лид в CRM. Контактные данные (имя, телефон, email) будут извлечены из данных формы.'
         }),
         ('Анкета по умолчанию', {
             'fields': ('default_quiz', 'default_quiz_status'),
