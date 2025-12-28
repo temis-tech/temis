@@ -697,7 +697,7 @@ class ServiceAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Основная информация', {
-            'fields': ('title', 'slug', 'description', 'short_description', 'card_short_description'),
+            'fields': ('title', 'slug', 'description', 'card_short_description'),
             'description': 'Поле "Краткое описание для карточки" используется для отображения в карточках услуг стиля "minimal" и поддерживает форматирование текста.'
         }),
         ('Цены (базовые)', {

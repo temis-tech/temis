@@ -12,7 +12,7 @@ interface Service {
   title: string;
   slug: string;
   description: string;
-  short_description?: string;
+  card_short_description?: string;
   price: number;
   price_is_from?: boolean;
   price_with_abonement?: number;
@@ -175,7 +175,7 @@ export default async function ServicePage({ params }: { params: { slug: string }
               <>
                 {position === 'top' && priceDurationBlocks}
                 
-                {service.short_description && (
+                {service.card_short_description && (
                   <div 
                     style={{ 
                       fontSize: '1.2rem',
@@ -184,9 +184,8 @@ export default async function ServicePage({ params }: { params: { slug: string }
                       marginBottom: '2rem',
                       fontWeight: 500
                     }}
-                  >
-                    {service.short_description}
-                  </div>
+                    dangerouslySetInnerHTML={{ __html: service.card_short_description }}
+                  />
                 )}
                 
                 {service.description && (

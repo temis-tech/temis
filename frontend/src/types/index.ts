@@ -254,7 +254,6 @@ export interface Service {
   title: string;
   slug: string;
   description: string;
-  short_description?: string;
   card_short_description?: string;
   price: number;
   price_is_from?: boolean;  // Показывать "От" перед ценой

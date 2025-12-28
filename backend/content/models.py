@@ -72,7 +72,6 @@ class Service(models.Model):
     slug = models.SlugField('URL', unique=True, blank=True)
     description = RichTextField('Описание', blank=True,
                                help_text='Описание услуги с поддержкой форматирования текста')
-    short_description = models.TextField('Краткое описание', blank=True)
     card_short_description = RichTextField('Краткое описание для карточки', blank=True,
                                           help_text='Краткое описание для отображения в карточках услуг (стиль "minimal"). Поддерживает форматирование текста.')
     price = models.DecimalField('Цена', max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
@@ -717,7 +716,7 @@ class CatalogItem(models.Model):
         
         # Автоматически заполняем card_description из услуги, если оно не указано
         if not self.card_description and self.service:
-            self.card_description = self.service.short_description or self.service.description
+            self.card_description = self.service.card_short_description or self.service.description
         
         # Автоматически заполняем изображение из услуги или филиала, если оно не указано
         # Примечание: копируем путь к файлу, а не сам файл
