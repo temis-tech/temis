@@ -174,22 +174,6 @@ def log_sync_event(event_type, status='success', message='', message_id=None, ch
         raw_data: Исходные данные из Telegram
     """
     try:
-        # Проверяем, что таблица существует (миграция применена)
-        # Используем connection для проверки существования таблицы
-        from django.db import connection
-        table_name = TelegramSyncLog._meta.db_table
-        with connection.cursor() as cursor:
-            cursor.execute("""
-                SELECT COUNT(*) FROM information_schema.tables 
-                WHERE table_schema = DATABASE() 
-                AND table_name = %s
-            """, [table_name])
-            table_exists = cursor.fetchone()[0] > 0
-        
-        if not table_exists:
-            logger.debug(f'Таблица {table_name} еще не создана, пропускаем сохранение лога')
-            return None
-        
         hashtags_str = ', '.join(hashtags) if isinstance(hashtags, list) else (hashtags or '')
         
         log = TelegramSyncLog.objects.create(
@@ -207,11 +191,25 @@ def log_sync_event(event_type, status='success', message='', message_id=None, ch
         )
         return log
     except Exception as e:
-        # Не логируем ошибки, связанные с отсутствием таблицы, чтобы не засорять логи
+        # Обрабатываем ошибки, связанные с отсутствием таблицы (миграция еще не применена)
         error_str = str(e).lower()
-        if 'table' in error_str and ('doesn\'t exist' in error_str or 'does not exist' in error_str):
-            logger.debug(f'Таблица TelegramSyncLog еще не создана, пропускаем сохранение лога')
+        # Проверяем различные варианты ошибок отсутствия таблицы
+        table_not_exists_patterns = [
+            "doesn't exist",
+            "does not exist",
+            "no such table",
+            "table.*doesn't exist",
+            "relation.*does not exist",
+            "unknown table"
+        ]
+        
+        is_table_error = any(pattern in error_str for pattern in table_not_exists_patterns)
+        
+        if is_table_error:
+            # Таблица еще не создана - это нормально до применения миграций
+            logger.debug(f'Таблица TelegramSyncLog еще не создана (миграция не применена), пропускаем сохранение лога')
         else:
+            # Другая ошибка - логируем
             logger.error(f'Ошибка сохранения лога синхронизации: {str(e)}', exc_info=True)
         return None
 
