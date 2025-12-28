@@ -780,9 +780,21 @@ def handle_webhook_update(update_data):
             welcome_text = (
                 '👋 Добро пожаловать!\n\n'
                 'Этот бот отправляет уведомления о событиях на сайте.\n\n'
-                'Для получения уведомлений обратитесь к администратору.'
             )
+            if user.is_admin:
+                welcome_text += (
+                    '📋 <b>Команды CRM:</b>\n'
+                    '/leads - Список необработанных заявок\n'
+                    '/client <id> - Информация о клиенте\n'
+                    '/leads_new - Новые заявки\n'
+                    '/leads_in_progress - Заявки в работе\n\n'
+                )
+            welcome_text += 'Для получения уведомлений обратитесь к администратору.'
             send_message(telegram_id, welcome_text)
+        
+        # Обработка команд CRM (только для админов)
+        elif user.is_admin:
+            handle_crm_commands(telegram_id, text, user)
         
     except Exception as e:
         logger.error(f'Ошибка обработки webhook: {str(e)}')
@@ -847,4 +859,155 @@ def delete_webhook():
     except requests.exceptions.RequestException as e:
         logger.error(f'Ошибка удаления webhook: {str(e)}')
         return False
+
+
+def handle_crm_commands(telegram_id, text, user):
+    """
+    Обработать команды CRM
+    
+    Args:
+        telegram_id: ID пользователя Telegram
+        text: Текст команды
+        user: Объект TelegramUser
+    """
+    try:
+        from crm.models import Lead, Client, LeadStatus
+        
+        # Команда /leads - список необработанных заявок (новые и в работе)
+        if text == '/leads' or text.startswith('/leads '):
+            # Получаем статусы для необработанных заявок
+            new_status = LeadStatus.objects.filter(code='new').first()
+            in_progress_status = LeadStatus.objects.filter(code='in_progress').first()
+            
+            statuses = []
+            if new_status:
+                statuses.append(new_status)
+            if in_progress_status:
+                statuses.append(in_progress_status)
+            
+            if not statuses:
+                send_message(telegram_id, '❌ Статусы для заявок не настроены.')
+                return
+            
+            # Получаем необработанные заявки
+            leads = Lead.objects.filter(status__in=statuses).order_by('-created_at')[:20]
+            
+            if not leads:
+                send_message(telegram_id, '✅ Нет необработанных заявок.')
+                return
+            
+            message = f'📋 <b>Необработанные заявки ({leads.count()}):</b>\n\n'
+            for lead in leads:
+                name = lead.get_name() or 'Без имени'
+                phone = lead.get_phone() or 'Нет телефона'
+                status_name = lead.status.name if lead.status else 'Без статуса'
+                created = lead.created_at.strftime('%d.%m.%Y %H:%M')
+                message += (
+                    f'<b>#{lead.id}</b> {name}\n'
+                    f'📞 {phone}\n'
+                    f'📊 {status_name}\n'
+                    f'📅 {created}\n'
+                    f'🔗 {lead.source or "Не указан"}\n\n'
+                )
+            
+            send_message(telegram_id, message)
+        
+        # Команда /leads_new - только новые заявки
+        elif text == '/leads_new':
+            new_status = LeadStatus.objects.filter(code='new').first()
+            if not new_status:
+                send_message(telegram_id, '❌ Статус "Новый" не найден.')
+                return
+            
+            leads = Lead.objects.filter(status=new_status).order_by('-created_at')[:20]
+            
+            if not leads:
+                send_message(telegram_id, '✅ Нет новых заявок.')
+                return
+            
+            message = f'🆕 <b>Новые заявки ({leads.count()}):</b>\n\n'
+            for lead in leads:
+                name = lead.get_name() or 'Без имени'
+                phone = lead.get_phone() or 'Нет телефона'
+                created = lead.created_at.strftime('%d.%m.%Y %H:%M')
+                message += (
+                    f'<b>#{lead.id}</b> {name}\n'
+                    f'📞 {phone}\n'
+                    f'📅 {created}\n'
+                    f'🔗 {lead.source or "Не указан"}\n\n'
+                )
+            
+            send_message(telegram_id, message)
+        
+        # Команда /leads_in_progress - заявки в работе
+        elif text == '/leads_in_progress':
+            in_progress_status = LeadStatus.objects.filter(code='in_progress').first()
+            if not in_progress_status:
+                send_message(telegram_id, '❌ Статус "В процессе работы" не найден.')
+                return
+            
+            leads = Lead.objects.filter(status=in_progress_status).order_by('-created_at')[:20]
+            
+            if not leads:
+                send_message(telegram_id, '✅ Нет заявок в работе.')
+                return
+            
+            message = f'⚙️ <b>Заявки в работе ({leads.count()}):</b>\n\n'
+            for lead in leads:
+                name = lead.get_name() or 'Без имени'
+                phone = lead.get_phone() or 'Нет телефона'
+                created = lead.created_at.strftime('%d.%m.%Y %H:%M')
+                message += (
+                    f'<b>#{lead.id}</b> {name}\n'
+                    f'📞 {phone}\n'
+                    f'📅 {created}\n'
+                    f'🔗 {lead.source or "Не указан"}\n\n'
+                )
+            
+            send_message(telegram_id, message)
+        
+        # Команда /client <id> - информация о клиенте
+        elif text.startswith('/client '):
+            try:
+                client_id = int(text.split()[1])
+                client = Client.objects.get(id=client_id)
+                
+                name = client.get_name() or 'Не указано'
+                phone = client.get_phone() or 'Не указано'
+                email = client.get_email() or 'Не указано'
+                notes = client.notes or 'Нет заметок'
+                created = client.created_at.strftime('%d.%m.%Y %H:%M')
+                
+                # Получаем файлы клиента
+                files = client.files.all()[:10]
+                files_text = ''
+                if files:
+                    files_text = '\n\n📎 <b>Файлы:</b>\n'
+                    for file in files:
+                        files_text += f'• {file.get_display_name()}\n'
+                else:
+                    files_text = '\n\n📎 Файлов нет'
+                
+                message = (
+                    f'👤 <b>Клиент #{client.id}</b>\n\n'
+                    f'<b>Имя:</b> {name}\n'
+                    f'<b>Телефон:</b> {phone}\n'
+                    f'<b>Email:</b> {email}\n'
+                    f'<b>Создан:</b> {created}\n'
+                    f'<b>Заметки:</b> {notes}'
+                    f'{files_text}'
+                )
+                
+                send_message(telegram_id, message)
+            except (ValueError, IndexError):
+                send_message(telegram_id, '❌ Неверный формат команды. Используйте: /client <id>')
+            except Client.DoesNotExist:
+                send_message(telegram_id, f'❌ Клиент с ID {client_id} не найден.')
+            except Exception as e:
+                logger.error(f'Ошибка получения информации о клиенте: {str(e)}')
+                send_message(telegram_id, f'❌ Ошибка получения информации о клиенте: {str(e)}')
+        
+    except Exception as e:
+        logger.error(f'Ошибка обработки команды CRM: {str(e)}', exc_info=True)
+        send_message(telegram_id, f'❌ Ошибка обработки команды: {str(e)}')
 

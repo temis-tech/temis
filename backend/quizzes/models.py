@@ -8,6 +8,8 @@ class Quiz(models.Model):
     title = models.CharField('Название', max_length=200)
     slug = models.SlugField('URL', unique=True, blank=True)
     description = models.TextField('Описание', blank=True)
+    integrate_with_crm = models.BooleanField('Интегрировать с CRM', default=False,
+                                            help_text='При отправке анкеты автоматически создавать лид в CRM')
     is_active = models.BooleanField('Активен', default=True)
     created_at = models.DateTimeField('Создан', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлен', auto_now=True)
