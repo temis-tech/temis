@@ -22,6 +22,7 @@ interface HeaderClientProps {
   logoUrl: string;
   logoHeight?: number;
   logoWidth?: number;
+  logoMobileScale?: number;
   showMenu: boolean;
   menuItems: MenuItem[];
   showPhone?: boolean;
@@ -34,6 +35,7 @@ export default function HeaderClient({
   logoUrl,
   logoHeight = 100,
   logoWidth = 150,
+  logoMobileScale = 100,
   showMenu, 
   menuItems,
   showPhone,
@@ -50,7 +52,11 @@ export default function HeaderClient({
               src={normalizeImageUrl(logoImage)} 
               alt={logoText} 
               className={styles.logoImage}
-              style={{ maxHeight: `${logoHeight}px`, maxWidth: `${logoWidth}px` }}
+              style={{ 
+                maxHeight: `${logoHeight}px`, 
+                maxWidth: `${logoWidth}px`,
+                '--logo-mobile-scale': `${logoMobileScale}%`
+              } as React.CSSProperties}
             />
           )}
           {logoText && (

@@ -71,6 +71,7 @@ export default async function Header() {
           logoUrl={headerSettings?.logo_url || '/'}
           logoHeight={headerSettings?.logo_height || 100}
           logoWidth={headerSettings?.logo_width || 150}
+          logoMobileScale={headerSettings?.logo_mobile_scale || 100}
           showMenu={false} // Не показываем меню, если есть подозрение на старые данные
           menuItems={[]}
           showPhone={headerSettings?.show_phone}
@@ -88,6 +89,7 @@ export default async function Header() {
         logoUrl={headerSettings?.logo_url || '/'}
         logoHeight={headerSettings?.logo_height || 100}
         logoWidth={headerSettings?.logo_width || 150}
+        logoMobileScale={headerSettings?.logo_mobile_scale || 100}
         showMenu={headerSettings?.show_menu !== false}
         menuItems={filteredMenuItems}
         showPhone={headerSettings?.show_phone}

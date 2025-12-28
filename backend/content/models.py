@@ -1039,6 +1039,9 @@ class HeaderSettings(models.Model):
     logo_width = models.IntegerField('Ширина логотипа (px)', default=150, 
                                     validators=[MinValueValidator(50), MaxValueValidator(400)],
                                     help_text='Максимальная ширина логотипа в пикселях (от 50 до 400). Используется для ограничения размера на мобильных устройствах.')
+    logo_mobile_scale = models.IntegerField('Уменьшение логотипа на мобильных (%)', default=100, 
+                                           validators=[MinValueValidator(30), MaxValueValidator(100)],
+                                           help_text='Процент размера логотипа на мобильных устройствах (от 30 до 100). 100% = полный размер, 50% = половина размера.')
     header_height = models.IntegerField('Высота шапки (px)', default=140, 
                                        validators=[MinValueValidator(60), MaxValueValidator(300)],
                                        help_text='Общая высота шапки в пикселях (от 60 до 300). Используется для отступа контента.')
