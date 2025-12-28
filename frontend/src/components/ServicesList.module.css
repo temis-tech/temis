@@ -28,6 +28,8 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
+  /* Фиксированная высота и ширина будут применяться через inline стили */
+  min-height: 0; /* Позволяет flex-элементам сжиматься */
 }
 
 .card:hover {
@@ -57,6 +59,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0; /* Позволяет flex-элементам сжиматься */
+  overflow: hidden; /* Скрываем переполнение */
 }
 
 .name {
@@ -73,6 +77,11 @@
   margin-bottom: 1rem;
   line-height: 1.6;
   flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  /* Ограничиваем высоту описания, чтобы кнопки всегда были внизу */
+  max-height: 150px;
+  overflow-y: auto;
 }
 
 .duration {
@@ -85,6 +94,7 @@
   margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid #e0e0e0;
+  flex-shrink: 0; /* Блок цены не сжимается */
 }
 
 .price,
@@ -118,8 +128,10 @@
 .buttonsContainer {
   display: flex;
   gap: 0.75rem;
-  margin-top: 1rem;
+  margin-top: auto; /* Прижимаем кнопки к низу */
+  padding-top: 1rem;
   align-items: center;
+  flex-shrink: 0; /* Кнопки не сжимаются */
 }
 
 .bookingButton {
@@ -315,6 +327,7 @@
   margin-top: auto;
   padding-top: 0.75rem;
   justify-content: flex-start;
+  flex-shrink: 0; /* Кнопки не сжимаются */
 }
 
 .card_minimal .bookingButton {

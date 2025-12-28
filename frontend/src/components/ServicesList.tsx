@@ -12,6 +12,8 @@ interface ServicesListProps {
   showTitle?: boolean;
   className?: string;
   cardStyle?: 'standard' | 'compact' | 'detailed' | 'minimal';
+  cardWidth?: number;
+  cardHeight?: number;
   filterByBranchId?: number | null;
   onBookingClick?: (formId: number, serviceTitle: string, serviceId: number) => void;
 }
@@ -22,6 +24,8 @@ export default function ServicesList({
   showTitle = true,
   className = '',
   cardStyle = 'standard',
+  cardWidth,
+  cardHeight,
   filterByBranchId,
   onBookingClick
 }: ServicesListProps) {
@@ -127,8 +131,17 @@ export default function ServicesList({
 
           const cardClassName = `${styles.card} ${styles[`card_${cardStyle}`] || ''}`;
           
+          // Применяем размеры карточки, если они указаны
+          const cardStyleProps: React.CSSProperties = {};
+          if (cardWidth && cardStyle !== 'minimal') {
+            cardStyleProps.width = `${cardWidth}px`;
+          }
+          if (cardHeight) {
+            cardStyleProps.height = `${cardHeight}px`;
+          }
+          
           return (
-            <div key={service.id} className={cardClassName}>
+            <div key={service.id} className={cardClassName} style={cardStyleProps}>
               {service.image && cardStyle === 'minimal' && (
                 <div className={styles.imageWrapperMinimal}>
                   <Image

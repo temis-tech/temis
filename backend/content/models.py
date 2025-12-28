@@ -539,6 +539,19 @@ class ContentPage(models.Model):
                                           default='standard',
                                           help_text='Выберите стиль отображения карточек услуг')
     
+    # Размеры карточек услуг для каждого стиля
+    services_card_standard_width = models.IntegerField('Ширина стандартной карточки (px)', default=300, validators=[MinValueValidator(200), MaxValueValidator(600)], help_text='Ширина карточки в пикселях (от 200 до 600px)')
+    services_card_standard_height = models.IntegerField('Высота стандартной карточки (px)', default=450, validators=[MinValueValidator(300), MaxValueValidator(800)], help_text='Высота карточки в пикселях (от 300 до 800px)')
+    
+    services_card_compact_width = models.IntegerField('Ширина компактной карточки (px)', default=280, validators=[MinValueValidator(200), MaxValueValidator(500)], help_text='Ширина карточки в пикселях (от 200 до 500px)')
+    services_card_compact_height = models.IntegerField('Высота компактной карточки (px)', default=380, validators=[MinValueValidator(250), MaxValueValidator(600)], help_text='Высота карточки в пикселях (от 250 до 600px)')
+    
+    services_card_detailed_width = models.IntegerField('Ширина подробной карточки (px)', default=350, validators=[MinValueValidator(300), MaxValueValidator(700)], help_text='Ширина карточки в пикселях (от 300 до 700px)')
+    services_card_detailed_height = models.IntegerField('Высота подробной карточки (px)', default=550, validators=[MinValueValidator(400), MaxValueValidator(900)], help_text='Высота карточки в пикселях (от 400 до 900px)')
+    
+    services_card_minimal_width = models.IntegerField('Ширина минималистичной карточки (px)', default=100, validators=[MinValueValidator(100), MaxValueValidator(100)], help_text='Ширина карточки в пикселях (100% ширины контейнера, значение игнорируется)')
+    services_card_minimal_height = models.IntegerField('Высота минималистичной карточки (px)', default=120, validators=[MinValueValidator(100), MaxValueValidator(200)], help_text='Высота карточки в пикселях (от 100 до 200px)')
+    
     is_active = models.BooleanField('Активна', default=True)
     order = models.IntegerField('Порядок', default=0)
     created_at = models.DateTimeField('Создана', auto_now_add=True)

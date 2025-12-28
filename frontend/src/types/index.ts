@@ -204,6 +204,14 @@ export interface ContentPage {
   services_show_title?: boolean;
   services_title?: string;
   services_card_style?: 'standard' | 'compact' | 'detailed' | 'minimal';
+  services_card_standard_width?: number;
+  services_card_standard_height?: number;
+  services_card_compact_width?: number;
+  services_card_compact_height?: number;
+  services_card_detailed_width?: number;
+  services_card_detailed_height?: number;
+  services_card_minimal_width?: number;
+  services_card_minimal_height?: number;
 }
 
 export interface WelcomeBannerCard {

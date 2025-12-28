@@ -509,6 +509,20 @@ export default function ContentPage({ page }: ContentPageProps) {
                   title={contentPage.services_title || 'Наши услуги'}
                   showTitle={contentPage.services_show_title !== false}
                   cardStyle={contentPage.services_card_style || 'standard'}
+                  cardWidth={
+                    contentPage.services_card_style === 'standard' ? contentPage.services_card_standard_width :
+                    contentPage.services_card_style === 'compact' ? contentPage.services_card_compact_width :
+                    contentPage.services_card_style === 'detailed' ? contentPage.services_card_detailed_width :
+                    contentPage.services_card_style === 'minimal' ? contentPage.services_card_minimal_width :
+                    undefined
+                  }
+                  cardHeight={
+                    contentPage.services_card_style === 'standard' ? contentPage.services_card_standard_height :
+                    contentPage.services_card_style === 'compact' ? contentPage.services_card_compact_height :
+                    contentPage.services_card_style === 'detailed' ? contentPage.services_card_detailed_height :
+                    contentPage.services_card_style === 'minimal' ? contentPage.services_card_minimal_height :
+                    undefined
+                  }
                   filterByBranchId={selectedBranch?.id || null}
                   onBookingClick={openBookingForm}
                 />
