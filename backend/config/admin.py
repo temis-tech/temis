@@ -26,14 +26,19 @@ class CustomAdminSite(admin.AdminSite):
     
     def instruction_view(self, request):
         """Отображение инструкции по управлению сайтом"""
-        # Путь к файлу инструкции - используем BASE_DIR из settings
-        base_dir = Path(settings.BASE_DIR).parent if hasattr(settings, 'BASE_DIR') else Path(__file__).resolve().parent.parent.parent
+        # Путь к файлу инструкции - на сервере файл находится в /var/www/temis/
+        # BASE_DIR указывает на /var/www/temis/backend, поэтому parent будет /var/www/temis
+        base_dir = Path(settings.BASE_DIR).parent
         instruction_path = base_dir / 'ИНСТРУКЦИЯ_ПО_УПРАВЛЕНИЮ_САЙТОМ.md'
         
         # Если файл не найден, пробуем альтернативные пути
         if not instruction_path.exists():
-            # Пробуем в корне проекта (на уровень выше backend)
-            instruction_path = Path(settings.BASE_DIR).parent / 'ИНСТРУКЦИЯ_ПО_УПРАВЛЕНИЮ_САЙТОМ.md'
+            # Пробуем в корне backend (если файл был скопирован туда)
+            instruction_path = Path(settings.BASE_DIR) / 'ИНСТРУКЦИЯ_ПО_УПРАВЛЕНИЮ_САЙТОМ.md'
+        
+        # Если все еще не найден, пробуем абсолютный путь
+        if not instruction_path.exists():
+            instruction_path = Path('/var/www/temis/ИНСТРУКЦИЯ_ПО_УПРАВЛЕНИЮ_САЙТОМ.md')
         
         # Читаем содержимое инструкции
         content = ""

@@ -100,7 +100,8 @@ jobs:
             backend \
             deploy/configs \
             deploy/apply-nginx-config.sh \
-            deploy/fix-server.sh
+            deploy/fix-server.sh \
+            ИНСТРУКЦИЯ_ПО_УПРАВЛЕНИЮ_САЙТОМ.md
           
           # Создаем финальный архив
           tar -czf deploy.tar.gz frontend-deploy.tar.gz backend-deploy.tar.gz
