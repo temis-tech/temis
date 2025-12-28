@@ -1,0 +1,25 @@
+name: Check Telegram Logs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check-logs:
+    name: Check Telegram Logs on Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Check Telegram Logs
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set +x
+            cd /var/www/temis/backend
+            source venv/bin/activate
+            sudo -u www-data venv/bin/python manage.py check_telegram_logs --lines 200 --hours 48
+
