@@ -138,7 +138,7 @@ export default async function ServicePage({ params }: { params: { slug: string }
             const showBlocks = position !== 'hidden';
             const hasPrice = service.price && (typeof service.price === 'number' || typeof service.price === 'string') && Number(service.price) > 0;
             // Продолжительность больше не используется
-            const shouldShowBlocks = showBlocks && (hasPrice || hasDuration);
+            const shouldShowBlocks = showBlocks && hasPrice;
             
             const priceDurationBlocks = shouldShowBlocks ? (
               <div style={{ 
