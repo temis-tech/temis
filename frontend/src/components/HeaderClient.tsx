@@ -42,10 +42,20 @@ export default function HeaderClient({
   phoneText 
 }: HeaderClientProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // Отладка: проверяем значение logoMobileScale
+  if (process.env.NODE_ENV === 'development') {
+    console.log('HeaderClient logoMobileScale:', logoMobileScale);
+  }
 
   return (
     <header className={styles.header}>
-      <div className={styles.container} style={{ '--mobile-scale': logoMobileScale } as React.CSSProperties}>
+      <div 
+        className={styles.container} 
+        style={{ 
+          '--mobile-scale': `${logoMobileScale}` 
+        } as React.CSSProperties}
+      >
         <Link href={logoUrl} className={styles.logo}>
           {logoImage && (
             <img 
