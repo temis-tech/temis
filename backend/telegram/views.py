@@ -44,6 +44,20 @@ def webhook(request):
             chat = edited_post.get('chat', {})
             message_id = edited_post.get('message_id')
             logger.info(f'Webhook: edited_channel_post от канала {chat.get("id")} ({chat.get("username")}), message_id: {message_id}')
+            # Сохраняем лог о получении обновленного поста
+            try:
+                from .bot import log_sync_event
+                log_sync_event(
+                    event_type='edited_channel_post',
+                    status='success',
+                    message=f'Получен обновленный пост из канала через webhook',
+                    message_id=message_id,
+                    chat_id=str(chat.get('id', '')),
+                    chat_username=chat.get('username', ''),
+                    raw_data=edited_post
+                )
+            except Exception as e:
+                logger.error(f'Ошибка сохранения лога edited_channel_post: {str(e)}')
         elif 'message' in data:
             message = data.get('message', {})
             chat = message.get('chat', {})

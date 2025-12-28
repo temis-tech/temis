@@ -553,7 +553,7 @@ def handle_webhook_update(update_data):
         
         # Обрабатываем обновленные посты из канала (edited_channel_post)
         edited_channel_post = update_data.get('edited_channel_post')
-        if edited_channel_post and bot_settings and bot_settings.sync_channel_enabled:
+        if edited_channel_post:
             # Проверяем, что пост из нужного канала
             chat = edited_channel_post.get('chat', {})
             chat_id = str(chat.get('id', ''))
@@ -570,10 +570,34 @@ def handle_webhook_update(update_data):
                     channel_match = True
             
             if channel_match:
+                logger.info(f'Получен обновленный пост из канала, обрабатываем message_id: {edited_channel_post.get("message_id")}')
+                # Сохраняем лог о получении обновленного поста
+                log_sync_event(
+                    event_type='edited_channel_post',
+                    status='success',
+                    message=f'Получен обновленный пост из канала',
+                    message_id=edited_channel_post.get('message_id'),
+                    chat_id=chat_id,
+                    chat_username=chat_username,
+                    raw_data=edited_channel_post
+                )
                 # Обновляем элемент каталога из отредактированного поста
                 catalog_item = create_or_update_catalog_item_from_telegram_post(edited_channel_post, is_edit=True)
                 if catalog_item:
                     logger.info(f'Обновлен элемент каталога из Telegram канала: {catalog_item.title}')
+                else:
+                    logger.warning(f'Не удалось обновить элемент каталога из поста message_id: {edited_channel_post.get("message_id")}')
+            else:
+                logger.debug(f'Канал не совпадает для обновленного поста: chat_id={chat_id}, username={chat_username}, ожидаемый channel_id={bot_settings.channel_id}, channel_username={bot_settings.channel_username}')
+                log_sync_event(
+                    event_type='edited_channel_post',
+                    status='skipped',
+                    message=f'Канал не совпадает для обновленного поста: chat_id={chat_id}, username={chat_username}',
+                    message_id=edited_channel_post.get('message_id'),
+                    chat_id=chat_id,
+                    chat_username=chat_username,
+                    raw_data=edited_channel_post
+                )
         
         # Обрабатываем удаленные сообщения из канала
         # Telegram Bot API не отправляет стандартные события об удалении через webhook,
