@@ -4,11 +4,35 @@ const path = require('path');
 const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
-  webpack: (config) => {
+  // Оптимизация CSS для уменьшения блокирующих запросов
+  swcMinify: true,
+  compress: true,
+  poweredByHeader: false,
+  webpack: (config, { isServer }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@': path.resolve(__dirname, 'src'),
     };
+    
+    // Оптимизация CSS модулей
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          ...config.optimization.splitChunks,
+          cacheGroups: {
+            ...config.optimization.splitChunks?.cacheGroups,
+            styles: {
+              name: 'styles',
+              test: /\.(css|scss|sass)$/,
+              chunks: 'all',
+              enforce: true,
+            },
+          },
+        },
+      };
+    }
+    
     return config;
   },
   images: {
@@ -44,6 +68,16 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'local-network-access=()',
+          },
+        ],
+      },
+      // Оптимизация кэширования для CSS файлов
+      {
+        source: '/_next/static/css/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },

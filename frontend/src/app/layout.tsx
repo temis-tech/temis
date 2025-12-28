@@ -127,10 +127,25 @@ export default async function RootLayout({
   return (
     <html lang="ru" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://static.tildacdn.com" crossOrigin="anonymous" />
         <meta httpEquiv="Permissions-Policy" content="local-network-access=()" />
+        
+        {/* Критический CSS inline для избежания блокировки рендеринга */}
         <style dangerouslySetInnerHTML={{
           __html: `
+            /* Критические стили для предотвращения FOUC */
+            * {
+              box-sizing: border-box;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+              -webkit-font-smoothing: antialiased;
+              -moz-osx-font-smoothing: grayscale;
+              font-size: 16px;
+              color: #000;
+              background-color: #fff;
+            }
             :root {
               --header-height: ${headerHeight}px !important;
             }
@@ -138,6 +153,9 @@ export default async function RootLayout({
               :root {
                 --header-height: ${mobileHeaderHeight}px !important;
               }
+            }
+            main {
+              padding-top: var(--header-height, 140px) !important;
             }
           `
         }} />
