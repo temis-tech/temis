@@ -9,8 +9,8 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('booking', '0007_bookingform_integrate_with_crm'),
-        ('quizzes', '0004_quiz_integrate_with_crm'),
+        ('booking', '0005_alter_bookingform_default_quiz_and_more'),
+        ('quizzes', '0002_alter_quiz_options_alter_quizsubmission_options'),
         ('auth', '0012_alter_user_first_name_max_length'),
     ]
 
