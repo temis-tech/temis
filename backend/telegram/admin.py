@@ -6,7 +6,13 @@ from django.urls import reverse
 from django.utils.html import format_html
 import json
 from config.constants import get_api_domain, get_protocol, TELEGRAM_WEBHOOK_PATH
-from .models import TelegramBotSettings, TelegramUser, TelegramHashtagMapping, TelegramSyncLog
+from .models import TelegramBotSettings, TelegramUser, TelegramHashtagMapping
+try:
+    from .models import TelegramSyncLog
+    TELEGRAM_SYNC_LOG_AVAILABLE = True
+except ImportError:
+    TELEGRAM_SYNC_LOG_AVAILABLE = False
+    TelegramSyncLog = None
 from .bot import set_webhook, delete_webhook, get_bot_settings
 
 
