@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'booking',
     'moyklass',
     'telegram',
+    'crm',
 ]
 
 MIDDLEWARE = [

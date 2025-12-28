@@ -14,6 +14,8 @@ class BookingForm(models.Model):
     default_quiz = models.ForeignKey('quizzes.Quiz', on_delete=models.SET_NULL, null=True, blank=True,
                                    verbose_name='Анкета по умолчанию',
                                    help_text='Анкета, которая откроется всегда при отправке формы (без условий). Если указана, будет показана вместо отправки формы.')
+    integrate_with_crm = models.BooleanField('Интегрировать с CRM', default=False,
+                                            help_text='При отправке формы автоматически создавать лид в CRM')
     is_active = models.BooleanField('Активна', default=True)
     created_at = models.DateTimeField('Создана', auto_now_add=True)
     updated_at = models.DateTimeField('Обновлена', auto_now=True)
