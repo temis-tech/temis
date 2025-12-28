@@ -1,8 +1,5 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from booking.models import BookingSubmission
-from quizzes.models import QuizSubmission
-from .models import Lead, LeadStatus
 
 
 def extract_contact_data(data, field_mapping=None):
@@ -51,14 +48,22 @@ def extract_contact_data(data, field_mapping=None):
     return result
 
 
-@receiver(post_save, sender=BookingSubmission)
+@receiver(post_save)
 def create_lead_from_booking_submission(sender, instance, created, **kwargs):
     """Создать лид при отправке формы записи, если включена интеграция с CRM"""
+    # Ленивый импорт для избежания циклических зависимостей
+    from booking.models import BookingSubmission
+    from .models import Lead, LeadStatus
+    
+    # Проверяем, что это BookingSubmission
+    if sender != BookingSubmission:
+        return
+    
     if not created:
         return  # Обрабатываем только новые записи
     
     # Проверяем, включена ли интеграция с CRM
-    if not instance.form.integrate_with_crm:
+    if not hasattr(instance.form, 'integrate_with_crm') or not instance.form.integrate_with_crm:
         return
     
     # Извлекаем контактные данные из данных формы
@@ -106,14 +111,22 @@ def create_lead_from_booking_submission(sender, instance, created, **kwargs):
     return lead
 
 
-@receiver(post_save, sender=QuizSubmission)
+@receiver(post_save)
 def create_lead_from_quiz_submission(sender, instance, created, **kwargs):
     """Создать лид при отправке анкеты, если включена интеграция с CRM"""
+    # Ленивый импорт для избежания циклических зависимостей
+    from quizzes.models import QuizSubmission
+    from .models import Lead, LeadStatus
+    
+    # Проверяем, что это QuizSubmission
+    if sender != QuizSubmission:
+        return
+    
     if not created:
         return  # Обрабатываем только новые записи
     
     # Проверяем, включена ли интеграция с CRM
-    if not instance.quiz.integrate_with_crm:
+    if not hasattr(instance.quiz, 'integrate_with_crm') or not instance.quiz.integrate_with_crm:
         return
     
     # Извлекаем контактные данные
