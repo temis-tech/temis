@@ -94,19 +94,19 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='lead',
-            index=models.Index(fields=['-created_at'], name='crm_lead_created_idx'),
+            index=models.Index(fields=['-created_at'], name='crm_lead_created_deedb3_idx'),
         ),
         migrations.AddIndex(
             model_name='lead',
-            index=models.Index(fields=['status'], name='crm_lead_status_idx'),
+            index=models.Index(fields=['status'], name='crm_lead_status__0ea863_idx'),
         ),
         migrations.AddIndex(
             model_name='client',
-            index=models.Index(fields=['-created_at'], name='crm_client_created_idx'),
+            index=models.Index(fields=['-created_at'], name='crm_client_created_c06d65_idx'),
         ),
         migrations.AddIndex(
             model_name='client',
-            index=models.Index(fields=['is_active'], name='crm_client_is_acti_idx'),
+            index=models.Index(fields=['is_active'], name='crm_client_is_acti_a9915f_idx'),
         ),
     ]
 
