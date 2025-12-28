@@ -274,7 +274,7 @@
   .logoImage {
     max-width: 100%;
     height: auto;
-    transform: scale(calc(var(--logo-mobile-scale, 100) / 100));
+    transform: scale(calc(var(--mobile-scale, 100) / 100));
     transform-origin: left center;
   }
 

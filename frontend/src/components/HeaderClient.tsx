@@ -52,11 +52,11 @@ export default function HeaderClient({
               src={normalizeImageUrl(logoImage)} 
               alt={logoText} 
               className={styles.logoImage}
+              data-mobile-scale={logoMobileScale}
               style={{ 
                 maxHeight: `${logoHeight}px`, 
-                maxWidth: `${logoWidth}px`,
-                '--logo-mobile-scale': `${logoMobileScale}%`
-              } as React.CSSProperties}
+                maxWidth: `${logoWidth}px`
+              }}
             />
           )}
           {logoText && (
