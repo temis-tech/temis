@@ -65,7 +65,8 @@
   display: block;
   flex-shrink: 0;
   transition: transform 0.3s ease;
-  transform: scale(1); /* По умолчанию без масштабирования */
+  /* На десктопе без масштабирования */
+  transform: scale(1);
   transform-origin: left center;
 }
 
