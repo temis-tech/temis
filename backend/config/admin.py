@@ -1,9 +1,112 @@
 from django.contrib import admin
 from django.contrib.admin.apps import AdminConfig
+from django.shortcuts import render
+from django.urls import path
+from django.utils.html import format_html
+from django.template.response import TemplateResponse
+import os
+from pathlib import Path
 
 
 class CustomAdminSite(admin.AdminSite):
     """Кастомный AdminSite для группировки моделей"""
+    site_header = "Администрирование сайта"
+    site_title = "Админ-панель TEMIS"
+    index_title = "Добро пожаловать в админ-панель"
+    
+    def get_urls(self):
+        """Добавляем кастомные URL для админки"""
+        urls = super().get_urls()
+        custom_urls = [
+            path('instruction/', self.admin_view(self.instruction_view), name='admin_instruction'),
+        ]
+        return custom_urls + urls
+    
+    def instruction_view(self, request):
+        """Отображение инструкции по управлению сайтом"""
+        # Путь к файлу инструкции
+        base_dir = Path(__file__).resolve().parent.parent.parent
+        instruction_path = base_dir / 'ИНСТРУКЦИЯ_ПО_УПРАВЛЕНИЮ_САЙТОМ.md'
+        
+        # Читаем содержимое инструкции
+        content = ""
+        if instruction_path.exists():
+            try:
+                with open(instruction_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+            except Exception as e:
+                content = f"Ошибка при чтении инструкции: {e}"
+        else:
+            content = "Файл инструкции не найден."
+        
+        # Конвертируем Markdown в HTML (простая конвертация)
+        import re
+        html_content = self._markdown_to_html(content)
+        
+        context = {
+            **self.each_context(request),
+            'title': 'Инструкция по управлению сайтом',
+            'content': html_content,
+            'opts': {'app_label': 'admin', 'model_name': 'instruction'},
+        }
+        return TemplateResponse(request, 'admin/instruction.html', context)
+    
+    def _markdown_to_html(self, markdown_text):
+        """Простая конвертация Markdown в HTML"""
+        html = markdown_text
+        
+        # Заголовки
+        html = re.sub(r'^# (.+)$', r'<h1>\1</h1>', html, flags=re.MULTILINE)
+        html = re.sub(r'^## (.+)$', r'<h2>\1</h2>', html, flags=re.MULTILINE)
+        html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)
+        html = re.sub(r'^#### (.+)$', r'<h4>\1</h4>', html, flags=re.MULTILINE)
+        
+        # Жирный текст
+        html = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', html)
+        
+        # Курсив
+        html = re.sub(r'\*(.+?)\*', r'<em>\1</em>', html)
+        
+        # Ссылки
+        html = re.sub(r'\[(.+?)\]\((.+?)\)', r'<a href="\2">\1</a>', html)
+        
+        # Списки
+        lines = html.split('\n')
+        in_list = False
+        result = []
+        for line in lines:
+            if line.strip().startswith('- '):
+                if not in_list:
+                    result.append('<ul>')
+                    in_list = True
+                result.append(f'<li>{line.strip()[2:]}</li>')
+            elif line.strip().startswith(('1. ', '2. ', '3. ', '4. ', '5. ')):
+                if not in_list:
+                    result.append('<ol>')
+                    in_list = True
+                result.append(f'<li>{re.sub(r"^\d+\.\s*", "", line.strip())}</li>')
+            else:
+                if in_list:
+                    result.append('</ul>' if '<ol>' not in '\n'.join(result[-10:]) else '</ol>')
+                    in_list = False
+                if line.strip():
+                    result.append(f'<p>{line}</p>')
+                else:
+                    result.append('<br>')
+        if in_list:
+            result.append('</ul>')
+        html = '\n'.join(result)
+        
+        # Код
+        html = re.sub(r'`(.+?)`', r'<code>\1</code>', html)
+        
+        return html
+    
+    def index(self, request, extra_context=None):
+        """Переопределяем главную страницу админки для добавления ссылки на инструкцию"""
+        extra_context = extra_context or {}
+        extra_context['show_instruction_link'] = True
+        return super().index(request, extra_context)
     
     def get_app_list(self, request, app_label=None):
         """

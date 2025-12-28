@@ -1,0 +1,18 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+{{ block.super }}
+
+{% if show_instruction_link %}
+<div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px; border-left: 4px solid #417690;">
+    <h2 style="margin-top: 0; color: #417690;">📖 Инструкция по управлению сайтом</h2>
+    <p style="margin-bottom: 10px; line-height: 1.6;">
+        Нужна помощь в работе с админ-панелью? Ознакомьтесь с подробной инструкцией по созданию страниц, меню, элементов каталога и других разделов сайта.
+    </p>
+    <a href="{% url 'admin:admin_instruction' %}" class="button" style="background: #417690; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">
+        📖 Открыть инструкцию
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+

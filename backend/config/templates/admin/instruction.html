@@ -1,0 +1,109 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+<a href="{% url 'admin:index' %}">Главная</a>
+&rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="instruction-container" style="max-width: 1200px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <h1 style="color: #417690; border-bottom: 2px solid #417690; padding-bottom: 10px; margin-bottom: 20px;">
+        📖 Инструкция по управлению сайтом TEMIS
+    </h1>
+    
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border-left: 4px solid #417690;">
+        <p style="margin: 0; font-size: 14px; line-height: 1.6;">
+            <strong>💡 Совет:</strong> Эта инструкция поможет вам разобраться во всех функциях админ-панели. 
+            Сохраните эту страницу в закладки для быстрого доступа.
+        </p>
+    </div>
+    
+    <div class="instruction-content" style="line-height: 1.8; color: #333;">
+        {{ content|safe }}
+    </div>
+    
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 2px solid #e0e0e0; text-align: center;">
+        <a href="{% url 'admin:index' %}" class="button" style="background: #417690; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">
+            ← Вернуться в админ-панель
+        </a>
+    </div>
+</div>
+
+<style>
+.instruction-content h1 {
+    color: #417690;
+    font-size: 28px;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #417690;
+    padding-bottom: 10px;
+}
+
+.instruction-content h2 {
+    color: #417690;
+    font-size: 24px;
+    margin-top: 25px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 8px;
+}
+
+.instruction-content h3 {
+    color: #5a9;
+    font-size: 20px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.instruction-content h4 {
+    color: #666;
+    font-size: 18px;
+    margin-top: 15px;
+    margin-bottom: 8px;
+}
+
+.instruction-content p {
+    margin: 10px 0;
+    text-align: justify;
+}
+
+.instruction-content ul,
+.instruction-content ol {
+    margin: 15px 0;
+    padding-left: 30px;
+}
+
+.instruction-content li {
+    margin: 8px 0;
+}
+
+.instruction-content code {
+    background: #f4f4f4;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #c7254e;
+}
+
+.instruction-content strong {
+    color: #417690;
+    font-weight: 600;
+}
+
+.instruction-content a {
+    color: #417690;
+    text-decoration: underline;
+}
+
+.instruction-content a:hover {
+    color: #205067;
+}
+</style>
+{% endblock %}
+
