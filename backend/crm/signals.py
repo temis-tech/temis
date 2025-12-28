@@ -48,16 +48,11 @@ def extract_contact_data(data, field_mapping=None):
     return result
 
 
-@receiver(post_save)
+@receiver(post_save, sender='booking.BookingSubmission')
 def create_lead_from_booking_submission(sender, instance, created, **kwargs):
     """Создать лид при отправке формы записи, если включена интеграция с CRM"""
     # Ленивый импорт для избежания циклических зависимостей
-    from booking.models import BookingSubmission
     from .models import Lead, LeadStatus
-    
-    # Проверяем, что это BookingSubmission
-    if sender != BookingSubmission:
-        return
     
     if not created:
         return  # Обрабатываем только новые записи
@@ -111,16 +106,11 @@ def create_lead_from_booking_submission(sender, instance, created, **kwargs):
     return lead
 
 
-@receiver(post_save)
+@receiver(post_save, sender='quizzes.QuizSubmission')
 def create_lead_from_quiz_submission(sender, instance, created, **kwargs):
     """Создать лид при отправке анкеты, если включена интеграция с CRM"""
     # Ленивый импорт для избежания циклических зависимостей
-    from quizzes.models import QuizSubmission
     from .models import Lead, LeadStatus
-    
-    # Проверяем, что это QuizSubmission
-    if sender != QuizSubmission:
-        return
     
     if not created:
         return  # Обрабатываем только новые записи
