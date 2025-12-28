@@ -327,24 +327,24 @@ try:
             def message_preview(self, obj):
                 """Показывает превью сообщения"""
                 if obj.message:
-                preview = obj.message[:100] + '...' if len(obj.message) > 100 else obj.message
-                return format_html('<span title="{}">{}</span>', obj.message, preview)
+                    preview = obj.message[:100] + '...' if len(obj.message) > 100 else obj.message
+                    return format_html('<span title="{}">{}</span>', obj.message, preview)
                 return '-'
             message_preview.short_description = 'Сообщение'
     
             def raw_data_preview(self, obj):
                 """Показывает превью исходных данных"""
                 if obj.raw_data:
-                formatted = json.dumps(obj.raw_data, indent=2, ensure_ascii=False)
-                return format_html('<pre style="max-height: 400px; overflow: auto; background: #f5f5f5; padding: 10px; border-radius: 4px;">{}</pre>', formatted)
+                    formatted = json.dumps(obj.raw_data, indent=2, ensure_ascii=False)
+                    return format_html('<pre style="max-height: 400px; overflow: auto; background: #f5f5f5; padding: 10px; border-radius: 4px;">{}</pre>', formatted)
                 return '-'
             raw_data_preview.short_description = 'Исходные данные'
     
             def catalog_item_link(self, obj):
                 """Ссылка на элемент каталога"""
                 if obj.catalog_item:
-                url = reverse('admin:content_catalogitem_change', args=[obj.catalog_item.pk])
-                return format_html('<a href="{}">{}</a>', url, obj.catalog_item.title)
+                    url = reverse('admin:content_catalogitem_change', args=[obj.catalog_item.pk])
+                    return format_html('<a href="{}">{}</a>', url, obj.catalog_item.title)
                 return '-'
             catalog_item_link.short_description = 'Элемент каталога'
     
