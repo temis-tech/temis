@@ -17,6 +17,9 @@ except ImportError:
     CRYPTOGRAPHY_AVAILABLE = False
     # Заглушки для случаев, когда cryptography не установлена
     Fernet = None
+    hashes = None
+    PBKDF2HMAC = None
+    default_backend = None
 
 
 def get_encryption_key():
@@ -46,7 +49,7 @@ def encrypt_field(value):
     """Зашифровать значение поля"""
     if not value:
         return None
-    if not CRYPTOGRAPHY_AVAILABLE:
+    if not CRYPTOGRAPHY_AVAILABLE or Fernet is None:
         # Если cryptography не установлена, возвращаем значение как есть (для миграций)
         return value
     try:
@@ -61,7 +64,7 @@ def decrypt_field(encrypted_value):
     """Расшифровать значение поля"""
     if not encrypted_value:
         return None
-    if not CRYPTOGRAPHY_AVAILABLE:
+    if not CRYPTOGRAPHY_AVAILABLE or Fernet is None:
         # Если cryptography не установлена, возвращаем значение как есть (для миграций)
         return encrypted_value
     try:
