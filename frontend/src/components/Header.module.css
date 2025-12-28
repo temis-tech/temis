@@ -53,6 +53,8 @@
   align-items: center;
   text-decoration: none;
   gap: 0.75rem;
+  /* CSS переменная для масштабирования логотипа на мобильных */
+  --mobile-scale: 100;
 }
 
 .logo:hover {

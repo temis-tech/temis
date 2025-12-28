@@ -50,13 +50,14 @@ export default function HeaderClient({
 
   return (
     <header className={styles.header}>
-      <div 
-        className={styles.container} 
-        style={{ 
-          '--mobile-scale': `${logoMobileScale}` 
-        } as React.CSSProperties}
-      >
-        <Link href={logoUrl} className={styles.logo}>
+      <div className={styles.container}>
+        <Link 
+          href={logoUrl} 
+          className={styles.logo}
+          style={{ 
+            '--mobile-scale': `${logoMobileScale}` 
+          } as React.CSSProperties}
+        >
           {logoImage && (
             <img 
               src={normalizeImageUrl(logoImage)} 
