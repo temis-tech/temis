@@ -24,7 +24,7 @@ def get_bot_settings():
     return TelegramBotSettings.objects.first()
 
 
-def send_message(chat_id, text, parse_mode='HTML'):
+def send_message(chat_id, text, parse_mode='HTML', reply_markup=None):
     """
     Отправить сообщение пользователю
     
@@ -32,6 +32,7 @@ def send_message(chat_id, text, parse_mode='HTML'):
         chat_id: ID чата (telegram_id пользователя)
         text: Текст сообщения
         parse_mode: Режим парсинга (HTML или Markdown)
+        reply_markup: Inline клавиатура (опционально)
     
     Returns:
         bool: True если успешно, False если ошибка
@@ -43,17 +44,91 @@ def send_message(chat_id, text, parse_mode='HTML'):
     
     url = TELEGRAM_API_URL.format(token=bot_settings.token, method='sendMessage')
     
+    payload = {
+        'chat_id': chat_id,
+        'text': text,
+        'parse_mode': parse_mode
+    }
+    
+    if reply_markup:
+        payload['reply_markup'] = reply_markup
+    
     try:
-        response = requests.post(url, json={
-            'chat_id': chat_id,
-            'text': text,
-            'parse_mode': parse_mode
-        }, timeout=10)
+        response = requests.post(url, json=payload, timeout=10)
         
         response.raise_for_status()
         return True
     except requests.exceptions.RequestException as e:
         logger.error(f'Ошибка отправки сообщения в Telegram: {str(e)}')
+        return False
+
+
+def answer_callback_query(callback_query_id, text=None, show_alert=False):
+    """
+    Ответить на callback query
+    
+    Args:
+        callback_query_id: ID callback query
+        text: Текст ответа (опционально)
+        show_alert: Показать alert вместо уведомления
+    """
+    bot_settings = get_bot_settings()
+    if not bot_settings or not bot_settings.is_active:
+        return False
+    
+    url = TELEGRAM_API_URL.format(token=bot_settings.token, method='answerCallbackQuery')
+    
+    payload = {
+        'callback_query_id': callback_query_id
+    }
+    
+    if text:
+        payload['text'] = text
+    if show_alert:
+        payload['show_alert'] = True
+    
+    try:
+        response = requests.post(url, json=payload, timeout=10)
+        response.raise_for_status()
+        return True
+    except requests.exceptions.RequestException as e:
+        logger.error(f'Ошибка ответа на callback query: {str(e)}')
+        return False
+
+
+def edit_message_text(chat_id, message_id, text, parse_mode='HTML', reply_markup=None):
+    """
+    Редактировать текст сообщения
+    
+    Args:
+        chat_id: ID чата
+        message_id: ID сообщения
+        text: Новый текст
+        parse_mode: Режим парсинга
+        reply_markup: Inline клавиатура (опционально)
+    """
+    bot_settings = get_bot_settings()
+    if not bot_settings or not bot_settings.is_active:
+        return False
+    
+    url = TELEGRAM_API_URL.format(token=bot_settings.token, method='editMessageText')
+    
+    payload = {
+        'chat_id': chat_id,
+        'message_id': message_id,
+        'text': text,
+        'parse_mode': parse_mode
+    }
+    
+    if reply_markup:
+        payload['reply_markup'] = reply_markup
+    
+    try:
+        response = requests.post(url, json=payload, timeout=10)
+        response.raise_for_status()
+        return True
+    except requests.exceptions.RequestException as e:
+        logger.error(f'Ошибка редактирования сообщения: {str(e)}')
         return False
 
 
@@ -746,6 +821,12 @@ def handle_webhook_update(update_data):
                     # Деактивируем элемент, если он существует
                     deactivate_catalog_item_by_message_id(message_id, chat_id)
         
+        # Обрабатываем callback_query (нажатия на кнопки)
+        callback_query = update_data.get('callback_query')
+        if callback_query:
+            handle_callback_query(callback_query)
+            return
+        
         # Обрабатываем обычные сообщения (для бота)
         message = update_data.get('message')
         if not message:
@@ -782,15 +863,27 @@ def handle_webhook_update(update_data):
                 'Этот бот отправляет уведомления о событиях на сайте.\n\n'
             )
             if user.is_admin:
-                welcome_text += (
-                    '📋 <b>Команды CRM:</b>\n'
-                    '/leads - Список необработанных заявок\n'
-                    '/client <id> - Информация о клиенте\n'
-                    '/leads_new - Новые заявки\n'
-                    '/leads_in_progress - Заявки в работе\n\n'
-                )
-            welcome_text += 'Для получения уведомлений обратитесь к администратору.'
-            send_message(telegram_id, welcome_text)
+                welcome_text += '📋 <b>Используйте кнопки ниже для работы с CRM</b>'
+                # Создаем клавиатуру с кнопками CRM
+                keyboard = {
+                    'inline_keyboard': [
+                        [
+                            {'text': '📋 Необработанные заявки', 'callback_data': 'crm_leads'},
+                            {'text': '🆕 Новые заявки', 'callback_data': 'crm_leads_new'}
+                        ],
+                        [
+                            {'text': '⚙️ Заявки в работе', 'callback_data': 'crm_leads_in_progress'},
+                            {'text': '👥 Клиенты', 'callback_data': 'crm_clients'}
+                        ],
+                        [
+                            {'text': '🔄 Обновить', 'callback_data': 'crm_refresh'}
+                        ]
+                    ]
+                }
+                send_message(telegram_id, welcome_text, reply_markup=keyboard)
+            else:
+                welcome_text += 'Для получения уведомлений обратитесь к администратору.'
+                send_message(telegram_id, welcome_text)
         
         # Обработка команд CRM (только для админов)
         elif user.is_admin:
@@ -1010,4 +1103,348 @@ def handle_crm_commands(telegram_id, text, user):
     except Exception as e:
         logger.error(f'Ошибка обработки команды CRM: {str(e)}', exc_info=True)
         send_message(telegram_id, f'❌ Ошибка обработки команды: {str(e)}')
+
+
+def handle_callback_query(callback_query):
+    """
+    Обработать callback query (нажатие на кнопку)
+    
+    Args:
+        callback_query: Данные callback query от Telegram
+    """
+    try:
+        from telegram.models import TelegramUser
+        from crm.models import Lead, Client, LeadStatus
+        
+        callback_data = callback_query.get('data', '')
+        from_user = callback_query.get('from', {})
+        telegram_id = from_user.get('id')
+        message = callback_query.get('message', {})
+        message_id = message.get('message_id')
+        chat_id = message.get('chat', {}).get('id')
+        callback_query_id = callback_query.get('id')
+        
+        # Получаем пользователя
+        user = TelegramUser.objects.filter(telegram_id=telegram_id, is_admin=True, is_active=True).first()
+        if not user:
+            answer_callback_query(callback_query_id, '❌ У вас нет доступа к CRM', show_alert=True)
+            return
+        
+        # Обрабатываем разные типы callback_data
+        if callback_data == 'crm_leads':
+            show_leads_list(chat_id, message_id, callback_query_id)
+        elif callback_data == 'crm_leads_new':
+            show_leads_list(chat_id, message_id, callback_query_id, status_code='new')
+        elif callback_data == 'crm_leads_in_progress':
+            show_leads_list(chat_id, message_id, callback_query_id, status_code='in_progress')
+        elif callback_data == 'crm_clients':
+            show_clients_list(chat_id, message_id, callback_query_id)
+        elif callback_data == 'crm_refresh':
+            show_main_menu(chat_id, message_id, callback_query_id)
+        elif callback_data.startswith('crm_lead_'):
+            # Просмотр деталей лида: crm_lead_<id>
+            lead_id = callback_data.replace('crm_lead_', '')
+            show_lead_details(chat_id, message_id, callback_query_id, lead_id)
+        elif callback_data.startswith('crm_set_status_'):
+            # Изменение статуса: crm_set_status_<lead_id>_<status_code>
+            parts = callback_data.replace('crm_set_status_', '').split('_')
+            if len(parts) >= 2:
+                lead_id = parts[0]
+                status_code = '_'.join(parts[1:])
+                set_lead_status(chat_id, message_id, callback_query_id, lead_id, status_code)
+        elif callback_data.startswith('crm_client_'):
+            # Просмотр деталей клиента: crm_client_<id>
+            client_id = callback_data.replace('crm_client_', '')
+            show_client_details(chat_id, message_id, callback_query_id, client_id)
+        else:
+            answer_callback_query(callback_query_id, '❌ Неизвестная команда', show_alert=False)
+            
+    except Exception as e:
+        logger.error(f'Ошибка обработки callback query: {str(e)}', exc_info=True)
+        if 'callback_query_id' in locals():
+            answer_callback_query(callback_query_id, '❌ Ошибка обработки', show_alert=True)
+
+
+def show_main_menu(chat_id, message_id=None, callback_query_id=None):
+    """Показать главное меню CRM"""
+    text = '📋 <b>CRM - Главное меню</b>\n\nВыберите действие:'
+    keyboard = {
+        'inline_keyboard': [
+            [
+                {'text': '📋 Необработанные заявки', 'callback_data': 'crm_leads'},
+                {'text': '🆕 Новые заявки', 'callback_data': 'crm_leads_new'}
+            ],
+            [
+                {'text': '⚙️ Заявки в работе', 'callback_data': 'crm_leads_in_progress'},
+                {'text': '👥 Клиенты', 'callback_data': 'crm_clients'}
+            ],
+            [
+                {'text': '🔄 Обновить', 'callback_data': 'crm_refresh'}
+            ]
+        ]
+    }
+    
+    if message_id and callback_query_id:
+        edit_message_text(chat_id, message_id, text, reply_markup=keyboard)
+        answer_callback_query(callback_query_id, '✅ Обновлено')
+    else:
+        send_message(chat_id, text, reply_markup=keyboard)
+
+
+def show_leads_list(chat_id, message_id=None, callback_query_id=None, status_code=None):
+    """Показать список лидов"""
+    try:
+        from crm.models import Lead, LeadStatus
+        
+        if status_code:
+            status = LeadStatus.objects.filter(code=status_code).first()
+            if not status:
+                if callback_query_id:
+                    answer_callback_query(callback_query_id, f'❌ Статус "{status_code}" не найден', show_alert=True)
+                return
+            leads = Lead.objects.filter(status=status).order_by('-created_at')[:20]
+            title = f'📋 {status.name}'
+        else:
+            # Необработанные (новые и в работе)
+            new_status = LeadStatus.objects.filter(code='new').first()
+            in_progress_status = LeadStatus.objects.filter(code='in_progress').first()
+            statuses = [s for s in [new_status, in_progress_status] if s]
+            if not statuses:
+                if callback_query_id:
+                    answer_callback_query(callback_query_id, '❌ Статусы не настроены', show_alert=True)
+                return
+            leads = Lead.objects.filter(status__in=statuses).order_by('-created_at')[:20]
+            title = '📋 Необработанные заявки'
+        
+        if not leads:
+            text = f'{title}\n\n✅ Нет заявок.'
+            keyboard = {
+                'inline_keyboard': [
+                    [{'text': '🔙 Назад', 'callback_data': 'crm_refresh'}]
+                ]
+            }
+            if message_id:
+                edit_message_text(chat_id, message_id, text, reply_markup=keyboard)
+            else:
+                send_message(chat_id, text, reply_markup=keyboard)
+            if callback_query_id:
+                answer_callback_query(callback_query_id, '✅ Нет заявок')
+            return
+        
+        text = f'{title} ({leads.count()}):\n\n'
+        buttons = []
+        
+        for lead in leads[:10]:  # Показываем первые 10
+            name = lead.get_name() or 'Без имени'
+            phone = lead.get_phone() or 'Нет телефона'
+            status_name = lead.status.name if lead.status else 'Без статуса'
+            created = lead.created_at.strftime('%d.%m.%Y %H:%M')
+            text += (
+                f'<b>#{lead.id}</b> {name}\n'
+                f'📞 {phone} | 📊 {status_name}\n'
+                f'📅 {created}\n\n'
+            )
+            buttons.append([{'text': f'#{lead.id} {name}', 'callback_data': f'crm_lead_{lead.id}'}])
+        
+        buttons.append([{'text': '🔙 Назад', 'callback_data': 'crm_refresh'}])
+        
+        keyboard = {'inline_keyboard': buttons}
+        
+        if message_id:
+            edit_message_text(chat_id, message_id, text, reply_markup=keyboard)
+        else:
+            send_message(chat_id, text, reply_markup=keyboard)
+        
+        if callback_query_id:
+            answer_callback_query(callback_query_id, f'✅ Найдено {leads.count()} заявок')
+            
+    except Exception as e:
+        logger.error(f'Ошибка показа списка лидов: {str(e)}', exc_info=True)
+        if callback_query_id:
+            answer_callback_query(callback_query_id, '❌ Ошибка', show_alert=True)
+
+
+def show_lead_details(chat_id, message_id, callback_query_id, lead_id):
+    """Показать детали лида с кнопками изменения статуса"""
+    try:
+        from crm.models import Lead, LeadStatus
+        
+        lead = Lead.objects.get(id=lead_id)
+        statuses = LeadStatus.objects.filter(is_active=True).exclude(code='converted').order_by('order')
+        
+        name = lead.get_name() or 'Не указано'
+        phone = lead.get_phone() or 'Не указано'
+        email = lead.get_email() or 'Не указано'
+        status_name = lead.status.name if lead.status else 'Без статуса'
+        created = lead.created_at.strftime('%d.%m.%Y %H:%M')
+        source = lead.source or 'Не указан'
+        notes = lead.notes or 'Нет заметок'
+        
+        text = (
+            f'📋 <b>Лид #{lead.id}</b>\n\n'
+            f'<b>Имя:</b> {name}\n'
+            f'<b>Телефон:</b> {phone}\n'
+            f'<b>Email:</b> {email}\n'
+            f'<b>Статус:</b> {status_name}\n'
+            f'<b>Источник:</b> {source}\n'
+            f'<b>Создан:</b> {created}\n'
+            f'<b>Заметки:</b> {notes}'
+        )
+        
+        # Кнопки для изменения статуса
+        buttons = []
+        status_row = []
+        for status in statuses:
+            if lead.status and status.id == lead.status.id:
+                status_row.append({'text': f'✅ {status.name}', 'callback_data': f'crm_set_status_{lead_id}_{status.code}'})
+            else:
+                status_row.append({'text': status.name, 'callback_data': f'crm_set_status_{lead_id}_{status.code}'})
+            
+            if len(status_row) >= 2:
+                buttons.append(status_row)
+                status_row = []
+        
+        if status_row:
+            buttons.append(status_row)
+        
+        buttons.append([{'text': '🔙 Назад к списку', 'callback_data': 'crm_leads'}])
+        
+        keyboard = {'inline_keyboard': buttons}
+        
+        edit_message_text(chat_id, message_id, text, reply_markup=keyboard)
+        answer_callback_query(callback_query_id, '✅')
+        
+    except Lead.DoesNotExist:
+        answer_callback_query(callback_query_id, '❌ Лид не найден', show_alert=True)
+    except Exception as e:
+        logger.error(f'Ошибка показа деталей лида: {str(e)}', exc_info=True)
+        answer_callback_query(callback_query_id, '❌ Ошибка', show_alert=True)
+
+
+def set_lead_status(chat_id, message_id, callback_query_id, lead_id, status_code):
+    """Изменить статус лида"""
+    try:
+        from crm.models import Lead, LeadStatus
+        
+        lead = Lead.objects.get(id=lead_id)
+        status = LeadStatus.objects.filter(code=status_code).first()
+        
+        if not status:
+            answer_callback_query(callback_query_id, '❌ Статус не найден', show_alert=True)
+            return
+        
+        lead.status = status
+        lead.save()
+        
+        # Показываем обновленные детали
+        show_lead_details(chat_id, message_id, callback_query_id, lead_id)
+        answer_callback_query(callback_query_id, f'✅ Статус изменен на "{status.name}"')
+        
+    except Lead.DoesNotExist:
+        answer_callback_query(callback_query_id, '❌ Лид не найден', show_alert=True)
+    except Exception as e:
+        logger.error(f'Ошибка изменения статуса: {str(e)}', exc_info=True)
+        answer_callback_query(callback_query_id, '❌ Ошибка', show_alert=True)
+
+
+def show_clients_list(chat_id, message_id=None, callback_query_id=None):
+    """Показать список клиентов"""
+    try:
+        from crm.models import Client
+        
+        clients = Client.objects.filter(is_active=True).order_by('-created_at')[:20]
+        
+        if not clients:
+            text = '👥 <b>Клиенты</b>\n\n✅ Нет клиентов.'
+            keyboard = {
+                'inline_keyboard': [
+                    [{'text': '🔙 Назад', 'callback_data': 'crm_refresh'}]
+                ]
+            }
+            if message_id:
+                edit_message_text(chat_id, message_id, text, reply_markup=keyboard)
+            else:
+                send_message(chat_id, text, reply_markup=keyboard)
+            if callback_query_id:
+                answer_callback_query(callback_query_id, '✅ Нет клиентов')
+            return
+        
+        text = f'👥 <b>Клиенты ({clients.count()}):</b>\n\n'
+        buttons = []
+        
+        for client in clients[:10]:
+            name = client.get_name() or 'Без имени'
+            phone = client.get_phone() or 'Нет телефона'
+            created = client.created_at.strftime('%d.%m.%Y %H:%M')
+            text += (
+                f'<b>#{client.id}</b> {name}\n'
+                f'📞 {phone} | 📅 {created}\n\n'
+            )
+            buttons.append([{'text': f'#{client.id} {name}', 'callback_data': f'crm_client_{client.id}'}])
+        
+        buttons.append([{'text': '🔙 Назад', 'callback_data': 'crm_refresh'}])
+        
+        keyboard = {'inline_keyboard': buttons}
+        
+        if message_id:
+            edit_message_text(chat_id, message_id, text, reply_markup=keyboard)
+        else:
+            send_message(chat_id, text, reply_markup=keyboard)
+        
+        if callback_query_id:
+            answer_callback_query(callback_query_id, f'✅ Найдено {clients.count()} клиентов')
+            
+    except Exception as e:
+        logger.error(f'Ошибка показа списка клиентов: {str(e)}', exc_info=True)
+        if callback_query_id:
+            answer_callback_query(callback_query_id, '❌ Ошибка', show_alert=True)
+
+
+def show_client_details(chat_id, message_id, callback_query_id, client_id):
+    """Показать детали клиента"""
+    try:
+        from crm.models import Client
+        
+        client = Client.objects.get(id=client_id)
+        
+        name = client.get_name() or 'Не указано'
+        phone = client.get_phone() or 'Не указано'
+        email = client.get_email() or 'Не указано'
+        created = client.created_at.strftime('%d.%m.%Y %H:%M')
+        notes = client.notes or 'Нет заметок'
+        
+        # Получаем файлы клиента
+        files = client.files.all()[:10]
+        files_text = ''
+        if files:
+            files_text = '\n\n📎 <b>Файлы:</b>\n'
+            for file in files:
+                files_text += f'• {file.get_display_name()}\n'
+        else:
+            files_text = '\n\n📎 Файлов нет'
+        
+        text = (
+            f'👤 <b>Клиент #{client.id}</b>\n\n'
+            f'<b>Имя:</b> {name}\n'
+            f'<b>Телефон:</b> {phone}\n'
+            f'<b>Email:</b> {email}\n'
+            f'<b>Создан:</b> {created}\n'
+            f'<b>Заметки:</b> {notes}'
+            f'{files_text}'
+        )
+        
+        keyboard = {
+            'inline_keyboard': [
+                [{'text': '🔙 Назад к списку', 'callback_data': 'crm_clients'}]
+            ]
+        }
+        
+        edit_message_text(chat_id, message_id, text, reply_markup=keyboard)
+        answer_callback_query(callback_query_id, '✅')
+        
+    except Client.DoesNotExist:
+        answer_callback_query(callback_query_id, '❌ Клиент не найден', show_alert=True)
+    except Exception as e:
+        logger.error(f'Ошибка показа деталей клиента: {str(e)}', exc_info=True)
+        answer_callback_query(callback_query_id, '❌ Ошибка', show_alert=True)
 
