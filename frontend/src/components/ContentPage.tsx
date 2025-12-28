@@ -218,6 +218,23 @@ export default function ContentPage({ page }: ContentPageProps) {
       return (
         <ServicesList 
           services={page.display_services} 
+          title={page.services_title || 'Наши услуги'}
+          showTitle={page.services_show_title !== false}
+          cardStyle={page.services_card_style || 'standard'}
+          cardWidth={
+            page.services_card_style === 'standard' ? (page.services_card_standard_width ?? 300) :
+            page.services_card_style === 'compact' ? (page.services_card_compact_width ?? 280) :
+            page.services_card_style === 'detailed' ? (page.services_card_detailed_width ?? 350) :
+            page.services_card_style === 'minimal' ? (page.services_card_minimal_width ?? 100) :
+            undefined
+          }
+          cardHeight={
+            page.services_card_style === 'standard' ? (page.services_card_standard_height ?? 450) :
+            page.services_card_style === 'compact' ? (page.services_card_compact_height ?? 380) :
+            page.services_card_style === 'detailed' ? (page.services_card_detailed_height ?? 550) :
+            page.services_card_style === 'minimal' ? (page.services_card_minimal_height ?? 120) :
+            undefined
+          }
           filterByBranchId={selectedBranch?.id || null}
           onBookingClick={openBookingForm}
         />
