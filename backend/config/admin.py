@@ -4,7 +4,9 @@ from django.shortcuts import render
 from django.urls import path
 from django.utils.html import format_html
 from django.template.response import TemplateResponse
+from django.conf import settings
 import os
+import re
 from pathlib import Path
 
 
@@ -24,9 +26,14 @@ class CustomAdminSite(admin.AdminSite):
     
     def instruction_view(self, request):
         """Отображение инструкции по управлению сайтом"""
-        # Путь к файлу инструкции
-        base_dir = Path(__file__).resolve().parent.parent.parent
+        # Путь к файлу инструкции - используем BASE_DIR из settings
+        base_dir = Path(settings.BASE_DIR).parent if hasattr(settings, 'BASE_DIR') else Path(__file__).resolve().parent.parent.parent
         instruction_path = base_dir / 'ИНСТРУКЦИЯ_ПО_УПРАВЛЕНИЮ_САЙТОМ.md'
+        
+        # Если файл не найден, пробуем альтернативные пути
+        if not instruction_path.exists():
+            # Пробуем в корне проекта (на уровень выше backend)
+            instruction_path = Path(settings.BASE_DIR).parent / 'ИНСТРУКЦИЯ_ПО_УПРАВЛЕНИЮ_САЙТОМ.md'
         
         # Читаем содержимое инструкции
         content = ""
@@ -37,10 +44,9 @@ class CustomAdminSite(admin.AdminSite):
             except Exception as e:
                 content = f"Ошибка при чтении инструкции: {e}"
         else:
-            content = "Файл инструкции не найден."
+            content = f"Файл инструкции не найден. Искали по пути: {instruction_path}"
         
         # Конвертируем Markdown в HTML (простая конвертация)
-        import re
         html_content = self._markdown_to_html(content)
         
         context = {
