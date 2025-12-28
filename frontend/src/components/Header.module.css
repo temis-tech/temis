@@ -70,7 +70,7 @@
   flex-shrink: 0;
   transition: transform 0.3s ease;
   transform-origin: left center;
-  /* На десктопе без масштабирования - transform будет применен только на мобильных */
+  /* На десктопе transform не применяется - только на мобильных через медиа-запрос */
 }
 
 .logoText {
