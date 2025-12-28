@@ -344,12 +344,64 @@ class ServiceViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=False, methods=['get'], url_path='by-slug/(?P<slug>[^/.]+)')
     def by_slug(self, request, slug=None):
         """Получить услугу по slug"""
+        import logging
+        import traceback
+        logger = logging.getLogger(__name__)
+        
         try:
+            logger.info(f'Запрос услуги по slug: {slug}')
             service = self.get_queryset().get(slug=slug)
-            serializer = self.get_serializer(service)
-            return Response(serializer.data)
+            logger.info(f'Услуга найдена: id={service.id}, title="{service.title}", is_active={service.is_active}, has_own_page={service.has_own_page}')
+            
+            # Проверяем обязательные поля перед сериализацией
+            if not service.title:
+                logger.warning(f'Услуга id={service.id} не имеет названия')
+            if not service.description:
+                logger.warning(f'Услуга id={service.id}, title="{service.title}" не имеет описания')
+            if not service.price:
+                logger.warning(f'Услуга id={service.id}, title="{service.title}" не имеет цены')
+            
+            try:
+                serializer = self.get_serializer(service)
+                data = serializer.data
+                logger.info(f'Сериализация услуги успешна, данные: id={data.get("id")}, title="{data.get("title")}"')
+                return Response(data)
+            except Exception as e:
+                logger.error(f'Ошибка при сериализации услуги id={service.id}: {e}', exc_info=True)
+                logger.error(f'Traceback: {traceback.format_exc()}')
+                # Пытаемся вернуть упрощенные данные
+                try:
+                    logger.info('Пытаемся вернуть упрощенные данные услуги...')
+                    service_data = {
+                        'id': service.id,
+                        'title': service.title or 'Без названия',
+                        'slug': service.slug,
+                        'description': service.description or '',
+                        'price': float(service.price) if service.price else 0,
+                        'is_active': service.is_active,
+                        'has_own_page': service.has_own_page,
+                    }
+                    return Response(service_data)
+                except Exception as e2:
+                    logger.error(f'Ошибка при создании упрощенного ответа: {e2}')
+                    return Response({'error': f'Ошибка загрузки услуги: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Service.DoesNotExist:
+            logger.warning(f'Услуга со slug "{slug}" не найдена')
+            # Проверяем, существует ли услуга вообще (даже неактивная или без has_own_page)
+            all_services = Service.objects.filter(slug=slug)
+            if all_services.exists():
+                inactive_service = all_services.first()
+                logger.info(f'Услуга найдена, но неактивна или без has_own_page: id={inactive_service.id}, is_active={inactive_service.is_active}, has_own_page={inactive_service.has_own_page}')
+                return Response({
+                    'error': 'Услуга не найдена или недоступна',
+                    'is_active': inactive_service.is_active,
+                    'has_own_page': inactive_service.has_own_page
+                }, status=status.HTTP_404_NOT_FOUND)
             return Response({'error': 'Услуга не найдена'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f'Ошибка при загрузке услуги по slug {slug}: {e}', exc_info=True)
+            logger.error(f'Traceback: {traceback.format_exc()}')
+            return Response({'error': f'Ошибка загрузки услуги: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['get'], url_path='by-branch/(?P<branch_id>[^/.]+)')
     def by_branch(self, request, branch_id=None):
