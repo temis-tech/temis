@@ -156,6 +156,45 @@ def extract_hashtags(text):
     return [tag.lower() for tag in hashtags]
 
 
+def log_sync_event(event_type, status='success', message='', message_id=None, chat_id=None, 
+                   chat_username=None, hashtags=None, catalog_item=None, error_details='', raw_data=None):
+    """
+    Сохранить лог события синхронизации
+    
+    Args:
+        event_type: Тип события (из TelegramSyncLog.EVENT_TYPE_CHOICES)
+        status: Статус ('success', 'error', 'warning', 'skipped')
+        message: Сообщение о событии
+        message_id: ID сообщения Telegram
+        chat_id: ID канала
+        chat_username: Username канала
+        hashtags: Список хештегов или строка через запятую
+        catalog_item: Объект CatalogItem
+        error_details: Детали ошибки
+        raw_data: Исходные данные из Telegram
+    """
+    try:
+        hashtags_str = ', '.join(hashtags) if isinstance(hashtags, list) else (hashtags or '')
+        
+        log = TelegramSyncLog.objects.create(
+            event_type=event_type,
+            status=status,
+            message=message,
+            message_id=message_id,
+            chat_id=str(chat_id) if chat_id else '',
+            chat_username=chat_username or '',
+            hashtags=hashtags_str,
+            catalog_item=catalog_item,
+            catalog_item_title=catalog_item.title if catalog_item else '',
+            error_details=error_details,
+            raw_data=raw_data
+        )
+        return log
+    except Exception as e:
+        logger.error(f'Ошибка сохранения лога синхронизации: {str(e)}', exc_info=True)
+        return None
+
+
 def find_hashtag_mapping(hashtags):
     """
     Найти настройку для хештега
