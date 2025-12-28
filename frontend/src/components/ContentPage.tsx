@@ -510,17 +510,17 @@ export default function ContentPage({ page }: ContentPageProps) {
                   showTitle={contentPage.services_show_title !== false}
                   cardStyle={contentPage.services_card_style || 'standard'}
                   cardWidth={
-                    contentPage.services_card_style === 'standard' ? contentPage.services_card_standard_width :
-                    contentPage.services_card_style === 'compact' ? contentPage.services_card_compact_width :
-                    contentPage.services_card_style === 'detailed' ? contentPage.services_card_detailed_width :
-                    contentPage.services_card_style === 'minimal' ? contentPage.services_card_minimal_width :
+                    contentPage.services_card_style === 'standard' ? (contentPage.services_card_standard_width ?? 300) :
+                    contentPage.services_card_style === 'compact' ? (contentPage.services_card_compact_width ?? 280) :
+                    contentPage.services_card_style === 'detailed' ? (contentPage.services_card_detailed_width ?? 350) :
+                    contentPage.services_card_style === 'minimal' ? (contentPage.services_card_minimal_width ?? 100) :
                     undefined
                   }
                   cardHeight={
-                    contentPage.services_card_style === 'standard' ? contentPage.services_card_standard_height :
-                    contentPage.services_card_style === 'compact' ? contentPage.services_card_compact_height :
-                    contentPage.services_card_style === 'detailed' ? contentPage.services_card_detailed_height :
-                    contentPage.services_card_style === 'minimal' ? contentPage.services_card_minimal_height :
+                    contentPage.services_card_style === 'standard' ? (contentPage.services_card_standard_height ?? 450) :
+                    contentPage.services_card_style === 'compact' ? (contentPage.services_card_compact_height ?? 380) :
+                    contentPage.services_card_style === 'detailed' ? (contentPage.services_card_detailed_height ?? 550) :
+                    contentPage.services_card_style === 'minimal' ? (contentPage.services_card_minimal_height ?? 120) :
                     undefined
                   }
                   filterByBranchId={selectedBranch?.id || null}
