@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.html import format_html
+import json
 from config.constants import get_api_domain, get_protocol, TELEGRAM_WEBHOOK_PATH
 from .models import TelegramBotSettings, TelegramUser, TelegramHashtagMapping, TelegramSyncLog
 from .bot import set_webhook, delete_webhook, get_bot_settings
@@ -267,7 +268,7 @@ class TelegramSyncLogAdmin(admin.ModelAdmin):
     """Админка для логов синхронизации Telegram"""
     list_display = ('created_at', 'event_type', 'status_badge', 'chat_username', 'hashtags', 'catalog_item_title', 'message_preview')
     list_filter = ('event_type', 'status', 'created_at', 'chat_id')
-    search_fields = ('message', 'error_details', 'catalog_item_title', 'hashtags', 'chat_username', 'message_id')
+    search_fields = ('message', 'error_details', 'catalog_item_title', 'hashtags', 'chat_username')
     readonly_fields = ('created_at', 'raw_data_preview', 'catalog_item_link')
     date_hierarchy = 'created_at'
     ordering = ('-created_at',)
@@ -313,7 +314,6 @@ class TelegramSyncLogAdmin(admin.ModelAdmin):
     def raw_data_preview(self, obj):
         """Показывает превью исходных данных"""
         if obj.raw_data:
-            import json
             formatted = json.dumps(obj.raw_data, indent=2, ensure_ascii=False)
             return format_html('<pre style="max-height: 400px; overflow: auto; background: #f5f5f5; padding: 10px; border-radius: 4px;">{}</pre>', formatted)
         return '-'
@@ -339,4 +339,3 @@ class TelegramSyncLogAdmin(admin.ModelAdmin):
         """Разрешаем удаление логов"""
         return True
     
-    actions = ['delete_selected']
