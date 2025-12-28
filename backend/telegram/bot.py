@@ -24,7 +24,7 @@ def get_bot_settings():
     return TelegramBotSettings.objects.first()
 
 
-def send_message(chat_id, text, parse_mode='HTML', reply_markup=None):
+def send_message(chat_id, text, parse_mode='HTML', reply_markup=None, keyboard=None):
     """
     Отправить сообщение пользователю
     
@@ -33,6 +33,7 @@ def send_message(chat_id, text, parse_mode='HTML', reply_markup=None):
         text: Текст сообщения
         parse_mode: Режим парсинга (HTML или Markdown)
         reply_markup: Inline клавиатура (опционально)
+        keyboard: Reply клавиатура (постоянные кнопки внизу, опционально)
     
     Returns:
         bool: True если успешно, False если ошибка
@@ -50,8 +51,11 @@ def send_message(chat_id, text, parse_mode='HTML', reply_markup=None):
         'parse_mode': parse_mode
     }
     
+    # Приоритет: reply_markup (inline) > keyboard (reply)
     if reply_markup:
         payload['reply_markup'] = reply_markup
+    elif keyboard:
+        payload['reply_markup'] = keyboard
     
     try:
         response = requests.post(url, json=payload, timeout=10)
@@ -954,9 +958,41 @@ def delete_webhook():
         return False
 
 
+def handle_menu_button(telegram_id, text, user):
+    """
+    Обработать нажатие на кнопку меню
+    
+    Args:
+        telegram_id: ID пользователя Telegram
+        text: Текст кнопки
+        user: Объект TelegramUser
+    """
+    try:
+        from crm.models import Lead, Client, LeadStatus
+        
+        # Обрабатываем нажатия на кнопки меню
+        if text == '📋 Необработанные заявки':
+            show_leads_list(telegram_id)
+        elif text == '🆕 Новые заявки':
+            show_leads_list(telegram_id, status_code='new')
+        elif text == '⚙️ Заявки в работе':
+            show_leads_list(telegram_id, status_code='in_progress')
+        elif text == '👥 Клиенты':
+            show_clients_list(telegram_id)
+        elif text == '🔄 Обновить меню':
+            show_main_menu(telegram_id)
+        else:
+            # Если это не кнопка меню, проверяем старые команды для совместимости
+            handle_crm_commands(telegram_id, text, user)
+            
+    except Exception as e:
+        logger.error(f'Ошибка обработки кнопки меню: {str(e)}', exc_info=True)
+        send_message(telegram_id, f'❌ Ошибка обработки: {str(e)}')
+
+
 def handle_crm_commands(telegram_id, text, user):
     """
-    Обработать команды CRM
+    Обработать команды CRM (для совместимости со старыми командами)
     
     Args:
         telegram_id: ID пользователя Telegram
