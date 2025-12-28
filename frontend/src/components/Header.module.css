@@ -59,6 +59,8 @@
 
 .logoImage {
   width: auto;
+  max-width: 100%;
+  height: auto;
   object-fit: contain;
   display: block;
   flex-shrink: 0;
@@ -261,6 +263,16 @@
   .container {
     padding: 0.6rem 1.5rem;
     flex-wrap: wrap;
+  }
+
+  .logo {
+    max-width: calc(100% - 60px); /* Оставляем место для кнопки меню */
+    min-width: 0;
+  }
+
+  .logoImage {
+    max-width: 100%;
+    height: auto;
   }
 
   .headerRight {

@@ -336,7 +336,7 @@ class HeaderSettingsSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = HeaderSettings
-        fields = ['logo_text', 'logo_image', 'logo_url', 'logo_height', 'header_height', 
+        fields = ['logo_text', 'logo_image', 'logo_url', 'logo_height', 'logo_width', 'header_height', 
                  'show_menu', 'menu', 'show_phone', 'phone_text']
     
     def get_logo_image(self, obj):

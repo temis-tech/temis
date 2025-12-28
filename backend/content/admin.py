@@ -429,11 +429,11 @@ class HeaderSettingsAdmin(admin.ModelAdmin):
     list_display = ['logo_text', 'logo_height', 'header_height', 'show_menu', 'menu', 'show_phone']
     fieldsets = (
         ('Логотип', {
-            'fields': ('logo_text', 'logo_image', 'logo_url', 'logo_height', 'logo_preview')
+            'fields': ('logo_text', 'logo_image', 'logo_url', 'logo_preview')
         }),
         ('Размеры', {
-            'fields': ('header_height',),
-            'description': 'Высота шапки используется для расчета отступа контента, чтобы он не перекрывался фиксированной шапкой.'
+            'fields': ('logo_height', 'logo_width', 'header_height'),
+            'description': 'Высота шапки используется для расчета отступа контента, чтобы он не перекрывался фиксированной шапкой. Ширина логотипа ограничивает размер на мобильных устройствах.'
         }),
         ('Меню', {
             'fields': ('show_menu', 'menu'),

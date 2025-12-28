@@ -21,6 +21,7 @@ interface HeaderClientProps {
   logoImage?: string;
   logoUrl: string;
   logoHeight?: number;
+  logoWidth?: number;
   showMenu: boolean;
   menuItems: MenuItem[];
   showPhone?: boolean;
@@ -32,6 +33,7 @@ export default function HeaderClient({
   logoImage,
   logoUrl,
   logoHeight = 100,
+  logoWidth = 150,
   showMenu, 
   menuItems,
   showPhone,
@@ -48,7 +50,7 @@ export default function HeaderClient({
               src={normalizeImageUrl(logoImage)} 
               alt={logoText} 
               className={styles.logoImage}
-              style={{ maxHeight: `${logoHeight}px` }}
+              style={{ maxHeight: `${logoHeight}px`, maxWidth: `${logoWidth}px` }}
             />
           )}
           {logoText && (

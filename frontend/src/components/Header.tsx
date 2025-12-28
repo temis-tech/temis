@@ -70,6 +70,8 @@ export default async function Header() {
           logoImage={headerSettings?.logo_image || undefined}
           logoUrl={headerSettings?.logo_url || '/'}
           logoHeight={headerSettings?.logo_height || 100}
+          logoWidth={headerSettings?.logo_width || 150}
+          logoWidth={headerSettings?.logo_width || 150}
           showMenu={false} // Не показываем меню, если есть подозрение на старые данные
           menuItems={[]}
           showPhone={headerSettings?.show_phone}
