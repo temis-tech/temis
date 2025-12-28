@@ -317,10 +317,10 @@ try:
                 """Отображает статус с цветным бейджем"""
                 color = obj.get_status_color()
                 return format_html(
-                '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: bold;">{}</span>',
-                color,
-                obj.get_status_display()
-            )
+                    '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: bold;">{}</span>',
+                    color,
+                    obj.get_status_display()
+                )
             status_badge.short_description = 'Статус'
             status_badge.admin_order_field = 'status'
     
