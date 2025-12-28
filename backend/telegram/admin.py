@@ -287,14 +287,14 @@ try:
         @admin.register(TelegramSyncLog)
         class TelegramSyncLogAdmin(admin.ModelAdmin):
     """Админка для логов синхронизации Telegram"""
-    list_display = ('created_at', 'event_type', 'status_badge', 'chat_username', 'hashtags', 'catalog_item_title', 'message_preview')
-    list_filter = ('event_type', 'status', 'created_at', 'chat_id')
-    search_fields = ('message', 'error_details', 'catalog_item_title', 'hashtags', 'chat_username')
-    readonly_fields = ('created_at', 'raw_data_preview', 'catalog_item_link')
-    date_hierarchy = 'created_at'
-    ordering = ('-created_at',)
+            list_display = ('created_at', 'event_type', 'status_badge', 'chat_username', 'hashtags', 'catalog_item_title', 'message_preview')
+            list_filter = ('event_type', 'status', 'created_at', 'chat_id')
+            search_fields = ('message', 'error_details', 'catalog_item_title', 'hashtags', 'chat_username')
+            readonly_fields = ('created_at', 'raw_data_preview', 'catalog_item_link')
+            date_hierarchy = 'created_at'
+            ordering = ('-created_at',)
     
-    fieldsets = (
+            fieldsets = (
             ('Основная информация', {
                 'fields': ('event_type', 'status', 'created_at')
             }),
@@ -313,7 +313,7 @@ try:
             }),
     )
     
-    def status_badge(self, obj):
+            def status_badge(self, obj):
             """Отображает статус с цветным бейджем"""
             color = obj.get_status_color()
             return format_html(
@@ -321,41 +321,41 @@ try:
                 color,
                 obj.get_status_display()
             )
-    status_badge.short_description = 'Статус'
-    status_badge.admin_order_field = 'status'
+            status_badge.short_description = 'Статус'
+            status_badge.admin_order_field = 'status'
     
-    def message_preview(self, obj):
+            def message_preview(self, obj):
             """Показывает превью сообщения"""
             if obj.message:
                 preview = obj.message[:100] + '...' if len(obj.message) > 100 else obj.message
                 return format_html('<span title="{}">{}</span>', obj.message, preview)
             return '-'
-    message_preview.short_description = 'Сообщение'
+            message_preview.short_description = 'Сообщение'
     
-    def raw_data_preview(self, obj):
+            def raw_data_preview(self, obj):
             """Показывает превью исходных данных"""
             if obj.raw_data:
                 formatted = json.dumps(obj.raw_data, indent=2, ensure_ascii=False)
                 return format_html('<pre style="max-height: 400px; overflow: auto; background: #f5f5f5; padding: 10px; border-radius: 4px;">{}</pre>', formatted)
             return '-'
-    raw_data_preview.short_description = 'Исходные данные'
+            raw_data_preview.short_description = 'Исходные данные'
     
-    def catalog_item_link(self, obj):
+            def catalog_item_link(self, obj):
             """Ссылка на элемент каталога"""
             if obj.catalog_item:
                 url = reverse('admin:content_catalogitem_change', args=[obj.catalog_item.pk])
                 return format_html('<a href="{}">{}</a>', url, obj.catalog_item.title)
             return '-'
-    catalog_item_link.short_description = 'Элемент каталога'
+            catalog_item_link.short_description = 'Элемент каталога'
     
-    def has_add_permission(self, request):
+            def has_add_permission(self, request):
             """Запрещаем создание логов вручную"""
             return False
     
-    def has_change_permission(self, request, obj=None):
+            def has_change_permission(self, request, obj=None):
             """Запрещаем редактирование логов"""
             return False
     
-    def has_delete_permission(self, request, obj=None):
+            def has_delete_permission(self, request, obj=None):
             """Разрешаем удаление логов"""
             return True
