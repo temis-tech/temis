@@ -236,7 +236,7 @@ class TelegramSyncLog(models.Model):
         verbose_name_plural = 'Логи синхронизации Telegram'
         ordering = ['-created_at']
         indexes = [
-            models.Index(fields=['-created_at']),
+            models.Index(fields=['created_at']),
             models.Index(fields=['event_type', 'status']),
             models.Index(fields=['message_id']),
             models.Index(fields=['chat_id']),

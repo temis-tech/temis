@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='telegramsynclog',
-            index=models.Index(fields=['-created_at'], name='telegram_te_created_idx'),
+            index=models.Index(fields=['created_at'], name='telegram_te_created_idx'),
         ),
         migrations.AddIndex(
             model_name='telegramsynclog',
