@@ -873,9 +873,9 @@ def handle_webhook_update(update_data):
                 welcome_text += 'Для получения уведомлений обратитесь к администратору.'
                 send_message(telegram_id, welcome_text)
         
-        # Обработка команд CRM (только для админов)
+        # Обработка кнопок меню и команд CRM (только для админов)
         elif user.is_admin:
-            handle_crm_commands(telegram_id, text, user)
+            handle_menu_button(telegram_id, text, user)
         
     except Exception as e:
         logger.error(f'Ошибка обработки webhook: {str(e)}')
@@ -940,6 +940,27 @@ def delete_webhook():
     except requests.exceptions.RequestException as e:
         logger.error(f'Ошибка удаления webhook: {str(e)}')
         return False
+
+
+def get_crm_menu_keyboard():
+    """Получить постоянное меню CRM (ReplyKeyboard)"""
+    return {
+        'keyboard': [
+            [
+                {'text': '📋 Необработанные заявки'},
+                {'text': '🆕 Новые заявки'}
+            ],
+            [
+                {'text': '⚙️ Заявки в работе'},
+                {'text': '👥 Клиенты'}
+            ],
+            [
+                {'text': '🔄 Обновить меню'}
+            ]
+        ],
+        'resize_keyboard': True,
+        'one_time_keyboard': False
+    }
 
 
 def handle_menu_button(telegram_id, text, user):
