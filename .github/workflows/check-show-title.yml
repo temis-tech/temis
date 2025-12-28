@@ -30,14 +30,7 @@ jobs:
             
             # Проверяем значение в базе данных напрямую
             echo "1️⃣ Проверяем значение в базе данных:"
-            sudo -u www-data venv/bin/python manage.py shell -c "
-from content.models import ContentPage
-pages = ContentPage.objects.all().values('id', 'title', 'slug', 'page_type', 'show_title')
-print('\nВсе страницы в БД:')
-for page in pages:
-    show_title_val = page['show_title']
-    print(f\"  ID: {page['id']:3d} | Slug: {page['slug']:30s} | Type: {page['page_type']:10s} | show_title: {show_title_val} (type: {type(show_title_val).__name__})\")
-"
+            sudo -u www-data venv/bin/python manage.py check_show_title
 
             echo ""
             echo "2️⃣ Проверяем через API (сериализатор):"
