@@ -867,24 +867,8 @@ def handle_webhook_update(update_data):
                 'Этот бот отправляет уведомления о событиях на сайте.\n\n'
             )
             if user.is_admin:
-                welcome_text += '📋 <b>Используйте кнопки ниже для работы с CRM</b>'
-                # Создаем клавиатуру с кнопками CRM
-                keyboard = {
-                    'inline_keyboard': [
-                        [
-                            {'text': '📋 Необработанные заявки', 'callback_data': 'crm_leads'},
-                            {'text': '🆕 Новые заявки', 'callback_data': 'crm_leads_new'}
-                        ],
-                        [
-                            {'text': '⚙️ Заявки в работе', 'callback_data': 'crm_leads_in_progress'},
-                            {'text': '👥 Клиенты', 'callback_data': 'crm_clients'}
-                        ],
-                        [
-                            {'text': '🔄 Обновить', 'callback_data': 'crm_refresh'}
-                        ]
-                    ]
-                }
-                send_message(telegram_id, welcome_text, reply_markup=keyboard)
+                welcome_text += '📋 <b>Используйте кнопки меню ниже для работы с CRM</b>'
+                send_message(telegram_id, welcome_text, keyboard=get_crm_menu_keyboard())
             else:
                 welcome_text += 'Для получения уведомлений обратитесь к администратору.'
                 send_message(telegram_id, welcome_text)
