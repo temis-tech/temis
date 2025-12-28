@@ -90,6 +90,16 @@ button {
 /* Отступ для контента, чтобы не перекрывался фиксированным Header */
 main {
   padding-top: var(--header-height, 140px) !important;
+  min-height: calc(100vh - var(--header-height, 140px));
+}
+
+/* Дополнительный отступ на мобильных устройствах для надежности */
+@media (max-width: 768px) {
+  main {
+    padding-top: var(--header-height, 140px) !important;
+    /* Убеждаемся, что отступ достаточен даже если хедер больше */
+    min-height: calc(100vh - var(--header-height, 140px));
+  }
 }
 
 /* Утилиты */

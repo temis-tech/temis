@@ -117,7 +117,8 @@ export default async function RootLayout({
   // Получаем настройки шапки для установки CSS переменной глобально
   const headerSettings = await contentApi.getHeaderSettings().then(res => res.data).catch(() => null);
   const headerHeight = headerSettings?.header_height || 140;
-  const mobileHeaderHeight = Math.min(headerHeight * 0.85, 120);
+  // На мобильных используем полную высоту хедера или минимум 100px для достаточного отступа
+  const mobileHeaderHeight = Math.max(headerHeight, 100);
 
   // Если не удалось загрузить настройки шапки, все равно показываем минимальный layout
   // но Header и Footer сами проверят наличие данных и вернут null при ошибках
