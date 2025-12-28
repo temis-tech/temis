@@ -314,9 +314,9 @@ try:
     )
     
             def status_badge(self, obj):
-            """Отображает статус с цветным бейджем"""
-            color = obj.get_status_color()
-            return format_html(
+                """Отображает статус с цветным бейджем"""
+                color = obj.get_status_color()
+                return format_html(
                 '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px; font-weight: bold;">{}</span>',
                 color,
                 obj.get_status_display()
@@ -325,37 +325,37 @@ try:
             status_badge.admin_order_field = 'status'
     
             def message_preview(self, obj):
-            """Показывает превью сообщения"""
-            if obj.message:
+                """Показывает превью сообщения"""
+                if obj.message:
                 preview = obj.message[:100] + '...' if len(obj.message) > 100 else obj.message
                 return format_html('<span title="{}">{}</span>', obj.message, preview)
-            return '-'
+                return '-'
             message_preview.short_description = 'Сообщение'
     
             def raw_data_preview(self, obj):
-            """Показывает превью исходных данных"""
-            if obj.raw_data:
+                """Показывает превью исходных данных"""
+                if obj.raw_data:
                 formatted = json.dumps(obj.raw_data, indent=2, ensure_ascii=False)
                 return format_html('<pre style="max-height: 400px; overflow: auto; background: #f5f5f5; padding: 10px; border-radius: 4px;">{}</pre>', formatted)
-            return '-'
+                return '-'
             raw_data_preview.short_description = 'Исходные данные'
     
             def catalog_item_link(self, obj):
-            """Ссылка на элемент каталога"""
-            if obj.catalog_item:
+                """Ссылка на элемент каталога"""
+                if obj.catalog_item:
                 url = reverse('admin:content_catalogitem_change', args=[obj.catalog_item.pk])
                 return format_html('<a href="{}">{}</a>', url, obj.catalog_item.title)
-            return '-'
+                return '-'
             catalog_item_link.short_description = 'Элемент каталога'
     
             def has_add_permission(self, request):
-            """Запрещаем создание логов вручную"""
-            return False
+                """Запрещаем создание логов вручную"""
+                return False
     
             def has_change_permission(self, request, obj=None):
-            """Запрещаем редактирование логов"""
-            return False
+                """Запрещаем редактирование логов"""
+                return False
     
             def has_delete_permission(self, request, obj=None):
-            """Разрешаем удаление логов"""
-            return True
+                """Разрешаем удаление логов"""
+                return True
